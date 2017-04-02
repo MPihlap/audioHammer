@@ -20,7 +20,6 @@ public class Client {
             while ((read = in.read(buff)) > 0) {
                 out.write(buff, 0, read);
             }
-
             out.flush();
             audioBytes = out.toByteArray();
         }
