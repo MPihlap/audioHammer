@@ -10,15 +10,19 @@ import java.util.concurrent.Executors;
 
 
 public class Server {
+
     public static void main(String[] args) throws IOException {
         try (ServerSocket serverSocket = new ServerSocket(1337)) {
+
+
             //noinspection InfiniteLoopStatement
             ExecutorService executor = null;
             try {
                 executor = Executors.newFixedThreadPool(4); //Needs testing
                 while (true) {
                     Socket socket = serverSocket.accept();
-                    executor.execute(new Thread(new ServerThread(socket)));
+                    executor.execute(new Thread(new ServerThread(socket)))
+                    ;
                 }
             } finally {
                 executor.shutdown();

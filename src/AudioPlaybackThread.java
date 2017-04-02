@@ -7,7 +7,7 @@ import java.io.IOException;
  * Created by Meelis on 31/03/2017.
  */
 public class AudioPlaybackThread implements Runnable {
-    private final AudioFormat format = new AudioFormat(8000.0f, 16, 1, true, true);
+    private final AudioFormat format = new AudioFormat(44100, 16, 1, true, true);
     private final ByteArrayOutputStream captureOutputStream;
 
     public AudioPlaybackThread(ByteArrayOutputStream captureOutputStream) {
@@ -17,6 +17,7 @@ public class AudioPlaybackThread implements Runnable {
     @Override
     public void run() {
         try {
+            System.out.println(captureOutputStream.size());
             SourceDataLine speakerDataLine = AudioSystem.getSourceDataLine(format);
             int bufferSize = (int) format.getSampleRate() * format.getFrameSize();
             byte[] recordedAudioBytes = captureOutputStream.toByteArray();
@@ -34,10 +35,7 @@ public class AudioPlaybackThread implements Runnable {
             speakerDataLine.stop();
             speakerDataLine.close();
         }
-        catch (IOException e){
-            throw new RuntimeException(e);
-        }
-        catch (LineUnavailableException e){
+        catch (IOException | LineUnavailableException e){
             throw new RuntimeException(e);
         }
     }
