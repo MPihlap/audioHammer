@@ -8,9 +8,9 @@ public class Main {
     public static boolean recording;
 
     public static void main(String[] args) {
-        recording = true;
         AudioCaptureThread audioCaptureThread = new AudioCaptureThread(new ByteArrayOutputStream());
-        new Thread(audioCaptureThread).start();
+        SoundCardCaptureThread soundCardCaptureThread = new SoundCardCaptureThread(new ByteArrayOutputStream());
+        new Thread(soundCardCaptureThread).start();
         System.out.println("Started recording");
         try {
             Thread.sleep(5000);
@@ -19,8 +19,9 @@ public class Main {
         } finally {
             recording = false;
             System.out.println("Finished recording");
+            ByteArrayOutputStream soundAsBytes = soundCardCaptureThread.getCaptureOutputStream();
         }
-        new Thread(new AudioPlaybackThread(audioCaptureThread.getCaptureOutputStream())).start();
+        new Thread(new AudioPlaybackThread(soundCardCaptureThread.getCaptureOutputStream())).start();
     }
 
 }
