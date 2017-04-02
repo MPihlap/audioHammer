@@ -97,20 +97,20 @@ public class ServerThread implements Runnable {
         if (filesInFolder!=null) {
             for (File file:filesInFolder) {
                 if (file.getName().equals(path.getFileName().toString())){
-                    if ((pathString.substring(pathString.length()-12,pathString.length()-7)).equals("(Copy")){
+                    if (pathString.charAt(pathString.length()-5)==(')')){
                         int number2=Character.getNumericValue(pathString.charAt(pathString.length()-6))+1;
                         int number1=Character.getNumericValue(pathString.charAt(pathString.length()-7));
                         if (number1==9&&number2==9){
                             System.out.println("Selle faili nimega copisied on juba 100 tükki.Esimese faili ümbersalvestamine.");
-                            return (pathString.substring(0,(pathString.length()-12))+pathString.substring(pathString.length()-4,pathString.length()));
+                            return (pathString.substring(0,(pathString.length()-8))+pathString.substring(pathString.length()-4,pathString.length()));
                         }
                         if (number2==10){
                             number1=Character.getNumericValue(pathString.charAt(pathString.length()-7))+1;
                             number2=0;
                         }
-                        pathStringFixed=pathString.substring(0,(pathString.length()-12))+"(Copy"+number1+number2+")"+pathString.substring(pathString.length()-4,pathString.length());
+                        pathStringFixed=pathString.substring(0,(pathString.length()-8))+"("+number1+number2+")"+pathString.substring(pathString.length()-4,pathString.length());
                     }else{
-                        pathStringFixed=pathString.substring(0,(pathString.length()-4))+"(Copy01)"+pathString.substring(pathString.length()-4,pathString.length());
+                        pathStringFixed=pathString.substring(0,(pathString.length()-4))+"(01)"+pathString.substring(pathString.length()-4,pathString.length());
                     }
                     pathStringFixed=fileCheck(pathStringFixed);
                 }
