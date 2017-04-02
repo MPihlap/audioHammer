@@ -28,7 +28,7 @@ public class Client {
         }
 
     }
-    //Reads WAV file into byteArray
+    //Reads WAV file into byteArray, maybe used later
     private static byte[] readWAV(String filename) throws IOException {
         File wavFile = new File(filename);
         byte[] audioBytes;
