@@ -44,7 +44,7 @@ public class SoundCardCaptureThread implements Runnable {
             int bufferSize = (int)audioFormat.getSampleRate() *
                     audioFormat.getFrameSize();
             byte buffer[] = new byte[bufferSize];
-            while (Main.recording) {
+            while (Client.recording) {
                 int count = targetDataLine.read(buffer, 0, buffer.length);
                 if (count > 0) {
                     captureOutputStream.write(buffer, 0, count);
