@@ -80,11 +80,6 @@ public class ServerThread implements Runnable {
         AudioSystem.write(ais, AudioFileFormat.Type.WAVE, newFile);
 
 
-        /**
-         fileOutputStream.write(fileBytes);
-         fileOutputStream.flush();
-         **/
-
 
         System.out.println("File " + filename + " is saved as " + path.getFileName());
     }
