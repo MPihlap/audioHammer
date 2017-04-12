@@ -1,10 +1,9 @@
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
+package main.java.client;
 
 import javax.sound.sampled.*;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.Socket;
 
 /**
  * Created by Meelis on 30/03/2017.

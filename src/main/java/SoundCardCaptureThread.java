@@ -1,13 +1,8 @@
+import main.java.client.Client;
+
 import javax.sound.sampled.*;
-import javax.xml.crypto.Data;
-import javax.xml.transform.Source;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
-import java.util.Objects;
-import java.util.Scanner;
 
 /**
  * Created by Alo on 26-Mar-17.

@@ -1,6 +1,7 @@
+package main.java.client;
+
 import java.io.*;
 import java.net.Socket;
-import java.util.Objects;
 import java.util.Scanner;
 
 /**
