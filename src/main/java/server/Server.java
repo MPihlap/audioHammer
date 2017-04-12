@@ -1,3 +1,5 @@
+package main.java.server;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
