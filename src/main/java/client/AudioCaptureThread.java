@@ -44,7 +44,12 @@ public class AudioCaptureThread implements Runnable {
                         break;
                     }
                     if (command.equals("pause")){
-                        recordingQueue.take(); //Waits for input "resume"
+                        if (recordingQueue.take().equals("stop")) {
+                            break;
+                        }
+                        else {
+                            continue; //Waits for input "resume"
+                        }
                     }
                 }
                 numBytesRead = microphone.read(recordByteBuffer,0,recordByteBuffer.length);

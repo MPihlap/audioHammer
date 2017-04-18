@@ -30,6 +30,8 @@ public class Client {
             Thread captureThread = new Thread(audioCaptureThread);
             captureThread.start();
             System.out.println("Started recording");    //lindistab kuni kirjutatakse stop;
+            System.out.println("Type 'stop' to stop recording");
+            System.out.println("Type 'pause' to pause");
             while (true) {
                 String nextLine = sc.nextLine();
                 if (nextLine.equals("stop")) {
@@ -39,7 +41,8 @@ public class Client {
                 }
                 if (nextLine.equals("pause")){
                     recordingInfo.add("pause");
-                    System.out.println("Type 'resume' to resume recording.");
+                    System.out.println("Recording paused");
+                    System.out.println("Type 'resume' to resume or 'stop' to finish recording.");
                 }
                 if (nextLine.equals("resume")){
                     recordingInfo.add("resume");
