@@ -1,3 +1,5 @@
+package main.java;
+
 import main.java.client.Client;
 
 import javax.sound.sampled.*;
