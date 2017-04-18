@@ -19,7 +19,23 @@ public class Client {
              DataOutputStream servStream = new DataOutputStream(servSocket.getOutputStream());
              Scanner sc = new Scanner(System.in)
         ) {
-            LoginHandler.newUserAccount();
+            System.out.println("Welcome!");
+            while (true) {
+                System.out.println("Log in or create new account? (l/n)");
+                String nextline = sc.nextLine();
+                if(nextline.equals("n")) {
+                    LoginHandler.newUserAccount(sc);
+                    break;
+                }
+                else if(nextline.equals("l")) {
+                    if (LoginHandler.login(sc)) {
+                        System.out.println("Success!");
+                        break;
+                    }
+                }
+                System.out.println("Bad input! Try again.");
+
+            }
             String fileName = selectFilename(sc);
             servStream.writeUTF(fileName);
             while (true){
