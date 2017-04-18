@@ -8,12 +8,17 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.stream.Stream;
+
+import static java.nio.file.Files.walk;
 
 /**
  * Created by Helen on 30.03.2017.
  */
 public class ServerThread implements Runnable {
     private Socket socket;
+
 
     public ServerThread(Socket socket) {
         this.socket = socket;
@@ -59,8 +64,8 @@ public class ServerThread implements Runnable {
     //Saves file
     private void fileSaving(String filename, byte[] fileBytes) throws IOException {
         String serverFilename = "ServerFile_" + filename +".wav";
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         LocalDate localDate = LocalDate.now();
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         String directory = dateTimeFormatter.format(localDate);
         String pathString = System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator + directory + File.separator + serverFilename;
         System.out.println(pathString);
@@ -123,5 +128,7 @@ public class ServerThread implements Runnable {
 
 
     }
+
+
 
 }

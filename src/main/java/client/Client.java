@@ -80,6 +80,11 @@ public class Client {
             if (userResponse.equals("y")) {
                 new Thread(new AudioPlaybackThread(audioCaptureThread.getCaptureOutputStream())).start();
             }
+            System.out.println("Would you like to see your files? (y/n)");
+            userResponse = sc.nextLine();
+            if (userResponse.equals("y")) {
+                new Thread(new DisplayFiles()).start();
+            }
         }
     }
 
