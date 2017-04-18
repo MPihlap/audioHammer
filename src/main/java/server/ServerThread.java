@@ -1,11 +1,13 @@
 package main.java.server;
 
 import com.sun.deploy.util.ArrayUtil;
+import com.sun.media.sound.WaveFileWriter;
 
 import javax.sound.sampled.*;
 import java.io.*;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -49,6 +51,7 @@ public class ServerThread implements Runnable {
     //Reads sent audio as bytearray
     private byte[] readAudioBytesFromClient(DataInputStream dataInputStream) throws IOException {
         byte[] buffer = new byte[1024];
+        //ByteBuffer byteBuffer = ByteBuffer.wrap(buffer);
         ByteArrayOutputStream byteArrayOut = new ByteArrayOutputStream();
         int len;
         int dataLen = 0;
@@ -61,6 +64,7 @@ public class ServerThread implements Runnable {
             byteArrayOut.write(buffer, 0, len);
             fileOutputStream.write(buffer, 0, len);
             dataLen += len;
+
         }
         RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw");
         byte[] dataLenArray = ByteBuffer.allocate(4).putInt(dataLen).array();
