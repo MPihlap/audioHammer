@@ -1,4 +1,4 @@
-package main.java.client;
+package client;
 
 import java.io.*;
 import java.net.Socket;
@@ -29,7 +29,7 @@ public class Client {
             AudioCaptureThread audioCaptureThread = new AudioCaptureThread(new ByteArrayOutputStream(), servStream,recordingInfo);
             Thread captureThread = new Thread(audioCaptureThread);
             captureThread.start();
-            System.out.println("Started recording");    //lindistab kuni kirjutatakse stop
+            System.out.println("Started recording");    //lindistab kuni kirjutatakse stop;
             while (true) {
                 String nextLine = sc.nextLine();
                 if (nextLine.equals("stop")) {
