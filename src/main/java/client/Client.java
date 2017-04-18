@@ -1,5 +1,7 @@
 package client;
 
+import server.LoginHandler;
+
 import java.io.*;
 import java.net.Socket;
 import java.util.Scanner;
@@ -17,6 +19,7 @@ public class Client {
              DataOutputStream servStream = new DataOutputStream(servSocket.getOutputStream());
              Scanner sc = new Scanner(System.in)
         ) {
+            LoginHandler.newUserAccount();
             String fileName = selectFilename(sc);
             servStream.writeUTF(fileName);
             while (true){
