@@ -3,36 +3,47 @@ package main.java.client;
 import java.io.*;
 import java.net.Socket;
 import java.util.Scanner;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 /**
  * Created by Helen on 12-Mar-17.
  */
 public class Client {
-    public static boolean recording;
 
     public static void main(String[] args) throws IOException {
-        recording = true;
+        BlockingQueue<String> recordingInfo = new ArrayBlockingQueue<String>(5);
         try (Socket servSocket = new Socket("localhost", 1337);
              DataOutputStream servStream = new DataOutputStream(servSocket.getOutputStream());
              Scanner sc = new Scanner(System.in)
         ) {
             String fileName = selectFilename(sc);
             servStream.writeUTF(fileName);
-            System.out.println("Write 'start' to begin capturing");
             while (true){
+                System.out.println("Write 'start' to begin capturing");
                 if (sc.nextLine().equals("start")){
+                    recordingInfo.add("start");
                     break;
                 }
             }
-            AudioCaptureThread audioCaptureThread = new AudioCaptureThread(new ByteArrayOutputStream(), servStream);
+            AudioCaptureThread audioCaptureThread = new AudioCaptureThread(new ByteArrayOutputStream(), servStream,recordingInfo);
             Thread captureThread = new Thread(audioCaptureThread);
             captureThread.start();
             System.out.println("Started recording");    //lindistab kuni kirjutatakse stop
             while (true) {
                 String nextLine = sc.nextLine();
                 if (nextLine.equals("stop")) {
-                    recording = false;
+                    recordingInfo.add("stop");
+                    System.out.println("Recording stopped");
                     break;
+                }
+                if (nextLine.equals("pause")){
+                    recordingInfo.add("pause");
+                    System.out.println("Type 'resume' to resume recording.");
+                }
+                if (nextLine.equals("resume")){
+                    recordingInfo.add("resume");
+                    System.out.println("Recording resumed");
                 }
             }
             try {
