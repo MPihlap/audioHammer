@@ -15,6 +15,7 @@ public class Client {
 
     public static void main(String[] args) throws IOException {
         BlockingQueue<String> recordingInfo = new ArrayBlockingQueue<String>(5);
+        String username;
         try (Socket servSocket = new Socket("localhost", 1337);
              DataOutputStream servStream = new DataOutputStream(servSocket.getOutputStream());
              Scanner sc = new Scanner(System.in)
@@ -24,11 +25,12 @@ public class Client {
                 System.out.println("Log in or create new account? (l/n)");
                 String nextline = sc.nextLine();
                 if(nextline.equals("n")) {
-                    LoginHandler.newUserAccount(sc);
+                    username = LoginHandler.newUserAccount(sc);
                     break;
                 }
                 else if(nextline.equals("l")) {
-                    if (LoginHandler.login(sc)) {
+                    username = LoginHandler.login(sc);
+                    if (!(username ==null)) {
                         System.out.println("Success!");
                         break;
                     }
@@ -36,7 +38,14 @@ public class Client {
                 System.out.println("Bad input! Try again.");
 
             }
+            System.out.println("Would you like to see your files? (y/n)");
+            String userResponse = sc.nextLine();
+            if (userResponse.equals("y")) {
+                new Thread(new DisplayFiles(username)).start();
+            }
+
             String fileName = selectFilename(sc);
+            servStream.writeUTF(username);
             servStream.writeUTF(fileName);
             while (true){
                 System.out.println("Write 'start' to begin capturing");
@@ -76,15 +85,11 @@ public class Client {
             System.out.println(audioCaptureThread.getCaptureOutputStream().size());
             System.out.println("Finished recording");
             System.out.println("Would you like to listen to your recording? (y/n)");
-            String userResponse = sc.nextLine();
+            userResponse = sc.nextLine();
             if (userResponse.equals("y")) {
                 new Thread(new AudioPlaybackThread(audioCaptureThread.getCaptureOutputStream())).start();
             }
-            System.out.println("Would you like to see your files? (y/n)");
-            userResponse = sc.nextLine();
-            if (userResponse.equals("y")) {
-                new Thread(new DisplayFiles()).start();
-            }
+
         }
     }
 

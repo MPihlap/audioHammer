@@ -30,9 +30,10 @@ public class ServerThread implements Runnable {
         try (InputStream inputStream = socket.getInputStream();
              DataInputStream dataInputStream = new DataInputStream(inputStream)) {
             try {
+                String username = dataInputStream.readUTF();
                 String fileName = dataInputStream.readUTF();
                 fileBytes = readAudioBytesFromClient(dataInputStream);
-                fileSaving(fileName, fileBytes);
+                fileSaving(fileName, fileBytes, username);
                 socket.close();
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -62,12 +63,12 @@ public class ServerThread implements Runnable {
     }
 
     //Saves file
-    private void fileSaving(String filename, byte[] fileBytes) throws IOException {
+    private void fileSaving(String filename, byte[] fileBytes, String username) throws IOException {
         String serverFilename = "ServerFile_" + filename +".wav";
         LocalDate localDate = LocalDate.now();
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         String directory = dateTimeFormatter.format(localDate);
-        String pathString = System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator + directory + File.separator + serverFilename;
+        String pathString = System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator + username + File.separator + directory + File.separator + serverFilename;
         System.out.println(pathString);
         pathString = fileCheck(pathString);
         Path path = Paths.get(pathString);
