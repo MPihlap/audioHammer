@@ -35,8 +35,8 @@ public class LoginHandler {
         return false;
     }
 
-    public static boolean login(Scanner sysScanner) throws IOException {
-        String userpath = "src/main/resources/UserInfo.txt";
+    public static String login(Scanner sysScanner) throws IOException {
+        String userpath = "src/resources/UserInfo.txt"; //all usernames/passwords are stored here
         File file = new File(userpath);
             while (true) {
                 System.out.println("Username:");
@@ -45,7 +45,7 @@ public class LoginHandler {
                     System.out.println("Password:");
                     String password = sysScanner.nextLine();
                     if (checkPassword(username, password, file)) {
-                        return true;
+                        return username;
                     }
                     else {
                         System.out.println("Wrong password!");
@@ -60,14 +60,15 @@ public class LoginHandler {
     }
 
 
-    public static void newUserAccount(Scanner sysScanner) throws IOException {
+    public static String newUserAccount(Scanner sysScanner) throws IOException {
 
-        String userpath = "src/main/resources/UserInfo.txt";
+        String userpath = "src/resources/UserInfo.txt";
         File file = new File(userpath);
+        String username;
+        String password;
         try (FileWriter fileWriter = new FileWriter(file, true)
         ) {
-            String username;
-            String password;
+
             boolean isTaken;
             while (true) {
                 System.out.println("Insert desired username:");
@@ -96,5 +97,7 @@ public class LoginHandler {
             }
             fileWriter.write(username+":"+password+ '\n');
         }
+        return username;
     }
+
 }
