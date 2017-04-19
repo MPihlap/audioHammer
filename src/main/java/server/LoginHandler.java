@@ -1,8 +1,11 @@
 package server;
 
+import javax.crypto.SecretKeyFactory;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 import java.util.Scanner;
 
@@ -27,12 +30,22 @@ public class LoginHandler {
     public static boolean checkPassword(String username, String password, File file) throws IOException {
         try (Scanner fileScanner = new Scanner(file, "UTF-8")) {
             while (fileScanner.hasNextLine()){
-                String[] a = fileScanner.nextLine().split(":");
-                if (a[0].equals(username) && a[1].equals(password))
-                    return true;
+                String[] userData = fileScanner.nextLine().split(":");
+                if (userData[0].equals(username)) {
+                    String storedPassword =userData[1];
+                    String salt = userData[2];
+                    if (PasswordEncryption.passwordCheck(password, storedPassword, salt)) {
+                        return true;
+                    }
+                    break;
+                }
             }
         }
+        catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            throw new RuntimeException(e);
+        }
         return false;
+
     }
 
     public static String login(Scanner sysScanner) throws IOException {
@@ -83,6 +96,7 @@ public class LoginHandler {
             while (true){
                 System.out.println("Insert password (at least 3 characters):");
                 password = sysScanner.nextLine();
+
                 if (password.length()<3){
                     System.out.println("Password too short!");
                 }
@@ -95,7 +109,10 @@ public class LoginHandler {
                         System.out.println("Passwords did not match");
                 }
             }
-            fileWriter.write(username+":"+password+ '\n');
+            fileWriter.write(username+":"+PasswordEncryption.passwordEncrypter(password)+ '\n');
+        }
+        catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            throw new RuntimeException(e);
         }
         return username;
     }

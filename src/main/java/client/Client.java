@@ -26,6 +26,7 @@ public class Client {
                 String nextline = sc.nextLine();
                 if(nextline.equals("n")) {
                     username = LoginHandler.newUserAccount(sc);
+                    System.out.println("Account created!");
                     break;
                 }
                 else if(nextline.equals("l")) {
