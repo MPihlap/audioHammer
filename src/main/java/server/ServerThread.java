@@ -26,11 +26,12 @@ public class ServerThread implements Runnable {
         byte[] fileBytes;
         try (InputStream inputStream = socket.getInputStream();
              DataInputStream dataInputStream = new DataInputStream(inputStream)) {
+            String fileName = dataInputStream.readUTF();
             try {
                 boolean bufferedMode = dataInputStream.readBoolean();
-                String fileName = dataInputStream.readUTF();
                 if (bufferedMode) {
-                    fileBytes = bufferAudioBytesFromClient(dataInputStream,882000);
+                    int minutes = dataInputStream.readInt();
+                    fileBytes = bufferAudioBytesFromClient(dataInputStream, minutes*60*88200);
                 }
                 else {
                     fileBytes = readAudioBytesFromClient(dataInputStream);
