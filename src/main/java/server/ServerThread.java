@@ -76,17 +76,11 @@ public class ServerThread implements Runnable {
         Files.createDirectories(path.getParent());
         File newFile = new File(pathString);
 
-        //enne oli probleem selles, et salvestati küll .wav laiendiga, kuid see ei tähenda, et ta reaalselt WAVE formaadis oleks
-        //alljärgnev kood lahendab selle
 
         ByteArrayInputStream bais = new ByteArrayInputStream(fileBytes);
-        double[] d = new double[fileBytes.length / 2];
-        for (int i = 0; i < fileBytes.length / 2; i++) {
-            d[i] = ((short) (((fileBytes[2 * i + 1] & 0xFF) << 8) + (fileBytes[2 * i] & 0xFF))) / ((double) Short.MAX_VALUE);
-        }
-        AudioInputStream ais = new AudioInputStream(bais, new AudioFormat(44100, 16, 1, true, true), d.length);
+        AudioFormat audioFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED,44100,  16, 2,2,   44100, true);
+        AudioInputStream ais = new AudioInputStream(bais, audioFormat, fileBytes.length/audioFormat.getFrameSize());
         AudioSystem.write(ais, AudioFileFormat.Type.WAVE, newFile);
-
 
 
         System.out.println("File " + filename + " is saved as " + path.getFileName());
