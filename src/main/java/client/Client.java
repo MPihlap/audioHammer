@@ -11,19 +11,22 @@ import java.util.concurrent.BlockingQueue;
  */
 public class Client {
     public static void main(String[] args) throws IOException {
-        BlockingQueue<String> recordingInfo = new ArrayBlockingQueue<String>(5);
+        BlockingQueue<String> recordingInfo = new ArrayBlockingQueue<>(5);
         try (Socket servSocket = new Socket("localhost", 1337);
              DataOutputStream servStream = new DataOutputStream(servSocket.getOutputStream());
              Scanner sc = new Scanner(System.in)
         ) {
+            String fileName = selectFilename(sc);
+            servStream.writeUTF(fileName);
             label:
             while (true) {
                 System.out.println("Would you like to use buffer mode? y/n)");
                 String response = sc.nextLine();
                 switch (response) {
                     case "y":
-                        System.out.println("Select buffer size (min): ");
+                        String minutes = getMinutes(sc);
                         servStream.writeBoolean(true);
+                        servStream.writeInt(Integer.parseInt(minutes));
                         break label;
                     case "n":
                         servStream.writeBoolean(false);
@@ -32,16 +35,14 @@ public class Client {
                         System.out.println("False input");
                 }
             }
-            String fileName = selectFilename(sc);
-            servStream.writeUTF(fileName);
-            while (true){
+            while (true) {
                 System.out.println("Write 'start' to begin capturing");
-                if (sc.nextLine().equals("start")){
+                if (sc.nextLine().equals("start")) {
                     recordingInfo.add("start");
                     break;
                 }
             }
-            AudioCaptureThread audioCaptureThread = new AudioCaptureThread(new ByteArrayOutputStream(), servStream,recordingInfo);
+            AudioCaptureThread audioCaptureThread = new AudioCaptureThread(new ByteArrayOutputStream(), servStream, recordingInfo);
             Thread captureThread = new Thread(audioCaptureThread);
             captureThread.start();
             System.out.println("Started recording");    //lindistab kuni kirjutatakse stop
@@ -52,11 +53,11 @@ public class Client {
                     System.out.println("Recording stopped");
                     break;
                 }
-                if (nextLine.equals("pause")){
+                if (nextLine.equals("pause")) {
                     recordingInfo.add("pause");
                     System.out.println("Type 'resume' to resume recording.");
                 }
-                if (nextLine.equals("resume")){
+                if (nextLine.equals("resume")) {
                     recordingInfo.add("resume");
                     System.out.println("Recording resumed");
                 }
@@ -74,6 +75,19 @@ public class Client {
                 new Thread(new AudioPlaybackThread(audioCaptureThread.getCaptureOutputStream())).start();
             }
         }
+    }
+
+    private static String getMinutes(Scanner sc) {
+        String response;
+        System.out.println("Select buffer length (min): ");
+        while (true) {
+            response = sc.nextLine();
+            if (isInteger(response))
+                break;
+            else
+                System.out.println("Enter an integer");
+        }
+        return response;
     }
 
     //Reads WAV file into byteArray, coudld be used later
@@ -121,6 +135,15 @@ public class Client {
             }
         }
         return fileName;
+    }
+
+    public static boolean isInteger(String string) {
+        try {
+            Integer.parseInt(string);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 }
 
