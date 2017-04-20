@@ -13,7 +13,7 @@ import java.util.concurrent.BlockingQueue;
 public class AudioCaptureThread implements Runnable {
     private final BlockingQueue<String> recordingQueue;
     private final DataOutputStream servStream;
-    private final AudioFormat format = new AudioFormat(44100, 16, 2, true, true);
+    private final AudioFormat format = new AudioFormat(44100, 16, 1, true, true);
     private final ByteArrayOutputStream captureOutputStream;
 
     public AudioCaptureThread(ByteArrayOutputStream captureOutputStream, DataOutputStream servStream,BlockingQueue<String> recordingQueue) {

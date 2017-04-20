@@ -3,6 +3,7 @@ package main.java.server;
 import javax.sound.sampled.*;
 import java.io.*;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -14,6 +15,7 @@ import java.time.format.DateTimeFormatter;
  */
 public class ServerThread implements Runnable {
     private Socket socket;
+    AudioFormat format = new AudioFormat(44100, 16, 1, true, true);
 
     public ServerThread(Socket socket) {
         this.socket = socket;
@@ -25,8 +27,14 @@ public class ServerThread implements Runnable {
         try (InputStream inputStream = socket.getInputStream();
              DataInputStream dataInputStream = new DataInputStream(inputStream)) {
             try {
+                boolean bufferedMode = dataInputStream.readBoolean();
                 String fileName = dataInputStream.readUTF();
-                fileBytes = readAudioBytesFromClient(dataInputStream);
+                if (bufferedMode) {
+                    fileBytes = bufferAudioBytesFromClient(dataInputStream,882000);
+                }
+                else {
+                    fileBytes = readAudioBytesFromClient(dataInputStream);
+                }
                 fileSaving(fileName, fileBytes);
                 socket.close();
             } catch (IOException e) {
@@ -56,8 +64,26 @@ public class ServerThread implements Runnable {
 
     }
 
+    private byte[] bufferAudioBytesFromClient(DataInputStream clientInputStream,int byteNumber) throws IOException {
+        byte[] buffer = new byte[1024];
+        //ByteArrayOutputStream byteArrayOut = new ByteArrayOutputStream();
+        ByteBuffer audioByteBuffer = ByteBuffer.allocate(byteNumber);
+        int len;
+        while ((len = clientInputStream.read(buffer, 0, buffer.length)) > 0) {
+            if (audioByteBuffer.position()+len > audioByteBuffer.limit()){ //Check if size limit has been reached
+                audioByteBuffer.position(1024);                     //Go to position after first 1024 bytes
+                audioByteBuffer.compact();                          //Remove bytes before position
+            }
+            audioByteBuffer.put(buffer, 0, len);
+        }
+
+        return audioByteBuffer.array();
+
+    }
+
     //Saves file
     private void fileSaving(String filename, byte[] fileBytes) throws IOException {
+
         String serverFilename = "ServerFile_" + filename +".wav";
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         LocalDate localDate = LocalDate.now();
@@ -78,7 +104,7 @@ public class ServerThread implements Runnable {
         for (int i = 0; i < fileBytes.length / 2; i++) {
             d[i] = ((short) (((fileBytes[2 * i + 1] & 0xFF) << 8) + (fileBytes[2 * i] & 0xFF))) / ((double) Short.MAX_VALUE);
         }
-        AudioInputStream ais = new AudioInputStream(bais, new AudioFormat(44100, 16, 1, true, true), d.length);
+        AudioInputStream ais = new AudioInputStream(bais, format, d.length);
         AudioSystem.write(ais, AudioFileFormat.Type.WAVE, newFile);
 
 

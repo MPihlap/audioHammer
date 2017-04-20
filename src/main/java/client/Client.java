@@ -10,13 +10,28 @@ import java.util.concurrent.BlockingQueue;
  * Created by Helen on 12-Mar-17.
  */
 public class Client {
-
     public static void main(String[] args) throws IOException {
         BlockingQueue<String> recordingInfo = new ArrayBlockingQueue<String>(5);
         try (Socket servSocket = new Socket("localhost", 1337);
              DataOutputStream servStream = new DataOutputStream(servSocket.getOutputStream());
              Scanner sc = new Scanner(System.in)
         ) {
+            label:
+            while (true) {
+                System.out.println("Would you like to use buffer mode? y/n)");
+                String response = sc.nextLine();
+                switch (response) {
+                    case "y":
+                        System.out.println("Select buffer size (min): ");
+                        servStream.writeBoolean(true);
+                        break label;
+                    case "n":
+                        servStream.writeBoolean(false);
+                        break label;
+                    default:
+                        System.out.println("False input");
+                }
+            }
             String fileName = selectFilename(sc);
             servStream.writeUTF(fileName);
             while (true){
