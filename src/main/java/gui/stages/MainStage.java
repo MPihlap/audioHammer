@@ -1,5 +1,6 @@
 package gui.stages;
 
+import client.Client;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.event.ActionEvent;
@@ -13,18 +14,44 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
+import java.io.IOException;
+
 
 /**
  * Created by Helen on 20.04.2017.
  */
 public class MainStage{
     private Stage stage;
+    private Client client;
+    private boolean isCreated = false;
+
+
+    public boolean isCreated() {
+        return isCreated;
+    }
+
+    public MainStage(Client client) {
+        this.client = client;
+        try {
+            client.createConnection();
+            this.isCreated=true;
+        } catch (Exception e) {
+            Alert errorAlert = new Alert(Alert.AlertType.INFORMATION); //TODO use
+            errorAlert.setTitle("Error");
+            errorAlert.setHeaderText(null);
+            errorAlert.setContentText("Could not create a connection. Please try again later.");
+            errorAlert.showAndWait();
+        }
+
+    }
 
     public void setStage(Stage stage) {
         this.stage = stage;
     }
 
     public void showStage(){
+
+
         //Stage settings
         stage.setTitle("AudioHammer");
         int sizeW = 500;
@@ -75,6 +102,8 @@ public class MainStage{
         Scene scene = new Scene(gridPane, sizeW, sizeH);
         stage.setScene(scene);
         stage.show();
+
+
     }
     //Opens recording stage
     private void settings(){

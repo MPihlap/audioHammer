@@ -1,17 +1,22 @@
 package gui.stages;
 
+import client.Client;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
+import server.LoginHandler;
+
+import java.io.IOException;
 
 /**
  * Created by Helen on 20.04.2017.
  */
 public class SignUpStage {
     private Stage stage;
+    private Client client;
 
     public void setStage(Stage stage) {
         this.stage = stage;
@@ -56,6 +61,7 @@ public class SignUpStage {
         passwordsDoNotMatch.setHeaderText(null);
         passwordsDoNotMatch.setContentText("These passwords do not match. Try again.");
 
+
         Alert unfilledFields = new Alert(Alert.AlertType.INFORMATION);
         unfilledFields.setTitle("Empty fields!");
         unfilledFields.setHeaderText(null);
@@ -66,7 +72,12 @@ public class SignUpStage {
             if (usernameField.getText().equals("") || passwordFieldFirst.getText().equals("") || passwordFieldConfirm.getText().equals("")) {
                 unfilledFields.showAndWait();
             } else {
-                createAccount();
+                if (passwordFieldFirst.getText().equals(passwordFieldConfirm.getText())) {
+                    createAccount(usernameField.getText(), passwordFieldFirst.getText());
+                }
+                else{
+                    passwordsDoNotMatch.showAndWait();
+                }
             }
         });
         //Back to lon in stage button
@@ -94,10 +105,33 @@ public class SignUpStage {
     }
 
     //Account creating
-    private void createAccount() {
-        //Account creation before mainStage lines
+    private void createAccount(String username, String password) {
+        Alert accountCreated = new Alert(Alert.AlertType.INFORMATION); //TODO use
+        accountCreated.setTitle("Success!");
+        accountCreated.setHeaderText(null);
+        accountCreated.setContentText("New account created!");
 
-        MainStage mainStage = new MainStage();
+        Alert errorAlert = new Alert(Alert.AlertType.INFORMATION); //TODO use
+        errorAlert.setTitle("Error");
+        errorAlert.setHeaderText(null);
+        errorAlert.setContentText("An account with this name already exists!");
+
+        //Account creation before mainStage lines
+        try {
+            if(LoginHandler.newUserAccount(username, password)) {
+                accountCreated.showAndWait();
+                this.client = new Client();
+                client.setUsername(username);
+            }
+            else {
+                errorAlert.showAndWait();
+                return;
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        MainStage mainStage = new MainStage(this.client);
         mainStage.setStage(stage);
         mainStage.showStage();
     }

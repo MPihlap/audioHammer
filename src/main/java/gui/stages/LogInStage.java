@@ -1,5 +1,6 @@
 package gui.stages;
 
+import client.Client;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -11,15 +12,22 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.event.ActionEvent;
+import server.LoginHandler;
+
+import java.io.IOException;
 
 /**
  * Created by Helen on 20.04.2017.
  */
-public class LogInStage {
+public class LogInStage extends Client {
     private Stage stage;
+    private Client client;
 
     public void setStage(Stage stage) {
         this.stage = stage;
+    }
+    public void setClient() {
+        this.client = new Client();
     }
 
     public void showStage() {
@@ -64,6 +72,8 @@ public class LogInStage {
         //Log in button
         Button logInButton= new Button("Log in");
         logInButton.setOnAction((ActionEvent event) -> {
+            this.setClient(); //starts up new client
+
             if(userNameField.getText().equals("")){
                 noUsernameAlert.showAndWait();
             }
@@ -71,14 +81,22 @@ public class LogInStage {
                 noPasswordAlert.showAndWait();
             }
             else {
-                boolean logInBoolean= logInCheck(passwordField.getText(),userNameField.getText());
-                if(!logInBoolean){
-                    wrongUsernameOrPasswordAlert.showAndWait();
-                }else{
-                    MainStage mainStage=new MainStage();
-                    mainStage.setStage(stage);
-                    mainStage.showStage();
+                try {
+                    boolean logInBoolean= logInCheck(passwordField.getText(),userNameField.getText());
+                    if(!logInBoolean){
+                        wrongUsernameOrPasswordAlert.showAndWait();
+                    }else{
+                        MainStage mainStage=new MainStage(client);
+                        if (mainStage.isCreated()) {
+                            mainStage.setStage(stage);
+                            mainStage.showStage();
+                        }
+
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
+
             }
         });
         //Sign up button
@@ -111,6 +129,9 @@ public class LogInStage {
         stage.setScene(scene);
         stage.show();
     }
+
+    /**
+     * Handled by LoginHandler
     //Checks username
     private boolean checkUserName(String username){
         //TODO add checks
@@ -121,14 +142,19 @@ public class LogInStage {
         //TODO add  checks
         return true;
     }
+     **/
+
     // Checks if user can log in and complite it
-    private boolean logInCheck(String password, String username){
-        if (checkUserName(username)&&checkPassword(password)){
+    private boolean logInCheck(String password, String username) throws IOException{
+        try{
+            client.setUsername(username);
             //LogIn and open main window
-            return true;
-        }else{
-            return false;
+            return LoginHandler.login(username, password);
         }
+        catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
     }
     // Opens sign up window
     private void signUp(){
@@ -144,4 +170,6 @@ public class LogInStage {
         unassignedButton.setContentText("Sorry. This button is unassigned for now. It can be used in AudioHammer's next stage.");
         unassignedButton.showAndWait();
     }
+
+
 }

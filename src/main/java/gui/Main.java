@@ -1,5 +1,6 @@
 package gui;
 
+import client.Client;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import gui.stages.LogInStage;
@@ -15,6 +16,7 @@ public class Main extends Application {
     public void start(Stage stage) throws Exception {
         LogInStage logInStage=new LogInStage();
         logInStage.setStage(stage);
+        //Client client = new Client();
         logInStage.showStage();
     }
 }

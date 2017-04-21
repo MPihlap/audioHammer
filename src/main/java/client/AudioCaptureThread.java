@@ -1,4 +1,4 @@
-package main.java.client;
+package client;
 
 import javax.sound.sampled.*;
 import java.io.ByteArrayOutputStream;
