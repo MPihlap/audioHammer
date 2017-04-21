@@ -1,32 +1,78 @@
-package client;
+package main.java.client;
+
 
 import java.io.*;
 import java.net.Socket;
 import java.util.Scanner;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import main.java.server.LoginHandler;
 
 /**
  * Created by Helen on 12-Mar-17.
  */
 public class Client {
-
     public static void main(String[] args) throws IOException {
         BlockingQueue<String> recordingInfo = new ArrayBlockingQueue<String>(5);
+        String username;
+
         try (Socket servSocket = new Socket("localhost", 1337);
              DataOutputStream servStream = new DataOutputStream(servSocket.getOutputStream());
              Scanner sc = new Scanner(System.in)
         ) {
+            System.out.println("Welcome!");
+            while (true) {
+                System.out.println("Log in or create new account? (l/n)");
+                String nextline = sc.nextLine();
+                if(nextline.equals("n")) {
+                    username = LoginHandler.newUserAccount(sc);
+                    System.out.println("Account created!");
+                    break;
+                }
+                else if(nextline.equals("l")) {
+                    username = LoginHandler.login(sc);
+                    if (!(username ==null)) {
+                        System.out.println("Success!");
+                        break;
+                    }
+                }
+                System.out.println("Bad input! Try again.");
+
+            }
+            System.out.println("Would you like to see your files? (y/n)");
+            String userResponse = sc.nextLine();
+            if (userResponse.equals("y")) {
+                new Thread(new DisplayFiles(username)).start();
+            }
+
             String fileName = selectFilename(sc);
+            servStream.writeUTF(username);
             servStream.writeUTF(fileName);
-            while (true){
+            label:
+            while (true) {
+                System.out.println("Would you like to use buffer mode? y/n)");
+                String response = sc.nextLine();
+                switch (response) {
+                    case "y":
+                        String minutes = getMinutes(sc);
+                        servStream.writeBoolean(true);
+                        servStream.writeInt(Integer.parseInt(minutes));
+                        break label;
+                    case "n":
+                        servStream.writeBoolean(false);
+                        break label;
+                    default:
+                        System.out.println("False input");
+                }
+            }
+            while (true) {
                 System.out.println("Write 'start' to begin capturing");
-                if (sc.nextLine().equals("start")){
+                if (sc.nextLine().equals("start")) {
                     recordingInfo.add("start");
                     break;
                 }
             }
-            AudioCaptureThread audioCaptureThread = new AudioCaptureThread(new ByteArrayOutputStream(), servStream,recordingInfo);
+            AudioCaptureThread audioCaptureThread = new AudioCaptureThread(new ByteArrayOutputStream(), servStream, recordingInfo);
             Thread captureThread = new Thread(audioCaptureThread);
             captureThread.start();
             System.out.println("Started recording");    //lindistab kuni kirjutatakse stop;
@@ -39,12 +85,12 @@ public class Client {
                     System.out.println("Recording stopped");
                     break;
                 }
-                if (nextLine.equals("pause")){
+                if (nextLine.equals("pause")) {
                     recordingInfo.add("pause");
                     System.out.println("Recording paused");
                     System.out.println("Type 'resume' to resume or 'stop' to finish recording.");
                 }
-                if (nextLine.equals("resume")){
+                if (nextLine.equals("resume")) {
                     recordingInfo.add("resume");
                     System.out.println("Recording resumed");
                 }
@@ -57,11 +103,25 @@ public class Client {
             System.out.println(audioCaptureThread.getCaptureOutputStream().size());
             System.out.println("Finished recording");
             System.out.println("Would you like to listen to your recording? (y/n)");
-            String userResponse = sc.nextLine();
+            userResponse = sc.nextLine();
             if (userResponse.equals("y")) {
                 new Thread(new AudioPlaybackThread(audioCaptureThread.getCaptureOutputStream())).start();
             }
+
         }
+    }
+
+    private static String getMinutes(Scanner sc) {
+        String response;
+        System.out.println("Select buffer length (min): ");
+        while (true) {
+            response = sc.nextLine();
+            if (isInteger(response))
+                break;
+            else
+                System.out.println("Enter an integer");
+        }
+        return response;
     }
 
     //Reads WAV file into byteArray, coudld be used later
@@ -109,6 +169,15 @@ public class Client {
             }
         }
         return fileName;
+    }
+
+    public static boolean isInteger(String string) {
+        try {
+            Integer.parseInt(string);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 }
 
