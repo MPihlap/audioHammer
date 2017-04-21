@@ -1,4 +1,4 @@
-package client;
+package main.java.client;
 
 import javax.sound.sampled.*;
 import java.io.ByteArrayInputStream;
@@ -9,7 +9,7 @@ import java.io.IOException;
  * Created by Meelis on 31/03/2017.
  */
 public class AudioPlaybackThread implements Runnable {
-    private final AudioFormat format = new AudioFormat(44100, 16, 2, true, true);
+    private final AudioFormat format = new AudioFormat(44100, 16, 1, true, true);
     private final ByteArrayOutputStream captureOutputStream;
 
     public AudioPlaybackThread(ByteArrayOutputStream captureOutputStream) {
