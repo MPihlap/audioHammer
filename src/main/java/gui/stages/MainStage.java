@@ -33,9 +33,14 @@ public class MainStage{
     public MainStage(Client client) {
         this.client = client;
         try {
-            client.createConnection();
-            this.isCreated=true;
+            if(!isCreated) {
+                client.createConnection();
+                this.isCreated=true;
+                client.sendCommand("username");
+                client.sendCommand(client.getUsername());
+            }
         } catch (Exception e) {
+            e.printStackTrace();
             Alert errorAlert = new Alert(Alert.AlertType.INFORMATION); //TODO use
             errorAlert.setTitle("Error");
             errorAlert.setHeaderText(null);
@@ -115,14 +120,14 @@ public class MainStage{
     }
     //Opens recording stage
     private void recording(){
-        RecordingStage recordingStage=new RecordingStage();
+        RecordingStage recordingStage=new RecordingStage(client);
         recordingStage.setStage(stage);
         recordingStage.showStage();
 
     }
     //Opens myCloud stage
     private void myCloud(){
-        MyCloudStage myCloudStage=new MyCloudStage();
+        MyCloudStage myCloudStage=new MyCloudStage(this.client);
         myCloudStage.setStage(stage);
         myCloudStage.showStage();
     }
