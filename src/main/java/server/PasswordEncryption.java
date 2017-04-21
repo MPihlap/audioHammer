@@ -1,4 +1,4 @@
-package main.java.server;
+package server;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;

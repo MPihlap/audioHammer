@@ -1,5 +1,6 @@
 package gui.stages;
 
+import client.Client;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -20,6 +21,7 @@ import java.util.ArrayList;
  */
 public class MyCloudStage {
     private Stage stage;
+    private Client client;
 
     public void setStage(Stage stage) {
         this.stage = stage;
@@ -202,7 +204,7 @@ public class MyCloudStage {
     }
 
     private void mainStage() {
-        MainStage mainStage = new MainStage();
+        MainStage mainStage = new MainStage(client);
         mainStage.setStage(stage);
         mainStage.showStage();
 

@@ -1,4 +1,4 @@
-package main.java.client;
+package client;
 
 
 import java.io.*;
@@ -6,49 +6,74 @@ import java.net.Socket;
 import java.util.Scanner;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import main.java.server.LoginHandler;
+import server.LoginHandler;
 
 /**
  * Created by Helen on 12-Mar-17.
  */
 public class Client {
-    public static void main(String[] args) throws IOException {
+    private String username;
+    private Socket servSocket;
+
+    public void setUsername(String username) {
+        this.username = username;
+        System.out.println("sain username");
+    }
+
+    public void createConnection() throws IOException {
+        this.servSocket = new Socket("localhost", 1337);
+    }
+
+    public void closeConnection() throws IOException {
+        this.servSocket.close();
+    }
+
+
+
+
+
+    public void main(String[] args) throws IOException {
         BlockingQueue<String> recordingInfo = new ArrayBlockingQueue<String>(5);
-        String username;
+        System.out.println("läksin tööle");
+        String placeholderUserName;
 
         try (Socket servSocket = new Socket("localhost", 1337);
              DataOutputStream servStream = new DataOutputStream(servSocket.getOutputStream());
              Scanner sc = new Scanner(System.in)
         ) {
+            /**
             System.out.println("Welcome!");
             while (true) {
                 System.out.println("Log in or create new account? (l/n)");
                 String nextline = sc.nextLine();
                 if(nextline.equals("n")) {
-                    username = LoginHandler.newUserAccount(sc);
+                    placeholderUserName = LoginHandler.newUserAccount(sc);
                     System.out.println("Account created!");
                     break;
                 }
                 else if(nextline.equals("l")) {
-                    username = LoginHandler.login(sc);
-                    if (!(username ==null)) {
+                    placeholderUserName = LoginHandler.login(sc);
+                    if (!(placeholderUserName ==null)) {
                         System.out.println("Success!");
                         break;
                     }
-                }
-                System.out.println("Bad input! Try again.");
 
-            }
+                }
+
+
+                System.out.println("Bad input! Try again.");
             System.out.println("Would you like to see your files? (y/n)");
             String userResponse = sc.nextLine();
             if (userResponse.equals("y")) {
-                new Thread(new DisplayFiles(username)).start();
+                new Thread(new DisplayFiles(placeholderUserName)).start();
             }
 
             String fileName = selectFilename(sc);
-            servStream.writeUTF(username);
+            servStream.writeUTF(placeholderUserName);
             servStream.writeUTF(fileName);
+             **/
             label:
+
             while (true) {
                 System.out.println("Would you like to use buffer mode? y/n)");
                 String response = sc.nextLine();
@@ -103,7 +128,7 @@ public class Client {
             System.out.println(audioCaptureThread.getCaptureOutputStream().size());
             System.out.println("Finished recording");
             System.out.println("Would you like to listen to your recording? (y/n)");
-            userResponse = sc.nextLine();
+            String userResponse = sc.nextLine();
             if (userResponse.equals("y")) {
                 new Thread(new AudioPlaybackThread(audioCaptureThread.getCaptureOutputStream())).start();
             }

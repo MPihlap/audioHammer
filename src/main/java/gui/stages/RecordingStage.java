@@ -1,5 +1,6 @@
 package gui.stages;
 
+import client.Client;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -18,6 +19,7 @@ public class RecordingStage {
     private long time;
     private TimerThread timerThread;
     private Stage stage;
+    private Client client;
 
     public void setStage(Stage stage) {
         this.stage = stage;
@@ -158,7 +160,7 @@ public class RecordingStage {
     }
 
     private void mainStage() {
-        MainStage mainStage = new MainStage();
+        MainStage mainStage = new MainStage(client);
         mainStage.setStage(stage);
         mainStage.showStage();
     }
