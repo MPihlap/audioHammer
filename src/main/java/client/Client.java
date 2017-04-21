@@ -14,6 +14,13 @@ import server.LoginHandler;
 public class Client {
     private String username;
     private Socket servSocket;
+    private DataOutputStream servStream;
+    private BlockingQueue<String> recordingInfo = new ArrayBlockingQueue<String>(5);
+    Thread captureThread;
+
+    public String getUsername() {
+        return username;
+    }
 
     public void setUsername(String username) {
         this.username = username;
@@ -22,10 +29,48 @@ public class Client {
 
     public void createConnection() throws IOException {
         this.servSocket = new Socket("localhost", 1337);
+        this.servStream = new DataOutputStream(servSocket.getOutputStream());
+
+
     }
 
     public void closeConnection() throws IOException {
         this.servSocket.close();
+    }
+
+    public void sendCommand(String command) throws IOException {
+        servStream.writeUTF(command);
+    }
+
+    public void startRecording() throws IOException {
+        recordingInfo.add("start");
+        AudioCaptureThread audioCaptureThread = new AudioCaptureThread(new ByteArrayOutputStream(), servStream, recordingInfo);
+        this.captureThread = new Thread(audioCaptureThread);
+        captureThread.start();
+        System.out.println("hakkas lindistama");
+    }
+
+    public void pauseRecording() {
+        recordingInfo.add("pause");
+        System.out.println("recording paused");
+    }
+
+    public void resumeRecording() {
+        recordingInfo.add("resume");
+        System.out.println("resumed");
+    }
+
+    public void stopRecording() throws IOException {
+        recordingInfo.add("stop");
+        System.out.println("stopped");
+        //TODO: parem viis seda lahendada
+        //this.servStream = new DataOutputStream(servSocket.getOutputStream());
+        try {
+            captureThread.join();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        System.out.println("finished recording");
     }
 
 
@@ -35,43 +80,13 @@ public class Client {
     public void main(String[] args) throws IOException {
         BlockingQueue<String> recordingInfo = new ArrayBlockingQueue<String>(5);
         System.out.println("läksin tööle");
-        String placeholderUserName;
 
         try (Socket servSocket = new Socket("localhost", 1337);
              DataOutputStream servStream = new DataOutputStream(servSocket.getOutputStream());
              Scanner sc = new Scanner(System.in)
         ) {
+
             /**
-            System.out.println("Welcome!");
-            while (true) {
-                System.out.println("Log in or create new account? (l/n)");
-                String nextline = sc.nextLine();
-                if(nextline.equals("n")) {
-                    placeholderUserName = LoginHandler.newUserAccount(sc);
-                    System.out.println("Account created!");
-                    break;
-                }
-                else if(nextline.equals("l")) {
-                    placeholderUserName = LoginHandler.login(sc);
-                    if (!(placeholderUserName ==null)) {
-                        System.out.println("Success!");
-                        break;
-                    }
-
-                }
-
-
-                System.out.println("Bad input! Try again.");
-            System.out.println("Would you like to see your files? (y/n)");
-            String userResponse = sc.nextLine();
-            if (userResponse.equals("y")) {
-                new Thread(new DisplayFiles(placeholderUserName)).start();
-            }
-
-            String fileName = selectFilename(sc);
-            servStream.writeUTF(placeholderUserName);
-            servStream.writeUTF(fileName);
-             **/
             label:
 
             while (true) {
@@ -90,6 +105,7 @@ public class Client {
                         System.out.println("False input");
                 }
             }
+
             while (true) {
                 System.out.println("Write 'start' to begin capturing");
                 if (sc.nextLine().equals("start")) {
@@ -97,12 +113,14 @@ public class Client {
                     break;
                 }
             }
+             **/
             AudioCaptureThread audioCaptureThread = new AudioCaptureThread(new ByteArrayOutputStream(), servStream, recordingInfo);
             Thread captureThread = new Thread(audioCaptureThread);
             captureThread.start();
             System.out.println("Started recording");    //lindistab kuni kirjutatakse stop;
             System.out.println("Type 'stop' to stop recording");
             System.out.println("Type 'pause' to pause");
+
             while (true) {
                 String nextLine = sc.nextLine();
                 if (nextLine.equals("stop")) {

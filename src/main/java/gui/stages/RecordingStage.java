@@ -11,6 +11,8 @@ import javafx.stage.Stage;
 import javafx.scene.control.*;
 import gui.TimerThread;
 
+import java.io.IOException;
+
 /**
  * Created by Helen on 18.04.2017.
  */
@@ -20,6 +22,10 @@ public class RecordingStage {
     private TimerThread timerThread;
     private Stage stage;
     private Client client;
+
+    public RecordingStage(Client client) {
+        this.client = client;
+    }
 
     public void setStage(Stage stage) {
         this.stage = stage;
@@ -82,6 +88,11 @@ public class RecordingStage {
         recordingButton.setOnAction((ActionEvent event) -> {
             if (checkBoxLocal.isSelected()||checkBoxCloud.isSelected()){
                 if (recordingBoolean) {
+                    try {
+                        client.stopRecording();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                     recordingButton.setText("Start");
                     pauseButton.setDisable(true);
                     pauseButton.setText("Pause");
@@ -90,9 +101,21 @@ public class RecordingStage {
                     checkBoxLocal.setDisable(false);
                     filename.setDisable(false);
                     timerThread.setRecordingBoolean(false);
+
                 } else {
-                    if (filename.getText() != null && !filename.getText().equals("")) {
-                        recordingStart();
+                    if (filename.getText() != null && !filename.getText().equals("") || this.checkFilename(filename.getText())) {
+                        try {
+                            client.sendCommand("filename");
+                            client.sendCommand(filename.getText());
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+
+                        try {
+                            recordingStart();
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                         timerThread = new TimerThread(timer, time);
                         recordingButton.setText("Stop");
                         recordingBoolean = true;
@@ -116,8 +139,10 @@ public class RecordingStage {
             timerThread.setPauseBoolean(!timerThread.isPauseBoolean());
             if (timerThread.isPauseBoolean()) {
                 pauseButton.setText("Resume");
+                client.pauseRecording();
             } else {
                 pauseButton.setText("Pause");
+                client.resumeRecording();
             }
         });
 
@@ -143,14 +168,14 @@ public class RecordingStage {
 
     // Switches to MyCloud stage
     private void myCloudButton() {
-        MyCloudStage myCloudStage=new MyCloudStage();
+        MyCloudStage myCloudStage=new MyCloudStage(client);
         myCloudStage.setStage(stage);
         myCloudStage.showStage();
     }
 
     // Starts recording.
-    private void recordingStart() {
-        //Add recording start before "time=..."
+    private void recordingStart() throws IOException {
+        client.startRecording();
         time = System.currentTimeMillis();
     }
 

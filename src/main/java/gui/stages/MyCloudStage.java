@@ -1,6 +1,7 @@
 package gui.stages;
 
 import client.Client;
+import client.DisplayFiles;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -14,7 +15,9 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.scene.input.MouseEvent;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Set;
 
 /**
  * Created by Helen on 20.04.2017.
@@ -22,9 +25,17 @@ import java.util.ArrayList;
 public class MyCloudStage {
     private Stage stage;
     private Client client;
+    private DisplayFiles displayFiles;
+    ListView<String> myCloudFilesList;
 
     public void setStage(Stage stage) {
         this.stage = stage;
+    }
+
+    public MyCloudStage(Client client) {
+        this.client = client;
+        this.displayFiles = new DisplayFiles(client.getUsername());
+
     }
 
     public void showStage() {
@@ -40,8 +51,13 @@ public class MyCloudStage {
         //Files list label
         Label myCloudFilesListLabel = new Label("My files: ");
         //Files list
-        ListView<String> myCloudFilesList = new ListView<String>();
-        ObservableList<String> myCloudFiles = FXCollections.observableArrayList(myCloudFiles());
+        this.myCloudFilesList = new ListView<String>();
+        ObservableList<String> myCloudFiles = null;
+        try {
+            myCloudFiles = FXCollections.observableArrayList(myCloudFiles());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         myCloudFilesList.setItems(myCloudFiles);
         //right-click menu
         ContextMenu cm = new ContextMenu();
@@ -118,14 +134,8 @@ public class MyCloudStage {
     }
 
     //Makes list of files that user has on cloud and returns it. If user does not have any files, return empty list(not null)
-    private ArrayList<String> myCloudFiles() {
-        ArrayList<String> myCloudFiles = new ArrayList<>();
-        //Just for testing TODO remove later, replace with actual filenames
-        myCloudFiles.add("one");
-        myCloudFiles.add("two");
-        myCloudFiles.add("three");
-        //Insert magic
-        return myCloudFiles;
+    private ArrayList<String> myCloudFiles() throws IOException {
+        return displayFiles.getAllFiles();
     }
 
     //Asks for new filename
@@ -150,9 +160,11 @@ public class MyCloudStage {
         });
         Button saveName = new Button("Confirm");
         saveName.setOnAction((ActionEvent event) -> {
-            newFilenameStage.close();
             final String newFilenameString = newFilenameField.getText();
-            renameFile(fileName, newFilenameString);
+            if (renameFile(fileName, newFilenameString)) {
+                //TODO: make list automatically refresh;
+                newFilenameStage.close();
+            }
 
         });
         //Adding nodes to gridpane
@@ -170,8 +182,23 @@ public class MyCloudStage {
     }
 
     //Renames file in server
-    private void renameFile(String oldFilename, String newFilename) {
-        //TODO file name chancing in server
+    private boolean renameFile(String oldFilename, String newFilename) {
+        if(displayFiles.renameFile(oldFilename, newFilename)) {
+            Alert success = new Alert(Alert.AlertType.INFORMATION);
+            success.setTitle("Success!");
+            success.setHeaderText(null);
+            success.setContentText("File succesfully renamed!");
+            success.showAndWait();
+            return true;
+        }
+        else {
+            Alert nameExists = new Alert(Alert.AlertType.INFORMATION);
+            nameExists.setTitle("Error");
+            nameExists.setHeaderText(null);
+            nameExists.setContentText("One of your files already has this name!");
+            nameExists.showAndWait();
+            return false;
+        }
     }
 
     private void deleteFile(String fileName) {

@@ -3,7 +3,10 @@ package server;
 import javax.sound.sampled.*;
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketException;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -16,7 +19,9 @@ import java.time.format.DateTimeFormatter;
  */
 public class ServerThread implements Runnable {
     private Socket socket;
-    AudioFormat format = new AudioFormat(44100, 16, 1, true, true);
+    private String username;
+    private String fileName;
+
 
 
     public ServerThread(Socket socket) {
@@ -25,25 +30,37 @@ public class ServerThread implements Runnable {
 
     @Override
     public void run() {
-        byte[] fileBytes;
         try (InputStream inputStream = socket.getInputStream();
              DataInputStream dataInputStream = new DataInputStream(inputStream)) {
-            try {
-                String username = dataInputStream.readUTF();
-                String fileName = dataInputStream.readUTF();
-                boolean bufferedMode = dataInputStream.readBoolean();
-                if (bufferedMode) {
-                    int minutes = dataInputStream.readInt();
-                    fileBytes = bufferAudioBytesFromClient(dataInputStream, minutes*60*88200);
+            while (true) {
+                String command = dataInputStream.readUTF();
+                if (command.equals("username")) {
+                    username = dataInputStream.readUTF();
                 }
-                else {
-                    fileBytes = readAudioBytesFromClient(dataInputStream);
+                if (command.equals("filename")) {
+                    fileName = dataInputStream.readUTF();
+                    System.out.println(fileName);
+                    //boolean bufferedMode = dataInputStream.readBoolean();
+                    byte[] fileBytes;
+                    boolean bufferedMode = false; //praeguseks false;
+                    if (bufferedMode) {
+                        int minutes = dataInputStream.readInt();
+                        fileBytes = bufferAudioBytesFromClient(dataInputStream, minutes*60*88200);
+                    }
+                    else {
+                        fileBytes = readAudioBytesFromClient(dataInputStream);
+                    }
+                    fileSaving(fileName, fileBytes,username);
                 }
-                fileSaving(fileName, fileBytes,username);
-                socket.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+
+                if (false){
+                    socket.close();
+                    break;
+                }
+
             }
+
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         } finally {
@@ -60,12 +77,15 @@ public class ServerThread implements Runnable {
         byte[] buffer = new byte[1024];
         ByteArrayOutputStream byteArrayOut = new ByteArrayOutputStream();
         int len;
+
         while ((len = dataInputStream.read(buffer, 0, buffer.length)) > 0) {
+            System.out.println(len);
+            if (len==1) { //TODO: VERY TEMP SOLUTION; check audioCaptureThread
+                break;
+            }
             byteArrayOut.write(buffer, 0, len);
         }
-
         return byteArrayOut.toByteArray();
-
     }
 
     private byte[] bufferAudioBytesFromClient(DataInputStream clientInputStream,int byteNumber) throws IOException {
@@ -147,6 +167,7 @@ public class ServerThread implements Runnable {
 
 
     }
+
 
 
 
