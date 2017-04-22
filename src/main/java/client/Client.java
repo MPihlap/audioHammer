@@ -63,8 +63,6 @@ public class Client {
     public void stopRecording() throws IOException {
         recordingInfo.add("stop");
         System.out.println("stopped");
-        //TODO: parem viis seda lahendada
-        //this.servStream = new DataOutputStream(servSocket.getOutputStream());
         try {
             captureThread.join();
         } catch (InterruptedException e) {
@@ -76,7 +74,8 @@ public class Client {
 
 
 
-
+    /**
+     //TODO: Meelis, pmst kõik main methodist on üleval peale sinu buffered, vaata ise mida siit on vaja
     public void main(String[] args) throws IOException {
         BlockingQueue<String> recordingInfo = new ArrayBlockingQueue<String>(5);
         System.out.println("läksin tööle");
@@ -86,7 +85,7 @@ public class Client {
              Scanner sc = new Scanner(System.in)
         ) {
 
-            /**
+
             label:
 
             while (true) {
@@ -113,7 +112,6 @@ public class Client {
                     break;
                 }
             }
-             **/
             AudioCaptureThread audioCaptureThread = new AudioCaptureThread(new ByteArrayOutputStream(), servStream, recordingInfo);
             Thread captureThread = new Thread(audioCaptureThread);
             captureThread.start();
@@ -152,7 +150,9 @@ public class Client {
             }
 
         }
-    }
+
+        }
+     **/
 
     private static String getMinutes(Scanner sc) {
         String response;
@@ -183,7 +183,7 @@ public class Client {
         return audioBytes;
     }
 
-    //Sends WAV file to server
+    //Sends WAV file to server, could be used later
     private static void sendWAV(ByteArrayOutputStream byteArrayOutputStream) throws IOException {
         //byte[] audioBytes = readWAV(byteArrayOutputStream);
         byte[] audioBytes = byteArrayOutputStream.toByteArray();
