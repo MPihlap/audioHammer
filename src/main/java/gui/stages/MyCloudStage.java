@@ -1,7 +1,8 @@
 package gui.stages;
 
 import client.Client;
-import client.DisplayFiles;
+import client.FileOperations;
+import client.PlayExistingFile;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -15,9 +16,11 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.scene.input.MouseEvent;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Set;
+import java.util.HashMap;
 
 /**
  * Created by Helen on 20.04.2017.
@@ -25,8 +28,9 @@ import java.util.Set;
 public class MyCloudStage {
     private Stage stage;
     private Client client;
-    private DisplayFiles displayFiles;
-    ListView<String> myCloudFilesList;
+    private FileOperations fileOperations;
+    private HashMap<String, String> parentAndFile;
+
 
     public void setStage(Stage stage) {
         this.stage = stage;
@@ -34,7 +38,7 @@ public class MyCloudStage {
 
     public MyCloudStage(Client client) {
         this.client = client;
-        this.displayFiles = new DisplayFiles(client.getUsername());
+        this.fileOperations = new FileOperations(client.getUsername());
 
     }
 
@@ -51,8 +55,8 @@ public class MyCloudStage {
         //Files list label
         Label myCloudFilesListLabel = new Label("My files: ");
         //Files list
-        this.myCloudFilesList = new ListView<String>();
-        ObservableList<String> myCloudFiles = null;
+        ListView<String> myCloudFilesList = new ListView<>();
+        ObservableList<String> myCloudFiles;
         try {
             myCloudFiles = FXCollections.observableArrayList(myCloudFiles());
         } catch (IOException e) {
@@ -134,8 +138,17 @@ public class MyCloudStage {
     }
 
     //Makes list of files that user has on cloud and returns it. If user does not have any files, return empty list(not null)
+    //TODO: implement empty list (for new accounts)
     private ArrayList<String> myCloudFiles() throws IOException {
-        return displayFiles.getAllFiles();
+        ArrayList<Path> allFilesWithPath = fileOperations.getAllFiles();
+
+        //this HashMap is meant for making fileOperations easier
+        this.parentAndFile = new HashMap<>();
+        for (Path file :
+                allFilesWithPath) {
+            this.parentAndFile.put(file.getFileName().toString(), file.getParent().toString());
+        }
+        return new ArrayList<>(parentAndFile.keySet());
     }
 
     //Asks for new filename
@@ -183,7 +196,8 @@ public class MyCloudStage {
 
     //Renames file in server
     private boolean renameFile(String oldFilename, String newFilename) {
-        if(displayFiles.renameFile(oldFilename, newFilename)) {
+        String oldFile = parentAndFile.get(oldFilename) + File.separator + oldFilename;
+        if(fileOperations.renameFile(oldFile, newFilename)) {
             Alert success = new Alert(Alert.AlertType.INFORMATION);
             success.setTitle("Success!");
             success.setHeaderText(null);
@@ -202,22 +216,30 @@ public class MyCloudStage {
     }
 
     private void deleteFile(String fileName) {
-        //TODO when fixed, remove alert
+        //TODO: ask for confirmation for delete; make list automatically update
+
+        String deleteFile = parentAndFile.get(fileName) + File.separator + fileName;
+        fileOperations.deleteFile(deleteFile);
         Alert unassignedButton = new Alert(Alert.AlertType.INFORMATION);
-        unassignedButton.setTitle("Unassigned!");
+        unassignedButton.setTitle("Success!");
         unassignedButton.setHeaderText(null);
-        unassignedButton.setContentText("Sorry. This function is not added yet. It can be used in AudioHammer's next stage.");
+        unassignedButton.setContentText("File " + fileName + " succesfully deleted.");
         unassignedButton.showAndWait();
     }
 
     //Allows file listeing
     private void listenFile(String fileName) {
-        //TODO when fixed, remove alert
+        String listenFile = parentAndFile.get(fileName) + File.separator + fileName;
+        new Thread(new PlayExistingFile(listenFile)).start();
+
+        //TODO: works, but maybe add custom media player?
+        /**
         Alert unassignedButton = new Alert(Alert.AlertType.INFORMATION);
         unassignedButton.setTitle("Unassigned!");
         unassignedButton.setHeaderText(null);
         unassignedButton.setContentText("Sorry. This function is not added yet. It can be used in AudioHammer's next stage.");
         unassignedButton.showAndWait();
+         **/
     }
 
     //Downloads wawfile.
