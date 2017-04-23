@@ -63,8 +63,8 @@ public class AudioCaptureThread implements Runnable {
             }
 
 
-            try {  //TODO: VERY TEMP SOLUTION
-                servStream.write(new byte[1], 0, 1);
+            try {
+                servStream.write(new byte[8], 0, 8);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
