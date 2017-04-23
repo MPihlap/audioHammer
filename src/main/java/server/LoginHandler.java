@@ -15,7 +15,14 @@ import java.util.Scanner;
  */
 public class LoginHandler {
 
-    public static boolean doesUsernameExist(String username, File file) throws IOException {
+    /**
+     *
+     * @param username Username of client
+     * @param file File where user data is stored
+     * @return True, if username is found in file; false otherwise
+     * @throws IOException
+     */
+    private static boolean doesUsernameExist(String username, File file) throws IOException {
         try (Scanner fileScanner = new Scanner(file, "UTF-8")) {
             while (fileScanner.hasNextLine()) {
                 if (fileScanner.nextLine().split(":")[0].equals(username)) {
@@ -23,11 +30,19 @@ public class LoginHandler {
                 }
             }
         }
-
         return false;
     }
 
-    public static boolean checkPassword(String username, String password, File file) throws IOException {
+
+    /**
+     *
+     * @param username Username of client
+     * @param password password of client (not encrypted)
+     * @param file File where user data is stored
+     * @return true, if inserted password matches encrypted password in user data file; false otherwise
+     * @throws IOException
+     */
+    private static boolean checkPassword(String username, String password, File file) throws IOException {
         try (Scanner fileScanner = new Scanner(file, "UTF-8")) {
             while (fileScanner.hasNextLine()) {
                 String[] userData = fileScanner.nextLine().split(":");
@@ -47,6 +62,13 @@ public class LoginHandler {
 
     }
 
+    /**
+     *
+     * @param username Username of client
+     * @param password password of client (not encrypted)
+     * @return True, if username and password matches data in user data file; false otherwise
+     * @throws IOException
+     */
     public static boolean login(String username, String password) throws IOException {
         String userpath = "src/resources/UserInfo.txt"; //all usernames/passwords are stored here
         File file = new File(userpath);
@@ -66,6 +88,13 @@ public class LoginHandler {
     }
 
 
+    /**
+     *
+     * @param username Username of client
+     * @param password password of Client(not encrypted)
+     * @return True, if new account is created; false, if username already exists
+     * @throws IOException
+     */
     public static boolean newUserAccount(String username, String password) throws IOException {
         boolean isTaken;
         String userpath = "src/resources/UserInfo.txt";
@@ -78,22 +107,6 @@ public class LoginHandler {
                 fileWriter.write(username + ":" + PasswordEncryption.passwordEncrypter(password) + '\n');
                 System.out.println("kirjutasin?");
             }
-
-            /**
-             while (true) {
-             System.out.println("Insert password (at least 3 characters):");
-
-             if (password.length() < 3) {
-             System.out.println("Password too short!");
-             } else {
-             System.out.println("Retype password: ");
-             if (sysScanner.nextLine().equals(password)) {
-             break;
-             } else
-             System.out.println("Passwords did not match");
-             }
-             }
-             **/
             else {
                 return false;
             }

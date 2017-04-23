@@ -1,9 +1,9 @@
 package gui.stages;
 
 import client.Client;
+import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.event.ActionEvent;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -15,10 +15,10 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 /**
+ * Constructs a Main stage.
  * Created by Helen on 20.04.2017.
  */
-public class MainStage {
-    private Stage stage;
+public class MainStage extends BaseStage {
     private Client client;
     private boolean isCreated = false;
 
@@ -50,14 +50,11 @@ public class MainStage {
         }
     }
 
-    void setStage(Stage stage) {
-        this.stage = stage;
-    }
-
     /**
      * Shows Main page/stage
      */
-    void showStage() {
+    @Override
+    public void showStage() {
         //Stage settings
         stage.setTitle("AudioHammer");
         int sizeW = 500;
@@ -75,18 +72,18 @@ public class MainStage {
         //Recording stage button
         Button recordingButton = new Button("Recording");
         recordingButton.setOnAction((ActionEvent event) -> {
-            recording();
+            switchStage(new RecordingStage(client));
         });
         //MyCloud stage button
         Button myCloudButton = new Button("MyCloud");
         myCloudButton.setOnAction((ActionEvent event) -> {
-            myCloud();
+            switchStage(new MyCloudStage(client));
         });
         //Settings stage button
         Image imageSettings = new Image(getClass().getClassLoader().getResourceAsStream("settings.png"));
         Button settingsButton = new Button("", new ImageView(imageSettings));
         settingsButton.setOnAction((ActionEvent event) -> {
-            settings();
+            unassigned();
         });
         //Log out button
         Button logOutButton = new Button("Log out");
@@ -113,36 +110,6 @@ public class MainStage {
     }
 
     /**
-     * Switches to Settings page/stage, will be added later
-     */
-    private void settings() {
-        Alert unassignedButton = new Alert(Alert.AlertType.INFORMATION);
-        unassignedButton.setTitle("Unassigned!");
-        unassignedButton.setHeaderText(null);
-        unassignedButton.setContentText("Sorry. This button is unassigned for now. It can be used in AudioHammer's next stage.");
-        unassignedButton.showAndWait();
-    }
-
-    /**
-     * Switches to Recording page/stage
-     */
-    private void recording() {
-        RecordingStage recordingStage = new RecordingStage(client);
-        recordingStage.setStage(stage);
-        recordingStage.showStage();
-
-    }
-
-    /**
-     * Switches to MyCloud page/stage
-     */
-    private void myCloud() {
-        MyCloudStage myCloudStage = new MyCloudStage(this.client);
-        myCloudStage.setStage(stage);
-        myCloudStage.showStage();
-    }
-
-    /**
      * Logs user out of the application
      */
     private void logOut() {
@@ -166,9 +133,7 @@ public class MainStage {
         Button yesButton = new Button("Yes");
         yesButton.setOnAction((ActionEvent event) -> {
             logoutStage.close();
-            LogInStage logInStage = new LogInStage();
-            logInStage.setStage(stage);
-            logInStage.showStage();
+            switchStage(new LogInStage());
         });
         //Adding nodes to gridpane
         gridPane.add(information, 0, 0, 2, 1);
