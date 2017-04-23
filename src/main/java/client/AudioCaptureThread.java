@@ -4,6 +4,7 @@ import javax.sound.sampled.*;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.InputMismatchException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
@@ -40,6 +41,12 @@ public class AudioCaptureThread implements Runnable {
             int numBytesRead;
             recordingQueue.take(); //Waits for initial input "start"
             microphone.start();
+            try {
+                servStream.writeInt(1);
+                servStream.writeInt(microphone.getBufferSize()/5);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
             while (true){
                 String command = recordingQueue.poll();
@@ -57,7 +64,8 @@ public class AudioCaptureThread implements Runnable {
                     }
                     if (command.equals("buffer")){
                         try {
-                            servStream.write(new byte[]{1,1,1,1,1,1,1,1},0,8); //End of audio transmission.
+                            servStream.writeInt(2); //End of audio transmission.
+                            servStream.writeInt(1); //Start new file
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -66,6 +74,8 @@ public class AudioCaptureThread implements Runnable {
                 numBytesRead = microphone.read(recordByteBuffer,0,recordByteBuffer.length);
                 captureOutputStream.write(recordByteBuffer,0,numBytesRead);
                 try {
+                    servStream.writeInt(0);
+                    servStream.writeInt(numBytesRead);
                     servStream.write(recordByteBuffer, 0, numBytesRead);
                 }
                 catch (IOException e){
@@ -75,14 +85,15 @@ public class AudioCaptureThread implements Runnable {
 
             if (bufferedMode){
                 try {
-                    servStream.writeBoolean(false); //Tell server we are done recording
+                    servStream.writeInt(2); //Tell server we are done recording
+                    servStream.writeInt(2); //Tell server we do not want more files
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
             }
             else {
                 try {
-                    servStream.write(new byte[]{1,1,1,1,1,1,1,1}, 0, 8);
+                    servStream.writeInt(2);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
