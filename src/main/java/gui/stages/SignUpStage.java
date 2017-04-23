@@ -9,6 +9,7 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import server.LoginHandler;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -122,6 +123,8 @@ public class SignUpStage {
                 accountCreated.showAndWait();
                 this.client = new Client();
                 client.setUsername(username);
+                (new File(System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator + username)).mkdir();
+
             }
             else {
                 errorAlert.showAndWait();
