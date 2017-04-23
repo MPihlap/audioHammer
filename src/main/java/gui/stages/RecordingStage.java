@@ -1,40 +1,34 @@
 package gui.stages;
 
 import client.Client;
+import gui.TimerThread;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.GridPane;
-import javafx.stage.Stage;
 import javafx.scene.control.*;
-import gui.TimerThread;
+import javafx.scene.layout.GridPane;
 
 import java.io.IOException;
 
 /**
+ * Constructs a Recording stage.
  * Created by Helen on 18.04.2017.
  */
-class RecordingStage {
+class RecordingStage extends BaseStage {
     private boolean recordingBoolean;
     private long time;
     private TimerThread timerThread;
-    private Stage stage;
     private Client client;
 
     RecordingStage(Client client) {
         this.client = client;
     }
 
-    void setStage(Stage stage) {
-        this.stage = stage;
-    }
-
     /**
      * Shows recording page/stage
      */
-    void showStage() {
+    @Override
+    public void showStage() {
         stage.setTitle("AudioHammer");
         int sizeW = 500;
         int sizeH = 300;
@@ -70,7 +64,7 @@ class RecordingStage {
     /**
      * Makes recording tab's content as a GridPane
      *
-     * @param gridPaneRecording the Gridapne on which the tab's content is created
+     * @param gridPaneRecording the GridPane on which the tab's content is created
      * @return Given GridPane with added Nodes
      */
     private GridPane recordingTab(GridPane gridPaneRecording) {
@@ -197,7 +191,7 @@ class RecordingStage {
     /**
      * Makes buffered recording tab's content as a GridPane
      *
-     * @param gridPaneRecording the Gridapne on which the tab's content is created
+     * @param gridPaneRecording the GridPane on which the tab's content is created
      * @return Given GridPane with added Nodes
      */
     private GridPane bufferedRecordingTab(GridPane gridPaneRecording) {
@@ -247,11 +241,13 @@ class RecordingStage {
         Slider bufferTimeSlider = new Slider();
         bufferTimeSlider.setMin(1);
         bufferTimeSlider.setMax(10);
-        bufferTimeSlider.setBlockIncrement(1);
         bufferTimeSlider.setValue(1);
         bufferTimeSlider.setShowTickMarks(true);
         bufferTimeSlider.setShowTickLabels(true);
         bufferTimeSlider.setMajorTickUnit(1);
+        bufferTimeSlider.setMinorTickCount(0);
+        bufferTimeSlider.setSnapToTicks(true);
+
         //Recording Start-Stop button
         Button recordingButton = new Button("Start");
         recordingButton.setMinWidth(100);
@@ -272,6 +268,7 @@ class RecordingStage {
                     filename.setDisable(false);
                     timerThread.setRecordingBoolean(false);
                 } else {
+                    System.out.println(bufferTimeSlider.getValue());
                     if (filename.getText() != null && !filename.getText().equals("") && this.checkFilename(filename.getText())) {
                         try {
                             client.sendCommand("filename");
@@ -343,9 +340,7 @@ class RecordingStage {
             stillRecordingAlert.setContentText("Please stop recording before visiting MyCloud.");
             stillRecordingAlert.showAndWait();
         } else {
-            MyCloudStage myCloudStage = new MyCloudStage(client);
-            myCloudStage.setStage(stage);
-            myCloudStage.showStage();
+            switchStage(new MyCloudStage(client));
         }
     }
 
@@ -390,9 +385,7 @@ class RecordingStage {
             stillRecordingAlert.setContentText("Please stop recording before returing to Main page.");
             stillRecordingAlert.showAndWait();
         } else {
-            MainStage mainStage = new MainStage(client);
-            mainStage.setStage(stage);
-            mainStage.showStage();
+            switchStage(new MainStage(client));
         }
     }
 }
