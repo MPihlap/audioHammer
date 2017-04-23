@@ -43,11 +43,15 @@ public class Client {
     }
 
     public void startRecording() throws IOException {
+        servStream.writeBoolean(false);
         recordingInfo.add("start");
         AudioCaptureThread audioCaptureThread = new AudioCaptureThread(new ByteArrayOutputStream(), servStream, recordingInfo);
         this.captureThread = new Thread(audioCaptureThread);
         captureThread.start();
         System.out.println("hakkas lindistama");
+    }
+    public void startBufferedRecording(){
+
     }
 
     public void pauseRecording() {

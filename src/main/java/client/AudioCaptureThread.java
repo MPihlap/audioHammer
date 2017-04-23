@@ -11,6 +11,7 @@ import java.util.concurrent.BlockingQueue;
  * Created by Meelis on 30/03/2017.
  */
 public class AudioCaptureThread implements Runnable {
+    private boolean bufferedMode;
     private final BlockingQueue<String> recordingQueue;
     private final DataOutputStream servStream;
     private final AudioFormat format = new AudioFormat(44100, 16, 1, true, true);
@@ -26,6 +27,9 @@ public class AudioCaptureThread implements Runnable {
         return captureOutputStream;
     }
 
+    public void setBufferedMode(boolean bufferedMode) {
+        this.bufferedMode = bufferedMode;
+    }
 
     @Override
     public void run() {
@@ -51,6 +55,13 @@ public class AudioCaptureThread implements Runnable {
                             continue; //Waits for input "resume"
                         }
                     }
+                    if (command.equals("buffer")){
+                        try {
+                            servStream.write(new byte[8],0,8); //Tells server to save buffered data as a file and start a new buffer
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
                 }
                 numBytesRead = microphone.read(recordByteBuffer,0,recordByteBuffer.length);
                 captureOutputStream.write(recordByteBuffer,0,numBytesRead);
@@ -67,6 +78,13 @@ public class AudioCaptureThread implements Runnable {
                 servStream.write(new byte[8], 0, 8);
             } catch (IOException e) {
                 throw new RuntimeException(e);
+            }
+            if (bufferedMode){
+                try {
+                    servStream.writeInt(-1);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
             microphone.stop();
             System.out.println(captureOutputStream.size());

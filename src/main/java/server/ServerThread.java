@@ -40,16 +40,22 @@ public class ServerThread implements Runnable {
                 if (command.equals("filename")) {
                     fileName = dataInputStream.readUTF();
                     System.out.println(fileName);
-                    //boolean bufferedMode = dataInputStream.readBoolean();
+                    boolean bufferedMode = dataInputStream.readBoolean();
                     byte[] fileBytes;
-                    boolean bufferedMode = false; //praeguseks false;
                     if (bufferedMode) {
-                        int minutes = dataInputStream.readInt();
-                        fileBytes = bufferAudioBytesFromClient(dataInputStream, minutes * 60 * 88200);
+                        while (true) {
+                            int minutes = dataInputStream.readInt();
+                            if (minutes == -1){
+                                break;
+                            }
+                            fileBytes = bufferAudioBytesFromClient(dataInputStream, minutes * 60 * 88200);
+                            fileSaving(fileName, fileBytes, username);
+                        }
                     } else {
                         fileBytes = readAudioBytesFromClient(dataInputStream);
+                        fileSaving(fileName, fileBytes, username);
                     }
-                    fileSaving(fileName, fileBytes, username);
+
                 }
 
                 if (false) {
