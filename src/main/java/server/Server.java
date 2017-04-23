@@ -23,8 +23,7 @@ public class Server {
                 executor = Executors.newFixedThreadPool(4); //Needs testing
                 while (true) {
                     Socket socket = serverSocket.accept();
-                    executor.execute(new Thread(new ServerThread(socket)))
-                    ;
+                    executor.execute(new Thread(new ServerThread(socket)));
                 }
             } finally {
                 executor.shutdown();

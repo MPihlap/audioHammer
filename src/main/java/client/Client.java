@@ -48,6 +48,7 @@ public class Client {
         servStream.writeBoolean(false);
         recordingInfo.add("start");
         AudioCaptureThread audioCaptureThread = new AudioCaptureThread(new ByteArrayOutputStream(), servStream, recordingInfo);
+        audioCaptureThread.setBufferedMode(false);
         this.captureThread = new Thread(audioCaptureThread);
         captureThread.start();
         System.out.println("hakkas lindistama");
@@ -58,6 +59,7 @@ public class Client {
         servStream.writeBoolean(true);
         recordingInfo.add("start");
         AudioCaptureThread audioCaptureThread = new AudioCaptureThread(new ByteArrayOutputStream(), servStream, recordingInfo);
+        audioCaptureThread.setBufferedMode(true);
         this.captureThread = new Thread(audioCaptureThread);
         captureThread.start();
     }

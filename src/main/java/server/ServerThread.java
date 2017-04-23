@@ -41,15 +41,15 @@ public class ServerThread implements Runnable {
                     fileName = dataInputStream.readUTF();
                     System.out.println(fileName);
                     boolean bufferedMode = dataInputStream.readBoolean();
-                    System.out.println("Buffer: "+bufferedMode);
+                    System.out.println("Buffer: " + bufferedMode);
                     byte[] fileBytes;
                     boolean isRecording;
                     if (bufferedMode) {
                         int minutes = dataInputStream.readInt();
-                        System.out.println("Minutes:"+minutes);
+                        System.out.println("Minutes:" + minutes);
                         while (true) {
                             isRecording = dataInputStream.readBoolean();
-                            if (!isRecording){
+                            if (!isRecording) {
                                 break;
                             }
                             fileBytes = bufferAudioBytesFromClient(dataInputStream, minutes * 60 * 88200);
@@ -84,31 +84,32 @@ public class ServerThread implements Runnable {
     private boolean isFinished(ByteBuffer byteBuffer, int nBytes) {
         byte[] endBytes = new byte[nBytes];
         int startPosition = byteBuffer.position();
-        System.out.println(byteBuffer.position()-nBytes-1);
-        byteBuffer.position(startPosition-nBytes);
-        byteBuffer.get(endBytes,0,nBytes);
+        System.out.println(byteBuffer.position() - nBytes - 1);
+        byteBuffer.position(startPosition - nBytes);
+        byteBuffer.get(endBytes, 0, nBytes);
         System.out.print("Endbytes:");
         for (int i = 0; i < nBytes; i++) {
             System.out.print(endBytes[i]);
-            if (endBytes[i]!=1)
+            if (endBytes[i] != 1)
                 return false;
         }
         byteBuffer.position(startPosition);
         return true;
     }
+
     private boolean isFinished(byte[] bytes, int nBytes) {
         if (bytes.length < 8)
             return false;
         byte[] endBytes = new byte[nBytes];
         for (int i = 0; i < 8; i++) {
             System.out.println(bytes.length);
-            System.out.println(bytes.length-1-i);
-            endBytes[i] = bytes[bytes.length-1-i];
+            System.out.println(bytes.length - 1 - i);
+            endBytes[i] = bytes[bytes.length - 1 - i];
         }
         System.out.print("Endbytes: ");
         for (int i = 0; i < nBytes; i++) {
             System.out.print(endBytes[i]);
-            if (endBytes[i]!=1)
+            if (endBytes[i] != 1)
                 return false;
         }
         return true;
@@ -116,43 +117,56 @@ public class ServerThread implements Runnable {
 
     //Reads sent audio as bytearray
     private byte[] readAudioBytesFromClient(DataInputStream dataInputStream) throws IOException {
-        byte[] buffer = new byte[1024];
+        int type = dataInputStream.readInt();
+        byte[] buffer;
+        if (type == 1) {
+            buffer = new byte[dataInputStream.readInt()];
+        } else {
+            throw new RuntimeException("Socket Transmission type error: " + type);
+        }
         ByteArrayOutputStream byteArrayOut = new ByteArrayOutputStream();
         int len;
         while (true) {
-            len = dataInputStream.read(buffer, 0, buffer.length);
-            System.out.println(len);
-            if (isFinished(byteArrayOut.toByteArray(),8)) {
+            type = dataInputStream.readInt();
+            if (type == 2) {
                 break;
             }
+            len = dataInputStream.readInt();
+            System.out.println(len);
+            dataInputStream.read(buffer, 0, len);
             byteArrayOut.write(buffer, 0, len);
         }
 
         byte[] audioBytes = byteArrayOut.toByteArray();
-        return Arrays.copyOf(audioBytes,audioBytes.length-8);
+        return byteArrayOut.toByteArray();
     }
 
     private byte[] bufferAudioBytesFromClient(DataInputStream clientInputStream, int byteNumber) throws IOException {
-        byte[] buffer = new byte[1024];
-        System.out.println("Bytenumber = "+byteNumber);
-        ByteBuffer audioByteBuffer = ByteBuffer.allocate(byteNumber+8);
+        int type = clientInputStream.readInt();
+        byte[] buffer;
+        int bufferSize;
+        if (type == 1) {
+            bufferSize = clientInputStream.readInt();
+            buffer = new byte[bufferSize];
+        } else {
+            throw new RuntimeException("Socket Transmission type error: " + type);
+        }
+        ByteBuffer audioByteBuffer = ByteBuffer.allocate(byteNumber);
         int len;
-        byte[] audioBytes;
-        int audioLength = 0;
         while (true) {
-            len = clientInputStream.read(buffer, 0, buffer.length);
-            audioLength += len;
+            type = clientInputStream.readInt();
+            if (type == 2) {
+                break;
+            }
+            len = clientInputStream.readInt();
+            clientInputStream.read(buffer, 0, len);
             if (audioByteBuffer.position() + len > byteNumber) { //Check if size limit has been reached
-                audioByteBuffer.position(1024);                     //Go to position after first 1024 bytes
+                audioByteBuffer.position(bufferSize);               //Go to position after first buffer
                 audioByteBuffer.compact();                          //Remove bytes before position
             }
             audioByteBuffer.put(buffer, 0, len);
-            if (isFinished(audioByteBuffer,8)){
-                break;
-            }
         }
-        audioBytes = audioByteBuffer.array();
-        return Arrays.copyOf(audioBytes,audioLength-8);
+        return audioByteBuffer.array();
     }
 
     //Saves file
