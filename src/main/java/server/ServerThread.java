@@ -43,14 +43,16 @@ public class ServerThread implements Runnable {
                     boolean bufferedMode = dataInputStream.readBoolean();
                     System.out.println("Buffer: " + bufferedMode);
                     byte[] fileBytes;
-                    boolean isRecording;
                     if (bufferedMode) {
                         int minutes = dataInputStream.readInt();
                         System.out.println("Minutes:" + minutes);
                         while (true) {
-                            isRecording = dataInputStream.readBoolean();
-                            if (!isRecording) {
+                            int type = dataInputStream.readInt();
+                            if (type == 2) {
                                 break;
+                            }
+                            if (type == 0){
+                                throw new RuntimeException("Socket transmission type error, got: "+type+", expected: 2 or 1");
                             }
                             fileBytes = bufferAudioBytesFromClient(dataInputStream, minutes * 60 * 88200);
                             fileSaving(fileName, fileBytes, username);
@@ -133,7 +135,7 @@ public class ServerThread implements Runnable {
             }
             len = dataInputStream.readInt();
             System.out.println(len);
-            dataInputStream.read(buffer, 0, len);
+            dataInputStream.readFully(buffer, 0, len);
             byteArrayOut.write(buffer, 0, len);
         }
 
@@ -149,7 +151,7 @@ public class ServerThread implements Runnable {
             bufferSize = clientInputStream.readInt();
             buffer = new byte[bufferSize];
         } else {
-            throw new RuntimeException("Socket Transmission type error: " + type);
+            throw new RuntimeException("Socket Transmission type error, got: " + type+", expected: 1");
         }
         ByteBuffer audioByteBuffer = ByteBuffer.allocate(byteNumber);
         int len;
@@ -159,7 +161,7 @@ public class ServerThread implements Runnable {
                 break;
             }
             len = clientInputStream.readInt();
-            clientInputStream.read(buffer, 0, len);
+            clientInputStream.readFully(buffer,0,len);
             if (audioByteBuffer.position() + len > byteNumber) { //Check if size limit has been reached
                 audioByteBuffer.position(bufferSize);               //Go to position after first buffer
                 audioByteBuffer.compact();                          //Remove bytes before position
