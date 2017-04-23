@@ -133,7 +133,7 @@ public class ServerThread implements Runnable {
             }
             len = dataInputStream.readInt();
             System.out.println(len);
-            dataInputStream.read(buffer, 0, len);
+            dataInputStream.readFully(buffer, 0, len);
             byteArrayOut.write(buffer, 0, len);
         }
 
@@ -159,7 +159,7 @@ public class ServerThread implements Runnable {
                 break;
             }
             len = clientInputStream.readInt();
-            clientInputStream.read(buffer, 0, len);
+            clientInputStream.readFully(buffer, 0, len);
             if (audioByteBuffer.position() + len > byteNumber) { //Check if size limit has been reached
                 audioByteBuffer.position(bufferSize);               //Go to position after first buffer
                 audioByteBuffer.compact();                          //Remove bytes before position
