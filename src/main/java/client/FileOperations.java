@@ -23,6 +23,7 @@ public class FileOperations{
 
     //adds user recorded files to list
     private void listFiles() {
+        allFilesWithPath = new ArrayList<>();
         SimpleFileVisitor<Path> simpleFileVisitor = new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
