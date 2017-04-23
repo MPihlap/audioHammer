@@ -41,11 +41,15 @@ public class ServerThread implements Runnable {
                     fileName = dataInputStream.readUTF();
                     System.out.println(fileName);
                     boolean bufferedMode = dataInputStream.readBoolean();
+                    System.out.println("Buffer: "+bufferedMode);
                     byte[] fileBytes;
+                    boolean isRecording;
                     if (bufferedMode) {
+                        int minutes = dataInputStream.readInt();
+                        System.out.println("Minutes:"+minutes);
                         while (true) {
-                            int minutes = dataInputStream.readInt();
-                            if (minutes == -1){
+                            isRecording = dataInputStream.readBoolean();
+                            if (!isRecording){
                                 break;
                             }
                             fileBytes = bufferAudioBytesFromClient(dataInputStream, minutes * 60 * 88200);
@@ -79,20 +83,32 @@ public class ServerThread implements Runnable {
 
     private boolean isFinished(ByteBuffer byteBuffer, int nBytes) {
         byte[] endBytes = new byte[nBytes];
-        byteBuffer.get(endBytes,byteBuffer.position() - nBytes,nBytes);
+        int startPosition = byteBuffer.position();
+        System.out.println(byteBuffer.position()-nBytes-1);
+        byteBuffer.position(startPosition-nBytes);
+        byteBuffer.get(endBytes,0,nBytes);
+        System.out.print("Endbytes:");
         for (int i = 0; i < nBytes; i++) {
-            if (endBytes[i]!=0)
+            System.out.print(endBytes[i]);
+            if (endBytes[i]!=1)
                 return false;
         }
+        byteBuffer.position(startPosition);
         return true;
     }
     private boolean isFinished(byte[] bytes, int nBytes) {
+        if (bytes.length < 8)
+            return false;
         byte[] endBytes = new byte[nBytes];
-        for (int i = nBytes-1; i >= 0; i--) {
-            endBytes[i] = bytes[-1-i];
+        for (int i = 0; i < 8; i++) {
+            System.out.println(bytes.length);
+            System.out.println(bytes.length-1-i);
+            endBytes[i] = bytes[bytes.length-1-i];
         }
+        System.out.print("Endbytes: ");
         for (int i = 0; i < nBytes; i++) {
-            if (endBytes[i]!=0)
+            System.out.print(endBytes[i]);
+            if (endBytes[i]!=1)
                 return false;
         }
         return true;
@@ -118,13 +134,15 @@ public class ServerThread implements Runnable {
 
     private byte[] bufferAudioBytesFromClient(DataInputStream clientInputStream, int byteNumber) throws IOException {
         byte[] buffer = new byte[1024];
-        //ByteArrayOutputStream byteArrayOut = new ByteArrayOutputStream();
-        ByteBuffer audioByteBuffer = ByteBuffer.allocate(byteNumber);
+        System.out.println("Bytenumber = "+byteNumber);
+        ByteBuffer audioByteBuffer = ByteBuffer.allocate(byteNumber+8);
         int len;
         byte[] audioBytes;
+        int audioLength = 0;
         while (true) {
             len = clientInputStream.read(buffer, 0, buffer.length);
-            if (audioByteBuffer.position() + len > audioByteBuffer.limit()) { //Check if size limit has been reached
+            audioLength += len;
+            if (audioByteBuffer.position() + len > byteNumber) { //Check if size limit has been reached
                 audioByteBuffer.position(1024);                     //Go to position after first 1024 bytes
                 audioByteBuffer.compact();                          //Remove bytes before position
             }
@@ -134,7 +152,7 @@ public class ServerThread implements Runnable {
             }
         }
         audioBytes = audioByteBuffer.array();
-        return Arrays.copyOf(audioBytes,audioBytes.length-8);
+        return Arrays.copyOf(audioBytes,audioLength-8);
     }
 
     //Saves file

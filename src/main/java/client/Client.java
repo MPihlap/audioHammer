@@ -52,16 +52,18 @@ public class Client {
         captureThread.start();
         System.out.println("hakkas lindistama");
     }
-    public void startBufferedRecording()throws IOException{
+    public void startBufferedRecording(int minutes)throws IOException{
+        servStream.writeBoolean(true);
+        servStream.writeInt(minutes);
         servStream.writeBoolean(true);
         recordingInfo.add("start");
         AudioCaptureThread audioCaptureThread = new AudioCaptureThread(new ByteArrayOutputStream(), servStream, recordingInfo);
         this.captureThread = new Thread(audioCaptureThread);
         captureThread.start();
     }
-    public void saveBuffer(int minutes) throws IOException {
+    public void saveBuffer() throws IOException {
         recordingInfo.add("buffer");
-        servStream.writeInt(minutes);
+        servStream.writeBoolean(true);
     }
 
     public void pauseRecording() {

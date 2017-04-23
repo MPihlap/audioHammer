@@ -57,7 +57,7 @@ public class AudioCaptureThread implements Runnable {
                     }
                     if (command.equals("buffer")){
                         try {
-                            servStream.write(new byte[8],0,8); //Tells server to save buffered data as a file and start a new buffer
+                            servStream.write(new byte[]{1,1,1,1,1,1,1,1},0,8); //End of audio transmission.
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -73,15 +73,16 @@ public class AudioCaptureThread implements Runnable {
                 }
             }
 
-
-            try {
-                servStream.write(new byte[8], 0, 8);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
             if (bufferedMode){
                 try {
-                    servStream.writeInt(-1);
+                    servStream.writeBoolean(false); //Tell server we are done recording
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            else {
+                try {
+                    servStream.write(new byte[]{1,1,1,1,1,1,1,1}, 0, 8);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }

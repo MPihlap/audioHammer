@@ -268,7 +268,7 @@ public class RecordingStage {
                         System.out.println(bufferTime);
                         //TODO start recording
                         try {
-                            bufferedRecordingStart();
+                            bufferedRecordingStart(bufferTime);
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -337,8 +337,8 @@ public class RecordingStage {
         client.startRecording();
         time = System.currentTimeMillis();
     }
-    private void bufferedRecordingStart() throws IOException {
-        client.startBufferedRecording();
+    private void bufferedRecordingStart(int minutes) throws IOException {
+        client.startBufferedRecording(minutes);
         time = System.currentTimeMillis();
     }
 
@@ -349,7 +349,7 @@ public class RecordingStage {
 
     //Saves last n minutes of the recording
     private void lapAction(Slider bufferedTimeSlider) throws IOException {
-        client.saveBuffer((int) bufferedTimeSlider.getValue());
+        client.saveBuffer();
     }
 
     // Returns to mainStage
