@@ -30,7 +30,7 @@ public class MyCloudStage {
     private Client client;
     private FileOperations fileOperations;
     private HashMap<String, String> parentAndFile;
-
+    private ListView<String> myCloudFilesList;
 
     public void setStage(Stage stage) {
         this.stage = stage;
@@ -55,7 +55,7 @@ public class MyCloudStage {
         //Files list label
         Label myCloudFilesListLabel = new Label("My files: ");
         //Files list
-        ListView<String> myCloudFilesList = new ListView<>();
+        this.myCloudFilesList = new ListView<>();
         ObservableList<String> myCloudFiles;
         try {
             myCloudFiles = FXCollections.observableArrayList(myCloudFiles());
@@ -116,7 +116,7 @@ public class MyCloudStage {
         myCloudFilesList.setMaxSize(sizeW - 35, 150);
         myCloudFilesList.setMinSize(sizeW - 35, 150);
         //information label TODO Text editing (Helen)
-        Label information = new Label("Here comes some information about chosen file.Date,Length,etc");
+        Label information = new Label("Here comes some information about chosen file. Date,Length,etc");
         //Back to main stage
         Button backButton = new Button("Back");
         backButton.setOnAction((ActionEvent event) -> {
@@ -203,6 +203,7 @@ public class MyCloudStage {
             success.setHeaderText(null);
             success.setContentText("File succesfully renamed!");
             success.showAndWait();
+            refreshTabel();
             return true;
         }
         else {
@@ -225,6 +226,7 @@ public class MyCloudStage {
         unassignedButton.setHeaderText(null);
         unassignedButton.setContentText("File " + fileName + " succesfully deleted.");
         unassignedButton.showAndWait();
+        refreshTabel();
     }
 
     //Allows file listeing
@@ -257,5 +259,12 @@ public class MyCloudStage {
         mainStage.setStage(stage);
         mainStage.showStage();
 
+    }
+    private void refreshTabel(){
+        try {
+            this.myCloudFilesList.setItems(FXCollections.observableArrayList(myCloudFiles()));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
