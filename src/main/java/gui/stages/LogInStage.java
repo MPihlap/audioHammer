@@ -26,10 +26,14 @@ public class LogInStage extends Client {
     public void setStage(Stage stage) {
         this.stage = stage;
     }
-    public void setClient() {
+
+    private void setClient() {
         this.client = new Client();
     }
 
+    /**
+     * Shows LogIn page/stage
+     */
     public void showStage() {
         //Stage settings
         stage.setTitle("AudioHammer");
@@ -41,19 +45,19 @@ public class LogInStage extends Client {
         stage.setMaxHeight(sizeH);
         stage.setMinHeight(sizeH);
         //Welcome labels
-        Label titleLabel1=new Label("Welcome to");
+        Label titleLabel1 = new Label("Welcome to");
         titleLabel1.setFont(Font.font(20));
-        Label titleLabel2=new Label("AUDIOHAMMER");
+        Label titleLabel2 = new Label("AUDIOHAMMER");
         titleLabel2.setFont(Font.font(22));
         //Username and password textfields
-        Label usernameLabel=new Label("Username: ");
-        TextField userNameField=new TextField();
+        Label usernameLabel = new Label("Username: ");
+        TextField userNameField = new TextField();
         userNameField.setPromptText("Username");
-        userNameField.setMaxWidth(sizeW-35);
-        Label passwordLabel=new Label("Password: ");
-        PasswordField passwordField=new PasswordField();
+        userNameField.setMaxWidth(sizeW - 35);
+        Label passwordLabel = new Label("Password: ");
+        PasswordField passwordField = new PasswordField();
         passwordField.setPromptText("Password");
-        passwordField.setMaxWidth(sizeW-35);
+        passwordField.setMaxWidth(sizeW - 35);
         //Alerts about log in information (password, username)
         Alert noPasswordAlert = new Alert(Alert.AlertType.INFORMATION);
         noPasswordAlert.setTitle("No password!");
@@ -70,23 +74,21 @@ public class LogInStage extends Client {
         wrongUsernameOrPasswordAlert.setHeaderText(null);
         wrongUsernameOrPasswordAlert.setContentText("You have inserted an incorrect username and/or password.");
         //Log in button
-        Button logInButton= new Button("Log in");
+        Button logInButton = new Button("Log in");
         logInButton.setOnAction((ActionEvent event) -> {
             this.setClient(); //starts up new client
 
-            if(userNameField.getText().equals("")){
+            if (userNameField.getText().equals("")) {
                 noUsernameAlert.showAndWait();
-            }
-            else if (passwordField.getText().equals("")){
+            } else if (passwordField.getText().equals("")) {
                 noPasswordAlert.showAndWait();
-            }
-            else {
+            } else {
                 try {
-                    boolean logInBoolean= logInCheck(passwordField.getText(),userNameField.getText());
-                    if(!logInBoolean){
+                    boolean logInBoolean = logInCheck(passwordField.getText(), userNameField.getText());
+                    if (!logInBoolean) {
                         wrongUsernameOrPasswordAlert.showAndWait();
-                    }else{
-                        MainStage mainStage=new MainStage(client);
+                    } else {
+                        MainStage mainStage = new MainStage(client);
                         if (mainStage.isCreated()) {
                             mainStage.setStage(stage);
                             mainStage.showStage();
@@ -100,14 +102,14 @@ public class LogInStage extends Client {
             }
         });
         //Sign up button
-        Button signUpButton=new Button("Sign up");
-        signUpButton.setOnAction((ActionEvent event)->{
+        Button signUpButton = new Button("Sign up");
+        signUpButton.setOnAction((ActionEvent event) -> {
             signUp();
         });
         //Offline mode button
-        Button offlineMode=new Button("Offline mode");
-        offlineMode.setMinWidth(sizeW-35);
-        offlineMode.setOnAction((ActionEvent event)->{
+        Button offlineMode = new Button("Offline mode");
+        offlineMode.setMinWidth(sizeW - 35);
+        offlineMode.setOnAction((ActionEvent event) -> {
             offlineMode();
         });
         //Adding nodes to grid
@@ -115,15 +117,15 @@ public class LogInStage extends Client {
         gridPane.setHgap(10);
         gridPane.setPadding(new Insets(10, 10, 5, 10));
         gridPane.setAlignment(Pos.CENTER);
-        gridPane.add(titleLabel1,0,0,3,1); //TODO horizontally center
-        gridPane.add(titleLabel2,0,1,3,1);//TODO horizontally center
+        gridPane.add(titleLabel1, 0, 0, 3, 1); //TODO horizontally center
+        gridPane.add(titleLabel2, 0, 1, 3, 1);//TODO horizontally center
         gridPane.add(offlineMode, 0, 2, 3, 1);
-        gridPane.add(usernameLabel,0,3,1,1);
-        gridPane.add(userNameField,0,4,3,1);
-        gridPane.add (passwordLabel,0,5,1,1);
-        gridPane.add(passwordField,0,6,3,1);
-        gridPane.add(logInButton,0,7,1,1);
-        gridPane.add(signUpButton,1,7,1,1);
+        gridPane.add(usernameLabel, 0, 3, 1, 1);
+        gridPane.add(userNameField, 0, 4, 3, 1);
+        gridPane.add(passwordLabel, 0, 5, 1, 1);
+        gridPane.add(passwordField, 0, 6, 3, 1);
+        gridPane.add(logInButton, 0, 7, 1, 1);
+        gridPane.add(signUpButton, 1, 7, 1, 1);
         //Last settings and show
         Scene scene = new Scene(gridPane, sizeW, sizeH);
         stage.setScene(scene);
@@ -131,39 +133,37 @@ public class LogInStage extends Client {
     }
 
     /**
-     * Handled by LoginHandler
-    //Checks username
-    private boolean checkUserName(String username){
-        //TODO add checks
-        return true;
-    }
-    //Checks password
-    private boolean checkPassword(String password){
-        //TODO add  checks
-        return true;
-    }
-     **/
-
-    // Checks if user can log in and complite it
-    private boolean logInCheck(String password, String username) throws IOException{
-        try{
+     * Checks if user can log in with inserted password and username
+     *
+     * @param password the password that user inserted into PasswordField
+     * @param username the username that user inserted into username TextField
+     * @return true, if user can log in; false otherwise
+     * @throws IOException
+     */
+    private boolean logInCheck(String password, String username) throws IOException {
+        try {
             client.setUsername(username);
             //LogIn and open main window
             return LoginHandler.login(username, password);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
     }
-    // Opens sign up window
-    private void signUp(){
-        SignUpStage signUpStage=new SignUpStage();
+
+    /**
+     * Switches to SignUp page/stage
+     */
+    private void signUp() {
+        SignUpStage signUpStage = new SignUpStage();
         signUpStage.setStage(stage);
         signUpStage.showStage();
     }
-    // Allows to use application in offline mode/locally. Will be add later
-    private void offlineMode(){
+
+    /**
+     * Allows to use application in offline mode/locally. Will be add later
+     */
+    private void offlineMode() {
         Alert unassignedButton = new Alert(Alert.AlertType.INFORMATION);
         unassignedButton.setTitle("Unassigned!");
         unassignedButton.setHeaderText(null);

@@ -8,9 +8,11 @@ import javafx.stage.Stage;
 //TODO
 public class SettingsStage {
     private Stage stage;
+
     void setStage(Stage stage) {
         this.stage = stage;
     }
 
-    void showStage() {}
+    void showStage() {
+    }
 }
