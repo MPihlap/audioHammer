@@ -1,31 +1,23 @@
 package gui.stages;
 
 import client.Client;
+import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Font;
-import javafx.stage.Stage;
-import javafx.event.ActionEvent;
 import server.LoginHandler;
 
 import java.io.IOException;
 
 /**
+ * Constructs a Log-in stage.
  * Created by Helen on 20.04.2017.
  */
-public class LogInStage extends Client {
-    private Stage stage;
+public class LogInStage extends BaseStage {
     private Client client;
-
-    public void setStage(Stage stage) {
-        this.stage = stage;
-    }
 
     private void setClient() {
         this.client = new Client();
@@ -34,6 +26,7 @@ public class LogInStage extends Client {
     /**
      * Shows LogIn page/stage
      */
+    @Override
     public void showStage() {
         //Stage settings
         stage.setTitle("AudioHammer");
@@ -90,8 +83,7 @@ public class LogInStage extends Client {
                     } else {
                         MainStage mainStage = new MainStage(client);
                         if (mainStage.isCreated()) {
-                            mainStage.setStage(stage);
-                            mainStage.showStage();
+                            switchStage(mainStage);
                         }
 
                     }
@@ -104,7 +96,7 @@ public class LogInStage extends Client {
         //Sign up button
         Button signUpButton = new Button("Sign up");
         signUpButton.setOnAction((ActionEvent event) -> {
-            signUp();
+            switchStage(new SignUpStage());
         });
         //Offline mode button
         Button offlineMode = new Button("Offline mode");
@@ -141,34 +133,16 @@ public class LogInStage extends Client {
      * @throws IOException
      */
     private boolean logInCheck(String password, String username) throws IOException {
-        try {
-            client.setUsername(username);
-            //LogIn and open main window
-            return LoginHandler.login(username, password);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
-
-    /**
-     * Switches to SignUp page/stage
-     */
-    private void signUp() {
-        SignUpStage signUpStage = new SignUpStage();
-        signUpStage.setStage(stage);
-        signUpStage.showStage();
+        client.setUsername(username);
+        //LogIn and open main window
+        return LoginHandler.login(username, password);
     }
 
     /**
      * Allows to use application in offline mode/locally. Will be add later
      */
     private void offlineMode() {
-        Alert unassignedButton = new Alert(Alert.AlertType.INFORMATION);
-        unassignedButton.setTitle("Unassigned!");
-        unassignedButton.setHeaderText(null);
-        unassignedButton.setContentText("Sorry. This button is unassigned for now. It can be used in AudioHammer's next stage.");
-        unassignedButton.showAndWait();
+        unassigned();
     }
 
 
