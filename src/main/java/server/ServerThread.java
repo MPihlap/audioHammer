@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 
 
 /**
@@ -21,7 +22,6 @@ public class ServerThread implements Runnable {
     private Socket socket;
     private String username;
     private String fileName;
-
 
 
     public ServerThread(Socket socket) {
@@ -45,15 +45,14 @@ public class ServerThread implements Runnable {
                     boolean bufferedMode = false; //praeguseks false;
                     if (bufferedMode) {
                         int minutes = dataInputStream.readInt();
-                        fileBytes = bufferAudioBytesFromClient(dataInputStream, minutes*60*88200);
-                    }
-                    else {
+                        fileBytes = bufferAudioBytesFromClient(dataInputStream, minutes * 60 * 88200);
+                    } else {
                         fileBytes = readAudioBytesFromClient(dataInputStream);
                     }
-                    fileSaving(fileName, fileBytes,username);
+                    fileSaving(fileName, fileBytes, username);
                 }
 
-                if (false){
+                if (false) {
                     socket.close();
                     break;
                 }
@@ -72,42 +71,69 @@ public class ServerThread implements Runnable {
         }
     }
 
+    private boolean isFinished(ByteBuffer byteBuffer, int nBytes) {
+        byte[] endBytes = new byte[nBytes];
+        byteBuffer.get(endBytes,byteBuffer.position() - nBytes,nBytes);
+        for (int i = 0; i < nBytes; i++) {
+            if (endBytes[i]!=0)
+                return false;
+        }
+        return true;
+    }
+    private boolean isFinished(byte[] bytes, int nBytes) {
+        byte[] endBytes = new byte[nBytes];
+        for (int i = nBytes-1; i >= 0; i--) {
+            endBytes[i] = bytes[-1-i];
+        }
+        for (int i = 0; i < nBytes; i++) {
+            if (endBytes[i]!=0)
+                return false;
+        }
+        return true;
+    }
+
     //Reads sent audio as bytearray
     private byte[] readAudioBytesFromClient(DataInputStream dataInputStream) throws IOException {
         byte[] buffer = new byte[1024];
         ByteArrayOutputStream byteArrayOut = new ByteArrayOutputStream();
         int len;
-
-        while ((len = dataInputStream.read(buffer, 0, buffer.length)) > 0) {
+        while (true) {
+            len = dataInputStream.read(buffer, 0, buffer.length);
             System.out.println(len);
-            if (len==1) { //TODO: VERY TEMP SOLUTION; check audioCaptureThread
+            if (isFinished(byteArrayOut.toByteArray(),8)) { //TODO: VERY TEMP SOLUTION; check audioCaptureThread
                 break;
             }
             byteArrayOut.write(buffer, 0, len);
         }
-        return byteArrayOut.toByteArray();
+
+        byte[] audioBytes = byteArrayOut.toByteArray();
+        return Arrays.copyOf(audioBytes,audioBytes.length-8);
     }
 
-    private byte[] bufferAudioBytesFromClient(DataInputStream clientInputStream,int byteNumber) throws IOException {
+    private byte[] bufferAudioBytesFromClient(DataInputStream clientInputStream, int byteNumber) throws IOException {
         byte[] buffer = new byte[1024];
         //ByteArrayOutputStream byteArrayOut = new ByteArrayOutputStream();
         ByteBuffer audioByteBuffer = ByteBuffer.allocate(byteNumber);
         int len;
-        while ((len = clientInputStream.read(buffer, 0, buffer.length)) > 0) {
-            if (audioByteBuffer.position()+len > audioByteBuffer.limit()){ //Check if size limit has been reached
+        byte[] audioBytes;
+        while (true) {
+            len = clientInputStream.read(buffer, 0, buffer.length);
+            if (audioByteBuffer.position() + len > audioByteBuffer.limit()) { //Check if size limit has been reached
                 audioByteBuffer.position(1024);                     //Go to position after first 1024 bytes
                 audioByteBuffer.compact();                          //Remove bytes before position
             }
             audioByteBuffer.put(buffer, 0, len);
+            if (isFinished(audioByteBuffer,8)){
+                break;
+            }
         }
-
-        return audioByteBuffer.array();
-
+        audioBytes = audioByteBuffer.array();
+        return Arrays.copyOf(audioBytes,audioBytes.length-8);
     }
 
     //Saves file
     private void fileSaving(String filename, byte[] fileBytes, String username) throws IOException {
-        String serverFilename = "ServerFile_" + filename +".wav";
+        String serverFilename = "ServerFile_" + filename + ".wav";
         LocalDate localDate = LocalDate.now();
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         String directory = dateTimeFormatter.format(localDate);
@@ -121,8 +147,8 @@ public class ServerThread implements Runnable {
 
 
         ByteArrayInputStream bais = new ByteArrayInputStream(fileBytes);
-        AudioFormat audioFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED,44100,  16, 1,2,   44100, true);
-        AudioInputStream ais = new AudioInputStream(bais, audioFormat, fileBytes.length/audioFormat.getFrameSize());
+        AudioFormat audioFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 44100, 16, 1, 2, 44100, true);
+        AudioInputStream ais = new AudioInputStream(bais, audioFormat, fileBytes.length / audioFormat.getFrameSize());
 
         AudioSystem.write(ais, AudioFileFormat.Type.WAVE, newFile);
 
@@ -130,7 +156,7 @@ public class ServerThread implements Runnable {
         System.out.println("File " + filename + " is saved as " + path.getFileName());
     }
 
-    //Checks if file name is unique in this fodler. Adds "(Copyxx)" if needed
+    //Checks if file name is unique in this folder. Adds "(Copyxx)" if needed
     private String fileCheck(String pathString) {
         String pathStringFixed = pathString;
         FilenameFilter filter = (dir, name) -> name.endsWith(".wav");
@@ -138,25 +164,25 @@ public class ServerThread implements Runnable {
         File folder = new File(path.getParent().toString());
         System.out.println(folder);
 
-        File[] filesInFolder=folder.listFiles(filter);
-        if (filesInFolder!=null) {
-            for (File file:filesInFolder) {
-                if (file.getName().equals(path.getFileName().toString())){
-                    if (pathString.charAt(pathString.length()-5)==(')')){
-                        int number2=Character.getNumericValue(pathString.charAt(pathString.length()-6))+1;
-                        int number1=Character.getNumericValue(pathString.charAt(pathString.length()-7));
-                        if (number1==9&&number2==9){
+        File[] filesInFolder = folder.listFiles(filter);
+        if (filesInFolder != null) {
+            for (File file : filesInFolder) {
+                if (file.getName().equals(path.getFileName().toString())) {
+                    if (pathString.charAt(pathString.length() - 5) == (')')) {
+                        int number2 = Character.getNumericValue(pathString.charAt(pathString.length() - 6)) + 1;
+                        int number1 = Character.getNumericValue(pathString.charAt(pathString.length() - 7));
+                        if (number1 == 9 && number2 == 9) {
                             System.out.println("Selle faili nimega copisied on juba 100 tükki.Esimese faili ümbersalvestamine.");
-                            return (pathString.substring(0,(pathString.length()-8))+pathString.substring(pathString.length()-4,pathString.length()));
+                            return (pathString.substring(0, (pathString.length() - 8)) + pathString.substring(pathString.length() - 4, pathString.length()));
                         }
                         if (number2 == 10) {
                             number1 = Character.getNumericValue(pathString.charAt(pathString.length() - 7)) + 1;
                             number2 = 0;
                         }
 
-                        pathStringFixed=pathString.substring(0,(pathString.length()-8))+"("+number1+number2+")"+pathString.substring(pathString.length()-4,pathString.length());
-                    }else{
-                        pathStringFixed=pathString.substring(0,(pathString.length()-4))+"(01)"+pathString.substring(pathString.length()-4,pathString.length());
+                        pathStringFixed = pathString.substring(0, (pathString.length() - 8)) + "(" + number1 + number2 + ")" + pathString.substring(pathString.length() - 4, pathString.length());
+                    } else {
+                        pathStringFixed = pathString.substring(0, (pathString.length() - 4)) + "(01)" + pathString.substring(pathString.length() - 4, pathString.length());
                     }
                     pathStringFixed = fileCheck(pathStringFixed);
                 }
@@ -167,8 +193,6 @@ public class ServerThread implements Runnable {
 
 
     }
-
-
 
 
 }
