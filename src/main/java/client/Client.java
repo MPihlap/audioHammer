@@ -6,6 +6,8 @@ import java.net.Socket;
 import java.util.Scanner;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import server.LoginHandler;
 
 /**
@@ -50,8 +52,16 @@ public class Client {
         captureThread.start();
         System.out.println("hakkas lindistama");
     }
-    public void startBufferedRecording(){
-
+    public void startBufferedRecording()throws IOException{
+        servStream.writeBoolean(true);
+        recordingInfo.add("start");
+        AudioCaptureThread audioCaptureThread = new AudioCaptureThread(new ByteArrayOutputStream(), servStream, recordingInfo);
+        this.captureThread = new Thread(audioCaptureThread);
+        captureThread.start();
+    }
+    public void saveBuffer(int minutes) throws IOException {
+        recordingInfo.add("buffer");
+        servStream.writeInt(minutes);
     }
 
     public void pauseRecording() {

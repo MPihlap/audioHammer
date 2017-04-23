@@ -243,7 +243,11 @@ public class RecordingStage {
         recordingButton.setOnAction((ActionEvent event) -> {
             if (checkBoxLocal.isSelected() || checkBoxCloud.isSelected()) {
                 if (recordingBoolean) {
-                    //TODO stop recording
+                    try {
+                        client.stopRecording();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                     recordingButton.setText("Start");
                     recordingBoolean = false;
                     bufferTimeSlider.setDisable(false);
@@ -263,6 +267,11 @@ public class RecordingStage {
                         int bufferTime= (int) bufferTimeSlider.getValue();
                         System.out.println(bufferTime);
                         //TODO start recording
+                        try {
+                            bufferedRecordingStart();
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
                         timerThread = new TimerThread(timer, time);
                         recordingButton.setText("Stop");
                         bufferTimeSlider.setDisable(true);
@@ -283,7 +292,11 @@ public class RecordingStage {
         });
         lapButton.setOnAction((ActionEvent event) -> {
             //TODO LapAction
-            lapAction();
+            try {
+                lapAction(bufferTimeSlider);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         });
         //Adding nodes to grid
         gridPaneRecording.setVgap(10);
@@ -324,6 +337,10 @@ public class RecordingStage {
         client.startRecording();
         time = System.currentTimeMillis();
     }
+    private void bufferedRecordingStart() throws IOException {
+        client.startBufferedRecording();
+        time = System.currentTimeMillis();
+    }
 
     // Filename check. TODO 1.add all cases that are not allowed in filename. 2.add checking from already existing files.
     private boolean checkFilename(String filename) {
@@ -331,8 +348,8 @@ public class RecordingStage {
     }
 
     //Saves last n minutes of the recording
-    private void lapAction() {
-
+    private void lapAction(Slider bufferedTimeSlider) throws IOException {
+        client.saveBuffer((int) bufferedTimeSlider.getValue());
     }
 
     // Returns to mainStage

@@ -106,7 +106,7 @@ public class ServerThread implements Runnable {
         while (true) {
             len = dataInputStream.read(buffer, 0, buffer.length);
             System.out.println(len);
-            if (isFinished(byteArrayOut.toByteArray(),8)) { //TODO: VERY TEMP SOLUTION; check audioCaptureThread
+            if (isFinished(byteArrayOut.toByteArray(),8)) {
                 break;
             }
             byteArrayOut.write(buffer, 0, len);
