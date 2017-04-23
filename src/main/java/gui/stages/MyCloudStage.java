@@ -63,6 +63,7 @@ class MyCloudStage extends BaseStage {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        myCloudFiles=myCloudFiles.sorted();
         myCloudFilesList.setItems(myCloudFiles);
         System.out.println(myCloudFiles);
         //right-click menu
@@ -284,6 +285,7 @@ class MyCloudStage extends BaseStage {
      */
     private void refreshListView() throws IOException {
         ObservableList<String> myCloudFiles = FXCollections.observableArrayList(myCloudFiles());
+        myCloudFiles=myCloudFiles.sorted();
         myCloudFilesList.setItems(myCloudFiles);
     }
 }

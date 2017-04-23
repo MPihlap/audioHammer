@@ -323,7 +323,6 @@ class RecordingStage extends BaseStage {
         gridPaneRecording.add(bufferTimeSlider, 1, 3, 2, 1);
         gridPaneRecording.add(recordingButton, 0, 4, 1, 1);
         gridPaneRecording.add(lapButton, 1, 4, 1, 1);
-        gridPaneRecording.add(timer, 2, 4, 1, 1);
         gridPaneRecording.add(openCloud, 0, 5, 2, 1);
         gridPaneRecording.add(backToMain, 1, 5, 1, 1);
         return gridPaneRecording;
