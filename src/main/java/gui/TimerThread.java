@@ -77,5 +77,6 @@ public class TimerThread extends Thread implements Runnable {
             }
 
         }
+        Platform.runLater(() -> timer.setText("00:00:00"));
     }
 }

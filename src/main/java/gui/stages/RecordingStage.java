@@ -101,9 +101,8 @@ public class RecordingStage {
                     checkBoxLocal.setDisable(false);
                     filename.setDisable(false);
                     timerThread.setRecordingBoolean(false);
-
                 } else {
-                    if (filename.getText() != null && !filename.getText().equals("") || this.checkFilename(filename.getText())) {
+                    if (filename.getText() != null && !filename.getText().equals("") && this.checkFilename(filename.getText())) {
                         try {
                             client.sendCommand("filename");
                             client.sendCommand(filename.getText());
