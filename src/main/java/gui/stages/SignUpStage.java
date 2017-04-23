@@ -6,27 +6,23 @@ import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
-import javafx.stage.Stage;
 import server.LoginHandler;
 
 import java.io.File;
 import java.io.IOException;
 
 /**
+ * Constructs a Sign-up stage.
  * Created by Helen on 20.04.2017.
  */
-class SignUpStage {
-    private Stage stage;
+class SignUpStage extends BaseStage {
     private Client client;
-
-    void setStage(Stage stage) {
-        this.stage = stage;
-    }
 
     /**
      * Shows SignUp page/stage
      */
-    void showStage() {
+    @Override
+    public void showStage() {
         //Stage settings
         stage.setTitle("AudioHammer");
         int sizeW = 250;
@@ -65,7 +61,6 @@ class SignUpStage {
         passwordsDoNotMatch.setHeaderText(null);
         passwordsDoNotMatch.setContentText("These passwords do not match. Try again.");
 
-
         Alert unfilledFields = new Alert(Alert.AlertType.INFORMATION);
         unfilledFields.setTitle("Empty fields!");
         unfilledFields.setHeaderText(null);
@@ -76,7 +71,9 @@ class SignUpStage {
             if (usernameField.getText().equals("") || passwordFieldFirst.getText().equals("") || passwordFieldConfirm.getText().equals("")) {
                 unfilledFields.showAndWait();
             } else {
-                if (passwordFieldFirst.getText().equals(passwordFieldConfirm.getText())) {
+                if (passwordFieldFirst.getText().length() < 6) {
+                    passwordTooShort.showAndWait();
+                } else if (passwordFieldFirst.getText().equals(passwordFieldConfirm.getText())) {
                     createAccount(usernameField.getText(), passwordFieldFirst.getText());
                 } else {
                     passwordsDoNotMatch.showAndWait();
@@ -86,7 +83,7 @@ class SignUpStage {
         //Back to lon in stage button
         Button backButton = new Button("Back");
         backButton.setOnAction((ActionEvent event) -> {
-            backToLogIn();
+            switchStage(new LogInStage());
         });
         //Adding nodes to grid
         gridPane.setVgap(10);
@@ -106,7 +103,6 @@ class SignUpStage {
         stage.setScene(scene);
         stage.show();
     }
-
 
     /**
      * Tries to create new account and if successful, show alert about successful account creation, it logs in and switches to Main page/stage. Otherwise shows alert with information.
@@ -141,19 +137,7 @@ class SignUpStage {
             throw new RuntimeException(e);
         }
 
-        MainStage mainStage = new MainStage(this.client);
-        mainStage.setStage(stage);
-        mainStage.showStage();
+        switchStage(new MainStage(client));
     }
 
-    //TODO buggy, it breaks LogInStage desgin when returned
-
-    /**
-     * Switches to LogIn page/stage
-     */
-    private void backToLogIn() {
-        LogInStage logInStage = new LogInStage();
-        logInStage.setStage(stage);
-        logInStage.showStage();
-    }
 }

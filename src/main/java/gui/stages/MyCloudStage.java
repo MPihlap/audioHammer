@@ -10,11 +10,11 @@ import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.scene.input.MouseEvent;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,19 +23,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
+ * Constructs a MyCloud stage.
  * Created by Helen on 20.04.2017.
  */
 
-class MyCloudStage {
-    private Stage stage;
+class MyCloudStage extends BaseStage {
     private Client client;
     private FileOperations fileOperations;
     private HashMap<String, String> parentAndFile;
     private ListView<String> myCloudFilesList;
-
-    void setStage(Stage stage) {
-        this.stage = stage;
-    }
 
     MyCloudStage(Client client) {
         this.client = client;
@@ -46,7 +42,8 @@ class MyCloudStage {
     /**
      * Shows MyCloud page/stage
      */
-    void showStage() {
+    @Override
+    public void showStage() {
         //Stage settings
         stage.setTitle("AudioHammer");
         int sizeW = 500;
@@ -90,7 +87,12 @@ class MyCloudStage {
             } else if ((((MenuItem) event.getTarget()).getText()).equals("Download")) {
                 downloadFile(myCloudFilesList.getSelectionModel().getSelectedItem());
             } else {
-                deleteFile(myCloudFilesList.getSelectionModel().getSelectedItem());
+                try {
+                    deleteFile(myCloudFilesList.getSelectionModel().getSelectedItem());
+                } catch (IOException e) {
+                    System.err.println("Error while deleting file");
+                    e.printStackTrace();
+                }
             }
         });
         //Shows right-click menu on left click and hides on left-click
@@ -125,7 +127,7 @@ class MyCloudStage {
         //Back to main stage
         Button backButton = new Button("Back");
         backButton.setOnAction((ActionEvent event) -> {
-            mainStage();
+            switchStage(new MainStage(client));
         });
         //Adding nodes to grid
         gridPane.setVgap(10);
@@ -146,7 +148,7 @@ class MyCloudStage {
      * Makes list of files that user has on server and returns it
      *
      * @return ArrayList<String> with user's files' names. If user does not have any files, returns empty list(not null)
-     * @throws IOException
+     * @throws IOException when error occurs while getting the filenames
      */
     private ArrayList<String> myCloudFiles() throws IOException {
         ArrayList<Path> allFilesWithPath = fileOperations.getAllFiles();
@@ -187,8 +189,13 @@ class MyCloudStage {
         Button saveName = new Button("Confirm");
         saveName.setOnAction((ActionEvent event) -> {
             final String newFilenameString = newFilenameField.getText();
-            if (renameFile(fileName, newFilenameString)) {
-                newFilenameStage.close();
+            try {
+                if (renameFile(fileName, newFilenameString)) {
+                    newFilenameStage.close();
+                }
+            } catch (IOException e) {
+                System.err.println("Error while renaming file");
+                e.printStackTrace();
             }
 
         });
@@ -213,7 +220,7 @@ class MyCloudStage {
      * @param newFilename new filename for the file that will be renamed
      * @return boolean true if filename is changed; false otherwise
      */
-    private boolean renameFile(String oldFilename, String newFilename) {
+    private boolean renameFile(String oldFilename, String newFilename) throws IOException {
         String oldFile = parentAndFile.get(oldFilename) + File.separator + oldFilename;
         if (fileOperations.renameFile(oldFile, newFilename)) {
             Alert success = new Alert(Alert.AlertType.INFORMATION);
@@ -221,7 +228,7 @@ class MyCloudStage {
             success.setHeaderText(null);
             success.setContentText("File succesfully renamed!");
             success.showAndWait();
-            refreshTabel();
+            refreshListView();
             return true;
         } else {
             Alert nameExists = new Alert(Alert.AlertType.INFORMATION);
@@ -238,7 +245,7 @@ class MyCloudStage {
      *
      * @param fileName the filename of the file that will be deleted
      */
-    private void deleteFile(String fileName) {
+    private void deleteFile(String fileName) throws IOException {
         //TODO: ask for confirmation for delete; make list automatically update
 
         String deleteFile = parentAndFile.get(fileName) + File.separator + fileName;
@@ -248,7 +255,7 @@ class MyCloudStage {
         unassignedButton.setHeaderText(null);
         unassignedButton.setContentText("File " + fileName + " succesfully deleted.");
         unassignedButton.showAndWait();
-        refreshTabel();
+        refreshListView();
     }
 
     /**
@@ -269,34 +276,14 @@ class MyCloudStage {
      * @param fileName the filename of the file that will be downloaded
      */
     private void downloadFile(String fileName) {
-        //TODO when fixed, remove alert
-        Alert unassignedButton = new Alert(Alert.AlertType.INFORMATION);
-        unassignedButton.setTitle("Unassigned!");
-        unassignedButton.setHeaderText(null);
-        unassignedButton.setContentText("Sorry. This function is not added yet. It can be used in AudioHammer's next stage.");
-        unassignedButton.showAndWait();
-    }
-
-    /**
-     * Switches to Main page/stage
-     */
-    private void mainStage() {
-        MainStage mainStage = new MainStage(client);
-        mainStage.setStage(stage);
-        mainStage.showStage();
-
+        unassigned();
     }
 
     /**
      * Refreshes Listview list of user serverfiles
      */
-    private void refreshTabel() {
-        ObservableList<String> myCloudFiles;
-        try {
-            myCloudFiles = FXCollections.observableArrayList(myCloudFiles());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    private void refreshListView() throws IOException {
+        ObservableList<String> myCloudFiles = FXCollections.observableArrayList(myCloudFiles());
         myCloudFilesList.setItems(myCloudFiles);
     }
 }

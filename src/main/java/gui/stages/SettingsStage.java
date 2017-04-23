@@ -1,18 +1,13 @@
 package gui.stages;
 
-import javafx.stage.Stage;
-
 /**
+ * Constructs a Settings stage.
  * Created by Helen on 20.04.2017.
  */
 //TODO
-public class SettingsStage {
-    private Stage stage;
+public class SettingsStage extends BaseStage {
+    @Override
+    public void showStage() {
 
-    void setStage(Stage stage) {
-        this.stage = stage;
-    }
-
-    void showStage() {
     }
 }
