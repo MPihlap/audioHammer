@@ -25,24 +25,28 @@ import java.util.HashMap;
 /**
  * Created by Helen on 20.04.2017.
  */
-public class MyCloudStage {
+
+class MyCloudStage {
     private Stage stage;
     private Client client;
     private FileOperations fileOperations;
     private HashMap<String, String> parentAndFile;
     private ListView<String> myCloudFilesList;
 
-    public void setStage(Stage stage) {
+    void setStage(Stage stage) {
         this.stage = stage;
     }
 
-    public MyCloudStage(Client client) {
+    MyCloudStage(Client client) {
         this.client = client;
         this.fileOperations = new FileOperations(client.getUsername());
 
     }
 
-    public void showStage() {
+    /**
+     * Shows MyCloud page/stage
+     */
+    void showStage() {
         //Stage settings
         stage.setTitle("AudioHammer");
         int sizeW = 500;
@@ -93,13 +97,13 @@ public class MyCloudStage {
         myCloudFilesList.addEventHandler(MouseEvent.MOUSE_CLICKED, (MouseEvent e) -> {
             String[] targetInfo = e.getTarget().toString().split("'");
             //If right click on filename
-            if (e.getButton() == MouseButton.SECONDARY && ((targetInfo.length==2 && !targetInfo[1].equals("null")))||(targetInfo.length==1)) {
+            if (e.getButton() == MouseButton.SECONDARY && ((targetInfo.length == 2 && !targetInfo[1].equals("null"))) || (targetInfo.length == 1)) {
                 if (myCloudFilesList.getSelectionModel().getSelectedItem() != null) {
                     cm.show(myCloudFilesList, e.getScreenX(), e.getScreenY());
                 }
                 //If right click on empty space
                 else {
-                    if (targetInfo.length!=1 && (targetInfo[1].equals("null"))) {
+                    if (targetInfo.length != 1 && (targetInfo[1].equals("null"))) {
                         myCloudFilesList.getSelectionModel().clearSelection();
                     }
                 }
@@ -107,7 +111,7 @@ public class MyCloudStage {
             } else {
                 cm.hide();
                 //If left click on empty space
-                if (myCloudFilesList.getSelectionModel().isSelected(myCloudFilesList.getSelectionModel().getSelectedIndex()) && targetInfo.length>=2&&
+                if (myCloudFilesList.getSelectionModel().isSelected(myCloudFilesList.getSelectionModel().getSelectedIndex()) && targetInfo.length >= 2 &&
                         (targetInfo[1].equals("null"))) {
                     myCloudFilesList.getSelectionModel().clearSelection();
                 }
@@ -138,8 +142,12 @@ public class MyCloudStage {
         stage.show();
     }
 
-    //Makes list of files that user has on cloud and returns it. If user does not have any files, return empty list(not null)
-    //TODO: implement empty list (for new accounts)
+    /**
+     * Makes list of files that user has on server and returns it
+     *
+     * @return ArrayList<String> with user's files' names. If user does not have any files, returns empty list(not null)
+     * @throws IOException
+     */
     private ArrayList<String> myCloudFiles() throws IOException {
         ArrayList<Path> allFilesWithPath = fileOperations.getAllFiles();
 
@@ -152,7 +160,11 @@ public class MyCloudStage {
         return new ArrayList<>(parentAndFile.keySet());
     }
 
-    //Asks for new filename
+    /**
+     * Creates popup window that asks for new filename
+     *
+     * @param fileName the old filename of the file that will be renamed
+     */
     private void renameFileStage(String fileName) {
         //New file name popup window
         Stage newFilenameStage = new Stage();
@@ -176,7 +188,6 @@ public class MyCloudStage {
         saveName.setOnAction((ActionEvent event) -> {
             final String newFilenameString = newFilenameField.getText();
             if (renameFile(fileName, newFilenameString)) {
-                //TODO: make list automatically refresh;
                 newFilenameStage.close();
             }
 
@@ -195,19 +206,24 @@ public class MyCloudStage {
         newFilenameStage.showAndWait();
     }
 
-    //Renames file in server
+    /**
+     * Renames file in server
+     *
+     * @param oldFilename current filename of the file that will be renamed
+     * @param newFilename new filename for the file that will be renamed
+     * @return boolean true if filename is changed; false otherwise
+     */
     private boolean renameFile(String oldFilename, String newFilename) {
         String oldFile = parentAndFile.get(oldFilename) + File.separator + oldFilename;
-        if(fileOperations.renameFile(oldFile, newFilename)) {
+        if (fileOperations.renameFile(oldFile, newFilename)) {
             Alert success = new Alert(Alert.AlertType.INFORMATION);
             success.setTitle("Success!");
             success.setHeaderText(null);
             success.setContentText("File succesfully renamed!");
             success.showAndWait();
-            refreshTabel(oldFilename);
+            refreshTabel();
             return true;
-        }
-        else {
+        } else {
             Alert nameExists = new Alert(Alert.AlertType.INFORMATION);
             nameExists.setTitle("Error");
             nameExists.setHeaderText(null);
@@ -217,6 +233,11 @@ public class MyCloudStage {
         }
     }
 
+    /**
+     * Deletes file with given filename from server
+     *
+     * @param fileName the filename of the file that will be deleted
+     */
     private void deleteFile(String fileName) {
         //TODO: ask for confirmation for delete; make list automatically update
 
@@ -227,18 +248,26 @@ public class MyCloudStage {
         unassignedButton.setHeaderText(null);
         unassignedButton.setContentText("File " + fileName + " succesfully deleted.");
         unassignedButton.showAndWait();
-        refreshTabel(fileName);
+        refreshTabel();
     }
 
-    //Allows file listeing
+    /**
+     * Plays recorded file with given name from server
+     *
+     * @param fileName the filename of the file that will be played
+     */
     private void listenFile(String fileName) {
         String listenFile = parentAndFile.get(fileName) + File.separator + fileName;
         new Thread(new PlayExistingFile(listenFile)).start();
 
-        //TODO: works, but maybe add custom media player?
+        //TODO: add custom media player
     }
 
-    //Downloads wawfile.
+    /**
+     * Downloads file with given filename from server into local device. Will be added later
+     *
+     * @param fileName the filename of the file that will be downloaded
+     */
     private void downloadFile(String fileName) {
         //TODO when fixed, remove alert
         Alert unassignedButton = new Alert(Alert.AlertType.INFORMATION);
@@ -248,22 +277,26 @@ public class MyCloudStage {
         unassignedButton.showAndWait();
     }
 
+    /**
+     * Switches to Main page/stage
+     */
     private void mainStage() {
         MainStage mainStage = new MainStage(client);
         mainStage.setStage(stage);
         mainStage.showStage();
 
     }
-    private void refreshTabel(String oldFilename){
+
+    /**
+     * Refreshes Listview list of user serverfiles
+     */
+    private void refreshTabel() {
         ObservableList<String> myCloudFiles;
         try {
             myCloudFiles = FXCollections.observableArrayList(myCloudFiles());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        myCloudFiles.remove(oldFilename);
         myCloudFilesList.setItems(myCloudFiles);
-        System.out.println(myCloudFiles);
-        System.out.println(myCloudFilesList.getItems().toString());
     }
 }

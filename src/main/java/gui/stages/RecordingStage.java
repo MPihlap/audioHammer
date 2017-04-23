@@ -16,22 +16,25 @@ import java.io.IOException;
 /**
  * Created by Helen on 18.04.2017.
  */
-public class RecordingStage {
+class RecordingStage {
     private boolean recordingBoolean;
     private long time;
     private TimerThread timerThread;
     private Stage stage;
     private Client client;
 
-    public RecordingStage(Client client) {
+    RecordingStage(Client client) {
         this.client = client;
     }
 
-    public void setStage(Stage stage) {
+    void setStage(Stage stage) {
         this.stage = stage;
     }
 
-    public void showStage() {
+    /**
+     * Shows recording page/stage
+     */
+    void showStage() {
         stage.setTitle("AudioHammer");
         int sizeW = 500;
         int sizeH = 300;
@@ -64,6 +67,12 @@ public class RecordingStage {
         stage.show();
     }
 
+    /**
+     * Makes recording tab's content as a GridPane
+     *
+     * @param gridPaneRecording the Gridapne on which the tab's content is created
+     * @return Given GridPane with added Nodes
+     */
     private GridPane recordingTab(GridPane gridPaneRecording) {
         //Filename textfield information label
         final Label fileNameLabel = new Label("Insert filename here: ");
@@ -185,6 +194,12 @@ public class RecordingStage {
         return gridPaneRecording;
     }
 
+    /**
+     * Makes buffered recording tab's content as a GridPane
+     *
+     * @param gridPaneRecording the Gridapne on which the tab's content is created
+     * @return Given GridPane with added Nodes
+     */
     private GridPane bufferedRecordingTab(GridPane gridPaneRecording) {
         //Filename textfield information label
         final Label fileNameLabel = new Label("Insert filename here: ");
@@ -228,8 +243,8 @@ public class RecordingStage {
         CheckBox checkBoxLocal = new CheckBox("Local");
         CheckBox checkBoxCloud = new CheckBox("MyCloud");
         //Buffertime slider
-        Label bufferTimeLabel=new Label("Choose buffertime (min): ");
-        Slider bufferTimeSlider=new Slider();
+        Label bufferTimeLabel = new Label("Choose buffertime (min): ");
+        Slider bufferTimeSlider = new Slider();
         bufferTimeSlider.setMin(1);
         bufferTimeSlider.setMax(10);
         bufferTimeSlider.setBlockIncrement(1);
@@ -264,7 +279,7 @@ public class RecordingStage {
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
-                        int bufferTime= (int) bufferTimeSlider.getValue();
+                        int bufferTime = (int) bufferTimeSlider.getValue();
                         System.out.println(bufferTime);
                         //TODO start recording
                         try {
@@ -307,8 +322,8 @@ public class RecordingStage {
         gridPaneRecording.add(saveLocation, 0, 2, 1, 1);
         gridPaneRecording.add(checkBoxLocal, 1, 2, 1, 1);
         gridPaneRecording.add(checkBoxCloud, 2, 2, 1, 1);
-        gridPaneRecording.add (bufferTimeLabel,0,3,1,1);
-        gridPaneRecording.add(bufferTimeSlider,1,3,2,1);
+        gridPaneRecording.add(bufferTimeLabel, 0, 3, 1, 1);
+        gridPaneRecording.add(bufferTimeSlider, 1, 3, 2, 1);
         gridPaneRecording.add(recordingButton, 0, 4, 1, 1);
         gridPaneRecording.add(lapButton, 1, 4, 1, 1);
         gridPaneRecording.add(timer, 2, 4, 1, 1);
@@ -317,7 +332,9 @@ public class RecordingStage {
         return gridPaneRecording;
     }
 
-    // Switches to MyCloud stage
+    /**
+     * Switches to MyCloud page/stage
+     */
     private void myCloudButton() {
         if (recordingBoolean) {
             Alert stillRecordingAlert = new Alert(Alert.AlertType.INFORMATION);
@@ -332,7 +349,11 @@ public class RecordingStage {
         }
     }
 
-    // Starts recording.
+    /**
+     * Starts recording
+     *
+     * @throws IOException from Client class
+     */
     private void recordingStart() throws IOException {
         client.startRecording();
         time = System.currentTimeMillis();
@@ -342,7 +363,13 @@ public class RecordingStage {
         time = System.currentTimeMillis();
     }
 
-    // Filename check. TODO 1.add all cases that are not allowed in filename. 2.add checking from already existing files.
+    /**
+     * Checks if the failname is allowed
+     *
+     * @param filename the filename that was inserted into filename TextField
+     * @return true if filename is suitable; false if it is not
+     */
+    // Filename check. TODO 1.add all cases that are not allowed in filename
     private boolean checkFilename(String filename) {
         return !(filename.contains(")") || filename.contains("(")) && !filename.startsWith(".");
     }
@@ -352,7 +379,9 @@ public class RecordingStage {
         client.saveBuffer();
     }
 
-    // Returns to mainStage
+    /**
+     * Switches to Main page/stage
+     */
     private void mainStage() {
         if (recordingBoolean) {
             Alert stillRecordingAlert = new Alert(Alert.AlertType.INFORMATION);
