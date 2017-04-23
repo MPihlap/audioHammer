@@ -15,15 +15,18 @@ import java.io.IOException;
 /**
  * Created by Helen on 20.04.2017.
  */
-public class SignUpStage {
+class SignUpStage {
     private Stage stage;
     private Client client;
 
-    public void setStage(Stage stage) {
+    void setStage(Stage stage) {
         this.stage = stage;
     }
 
-    public void showStage() {
+    /**
+     * Shows SignUp page/stage
+     */
+    void showStage() {
         //Stage settings
         stage.setTitle("AudioHammer");
         int sizeW = 250;
@@ -75,8 +78,7 @@ public class SignUpStage {
             } else {
                 if (passwordFieldFirst.getText().equals(passwordFieldConfirm.getText())) {
                     createAccount(usernameField.getText(), passwordFieldFirst.getText());
-                }
-                else{
+                } else {
                     passwordsDoNotMatch.showAndWait();
                 }
             }
@@ -105,7 +107,13 @@ public class SignUpStage {
         stage.show();
     }
 
-    //Account creating
+
+    /**
+     * Tries to create new account and if successful, show alert about successful account creation, it logs in and switches to Main page/stage. Otherwise shows alert with information.
+     *
+     * @param username the username that user inserted into new username TextField
+     * @param password the password that user inserted into PasswordField
+     */
     private void createAccount(String username, String password) {
         Alert accountCreated = new Alert(Alert.AlertType.INFORMATION); //TODO use
         accountCreated.setTitle("Success!");
@@ -119,14 +127,13 @@ public class SignUpStage {
 
         //Account creation before mainStage lines
         try {
-            if(LoginHandler.newUserAccount(username, password)) {
+            if (LoginHandler.newUserAccount(username, password)) {
                 accountCreated.showAndWait();
                 this.client = new Client();
                 client.setUsername(username);
                 (new File(System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator + username)).mkdir();
 
-            }
-            else {
+            } else {
                 errorAlert.showAndWait();
                 return;
             }
@@ -139,8 +146,11 @@ public class SignUpStage {
         mainStage.showStage();
     }
 
-    //Back to log in stage
     //TODO buggy, it breaks LogInStage desgin when returned
+
+    /**
+     * Switches to LogIn page/stage
+     */
     private void backToLogIn() {
         LogInStage logInStage = new LogInStage();
         logInStage.setStage(stage);
