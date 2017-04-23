@@ -63,6 +63,7 @@ public class MyCloudStage {
             throw new RuntimeException(e);
         }
         myCloudFilesList.setItems(myCloudFiles);
+        System.out.println(myCloudFiles);
         //right-click menu
         ContextMenu cm = new ContextMenu();
         MenuItem rightClickMIListen = new MenuItem("Listen");
@@ -92,13 +93,13 @@ public class MyCloudStage {
         myCloudFilesList.addEventHandler(MouseEvent.MOUSE_CLICKED, (MouseEvent e) -> {
             String[] targetInfo = e.getTarget().toString().split("'");
             //If right click on filename
-            if (e.getButton() == MouseButton.SECONDARY && (!targetInfo[1].equals("null"))&& targetInfo.length>=2) {
+            if (e.getButton() == MouseButton.SECONDARY && ((targetInfo.length==2 && !targetInfo[1].equals("null")))||(targetInfo.length==1)) {
                 if (myCloudFilesList.getSelectionModel().getSelectedItem() != null) {
                     cm.show(myCloudFilesList, e.getScreenX(), e.getScreenY());
                 }
                 //If right click on empty space
                 else {
-                    if ((targetInfo[1].equals("null"))) {
+                    if (targetInfo.length!=1 && (targetInfo[1].equals("null"))) {
                         myCloudFilesList.getSelectionModel().clearSelection();
                     }
                 }
@@ -203,7 +204,7 @@ public class MyCloudStage {
             success.setHeaderText(null);
             success.setContentText("File succesfully renamed!");
             success.showAndWait();
-            refreshTabel();
+            refreshTabel(oldFilename);
             return true;
         }
         else {
@@ -226,7 +227,7 @@ public class MyCloudStage {
         unassignedButton.setHeaderText(null);
         unassignedButton.setContentText("File " + fileName + " succesfully deleted.");
         unassignedButton.showAndWait();
-        refreshTabel();
+        refreshTabel(fileName);
     }
 
     //Allows file listeing
@@ -235,13 +236,6 @@ public class MyCloudStage {
         new Thread(new PlayExistingFile(listenFile)).start();
 
         //TODO: works, but maybe add custom media player?
-        /**
-        Alert unassignedButton = new Alert(Alert.AlertType.INFORMATION);
-        unassignedButton.setTitle("Unassigned!");
-        unassignedButton.setHeaderText(null);
-        unassignedButton.setContentText("Sorry. This function is not added yet. It can be used in AudioHammer's next stage.");
-        unassignedButton.showAndWait();
-         **/
     }
 
     //Downloads wawfile.
@@ -260,11 +254,16 @@ public class MyCloudStage {
         mainStage.showStage();
 
     }
-    private void refreshTabel(){
+    private void refreshTabel(String oldFilename){
+        ObservableList<String> myCloudFiles;
         try {
-            this.myCloudFilesList.setItems(FXCollections.observableArrayList(myCloudFiles()));
+            myCloudFiles = FXCollections.observableArrayList(myCloudFiles());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        myCloudFiles.remove(oldFilename);
+        myCloudFilesList.setItems(myCloudFiles);
+        System.out.println(myCloudFiles);
+        System.out.println(myCloudFilesList.getItems().toString());
     }
 }
