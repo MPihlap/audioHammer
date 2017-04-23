@@ -15,11 +15,14 @@ import java.io.IOException;
 public class PlayExistingFile implements Runnable, LineListener {
 
     private String fileName;
-
     public PlayExistingFile(String fileName) {
         this.fileName = fileName;
     }
 
+
+    /**
+     *Uses the Clip class to open an audio file and playback audio from there
+     */
     private void runFile() {
         File audioFile = new File(fileName);
         try(AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(audioFile)) {
@@ -31,6 +34,11 @@ public class PlayExistingFile implements Runnable, LineListener {
             throw new RuntimeException(e);
         }
     }
+
+    /**
+     * Could be used in stage 3 to implement custom media player;
+     * @param event
+     */
     @Override
     public void update(LineEvent event) {
         LineEvent.Type type = event.getType();

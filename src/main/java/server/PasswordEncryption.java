@@ -14,7 +14,15 @@ import java.util.Arrays;
  */
 public class PasswordEncryption  {
 
-    public static String passwordEncrypter(String password) throws NoSuchAlgorithmException, InvalidKeySpecException{
+
+    /**
+     * Generates random salt for password and encrypts it with PBKDF2WithHmacSHA1 encryption
+     * @param password Password to be encrypted
+     * @return Encrypted password + salt
+     * @throws NoSuchAlgorithmException
+     * @throws InvalidKeySpecException
+     */
+    static String passwordEncrypter(String password) throws NoSuchAlgorithmException, InvalidKeySpecException{
         char[] passwordAsChars = password.toCharArray();
         byte[] salt = saltGenerator();
         PBEKeySpec spec = new PBEKeySpec(passwordAsChars, salt, 100, 128);
@@ -24,7 +32,10 @@ public class PasswordEncryption  {
     }
 
 
-
+    /**
+     * Generates custom salt for password to be encrypted with; salt is random data that is used as an additional input to a one-way function that "hashes" a password;
+     * @return Randomly generated salt
+     */
     private static byte[] saltGenerator() {
         byte[] salt = new byte[16];
         SecureRandom secureRandom = new SecureRandom();
@@ -33,7 +44,16 @@ public class PasswordEncryption  {
 
     }
 
-    public static boolean passwordCheck(String checkPassword, String storedPassword, String salt) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    /**
+     *
+     * @param checkPassword Password that is inserted upon client login to audioHammer
+     * @param storedPassword Encrypted password that is already stored in user data file;
+     * @param salt random data that storedPassword was encrypted with
+     * @return True, if both checkPassword and storedPassword are equal;
+     * @throws NoSuchAlgorithmException
+     * @throws InvalidKeySpecException
+     */
+    static boolean passwordCheck(String checkPassword, String storedPassword, String salt) throws NoSuchAlgorithmException, InvalidKeySpecException {
         char[] passwordAsChars = checkPassword.toCharArray();
 
         byte[] saltAsBytes = new BigInteger(salt, 16).toByteArray();
