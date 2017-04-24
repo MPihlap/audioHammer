@@ -37,13 +37,13 @@ public class AudioCaptureThread implements Runnable {
         try {
             TargetDataLine microphone = AudioSystem.getTargetDataLine(format);
             microphone.open(format);
-            byte[] recordByteBuffer = new byte[microphone.getBufferSize() / 5];
+            byte[] recordByteBuffer = new byte[microphone.getBufferSize()/5];
             int numBytesRead;
             recordingQueue.take(); //Waits for initial input "start"
             microphone.start();
             try {
                 servStream.writeInt(1);
-                servStream.writeInt(microphone.getBufferSize()/5);
+                servStream.writeInt(recordByteBuffer.length);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -74,6 +74,7 @@ public class AudioCaptureThread implements Runnable {
                 numBytesRead = microphone.read(recordByteBuffer,0,recordByteBuffer.length);
                 captureOutputStream.write(recordByteBuffer,0,numBytesRead);
                 try {
+                    System.out.println(numBytesRead);
                     servStream.writeInt(0);
                     servStream.writeInt(numBytesRead);
                     servStream.write(recordByteBuffer, 0, numBytesRead);
