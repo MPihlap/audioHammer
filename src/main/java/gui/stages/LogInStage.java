@@ -3,7 +3,6 @@ package gui.stages;
 import client.Client;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
@@ -38,6 +37,8 @@ public class LogInStage extends BaseStage {
         stage.setMaxHeight(sizeH);
         stage.setMinHeight(sizeH);
         //Welcome labels
+        Label emptyLabel=new Label(" ");
+        emptyLabel.setFont(Font.font(18));
         Label titleLabel1 = new Label("Welcome to");
         titleLabel1.setFont(Font.font(20));
         Label titleLabel2 = new Label("AUDIOHAMMER");
@@ -83,7 +84,7 @@ public class LogInStage extends BaseStage {
                     } else {
                         MainStage mainStage = new MainStage(client);
                         if (mainStage.isCreated()) {
-                            switchStage(mainStage);
+                            switchPage(mainStage);
                         }
 
                     }
@@ -96,7 +97,7 @@ public class LogInStage extends BaseStage {
         //Sign up button
         Button signUpButton = new Button("Sign up");
         signUpButton.setOnAction((ActionEvent event) -> {
-            switchStage(new SignUpStage());
+            switchPage(new SignUpStage());
         });
         //Offline mode button
         Button offlineMode = new Button("Offline mode");
@@ -108,16 +109,17 @@ public class LogInStage extends BaseStage {
         gridPane.setVgap(10);
         gridPane.setHgap(10);
         gridPane.setPadding(new Insets(10, 10, 5, 10));
-        gridPane.setAlignment(Pos.CENTER);
-        gridPane.add(titleLabel1, 0, 0, 3, 1); //TODO horizontally center
-        gridPane.add(titleLabel2, 0, 1, 3, 1);//TODO horizontally center
-        gridPane.add(offlineMode, 0, 2, 3, 1);
-        gridPane.add(usernameLabel, 0, 3, 1, 1);
-        gridPane.add(userNameField, 0, 4, 3, 1);
-        gridPane.add(passwordLabel, 0, 5, 1, 1);
-        gridPane.add(passwordField, 0, 6, 3, 1);
-        gridPane.add(logInButton, 0, 7, 1, 1);
-        gridPane.add(signUpButton, 1, 7, 1, 1);
+        //gridPane.setAlignment(Pos.CENTER); very buggy
+        gridPane.add(emptyLabel,0,0,3,1);
+        gridPane.add(titleLabel1, 0, 1, 3, 1); //TODO horizontally center
+        gridPane.add(titleLabel2, 0, 2, 3, 1);//TODO horizontally center
+        gridPane.add(offlineMode, 0, 3, 3, 1);
+        gridPane.add(usernameLabel, 0, 4, 1, 1);
+        gridPane.add(userNameField, 0, 5, 3, 1);
+        gridPane.add(passwordLabel, 0, 6, 1, 1);
+        gridPane.add(passwordField, 0, 7, 3, 1);
+        gridPane.add(logInButton, 0, 8, 1, 1);
+        gridPane.add(signUpButton, 1, 8, 1, 1);
         //Last settings and show
         Scene scene = new Scene(gridPane, sizeW, sizeH);
         stage.setScene(scene);

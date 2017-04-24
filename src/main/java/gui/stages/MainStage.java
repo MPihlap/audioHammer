@@ -72,12 +72,12 @@ public class MainStage extends BaseStage {
         //Recording stage button
         Button recordingButton = new Button("Recording");
         recordingButton.setOnAction((ActionEvent event) -> {
-            switchStage(new RecordingStage(client));
+            switchPage(new RecordingStage(client));
         });
         //MyCloud stage button
         Button myCloudButton = new Button("MyCloud");
         myCloudButton.setOnAction((ActionEvent event) -> {
-            switchStage(new MyCloudStage(client));
+            switchPage(new MyCloudStage(client));
         });
         //Settings stage button
         Image imageSettings = new Image(getClass().getClassLoader().getResourceAsStream("settings.png"));
@@ -133,7 +133,7 @@ public class MainStage extends BaseStage {
         Button yesButton = new Button("Yes");
         yesButton.setOnAction((ActionEvent event) -> {
             logoutStage.close();
-            switchStage(new LogInStage());
+            switchPage(new LogInStage());
         });
         //Adding nodes to gridpane
         gridPane.add(information, 0, 0, 2, 1);

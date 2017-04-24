@@ -339,7 +339,7 @@ class RecordingStage extends BaseStage {
             stillRecordingAlert.setContentText("Please stop recording before visiting MyCloud.");
             stillRecordingAlert.showAndWait();
         } else {
-            switchStage(new MyCloudStage(client));
+            switchPage(new MyCloudStage(client));
         }
     }
 
@@ -384,8 +384,7 @@ class RecordingStage extends BaseStage {
             stillRecordingAlert.setContentText("Please stop recording before returing to Main page.");
             stillRecordingAlert.showAndWait();
         } else {
-            switchStage(new MainStage(client));
+            switchPage(new MainStage(client));
         }
     }
 }
-

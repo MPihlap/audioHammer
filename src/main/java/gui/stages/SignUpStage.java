@@ -83,7 +83,7 @@ class SignUpStage extends BaseStage {
         //Back to lon in stage button
         Button backButton = new Button("Back");
         backButton.setOnAction((ActionEvent event) -> {
-            switchStage(new LogInStage());
+            switchPage(new LogInStage());
         });
         //Adding nodes to grid
         gridPane.setVgap(10);
@@ -137,7 +137,7 @@ class SignUpStage extends BaseStage {
             throw new RuntimeException(e);
         }
 
-        switchStage(new MainStage(client));
+        switchPage(new MainStage(client));
     }
 
 }

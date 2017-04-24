@@ -128,7 +128,7 @@ class MyCloudStage extends BaseStage {
         //Back to main stage
         Button backButton = new Button("Back");
         backButton.setOnAction((ActionEvent event) -> {
-            switchStage(new MainStage(client));
+            switchPage(new MainStage(client));
         });
         //Adding nodes to grid
         gridPane.setVgap(10);
@@ -177,6 +177,11 @@ class MyCloudStage extends BaseStage {
         gridPane.setVgap(10);
         gridPane.setHgap(10);
         gridPane.setPadding(new Insets(5, 10, 5, 10));
+        // Rename empty input alert
+        Alert emptyFilename = new Alert(Alert.AlertType.INFORMATION);
+        emptyFilename.setTitle("Empty fileneame!");
+        emptyFilename.setHeaderText(null);
+        emptyFilename.setContentText("Filename cannot be empty.");
         //File name inserting
         Label information = new Label("Insert new filename: ");
         TextField newFilenameField = new TextField();
@@ -190,15 +195,18 @@ class MyCloudStage extends BaseStage {
         Button saveName = new Button("Confirm");
         saveName.setOnAction((ActionEvent event) -> {
             final String newFilenameString = newFilenameField.getText();
-            try {
-                if (renameFile(fileName, newFilenameString)) {
-                    newFilenameStage.close();
+            if (newFilenameString.equals("")){
+                emptyFilename.showAndWait();
+            }else{
+                try {
+                    if (renameFile(fileName, newFilenameString)) {
+                        newFilenameStage.close();
+                    }
+                } catch (IOException e) {
+                    System.err.println("Error while renaming file");
+                    e.printStackTrace();
                 }
-            } catch (IOException e) {
-                System.err.println("Error while renaming file");
-                e.printStackTrace();
             }
-
         });
         //Adding nodes to gridpane
         gridPane.add(information, 0, 0, 2, 1);
