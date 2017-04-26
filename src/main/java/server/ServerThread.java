@@ -62,14 +62,11 @@ public class ServerThread implements Runnable {
 
                 }
 
-                if (false) {
+                if (false) { //Sign out will be added here
                     socket.close();
                     break;
                 }
-
             }
-
-
         } catch (IOException e) {
             throw new RuntimeException(e);
         } finally {
