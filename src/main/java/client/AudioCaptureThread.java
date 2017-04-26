@@ -45,7 +45,7 @@ public class AudioCaptureThread implements Runnable {
                 servStream.writeInt(1);
                 servStream.writeInt(microphone.getBufferSize()/5);
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
 
             while (true){
@@ -96,7 +96,7 @@ public class AudioCaptureThread implements Runnable {
             }
             else {
                 try {
-                    servStream.writeInt(2);
+                    servStream.writeInt(2);  //Tell server we are done recording
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
