@@ -48,11 +48,11 @@ public class ServerThread implements Runnable {
                         int minutes = dataInputStream.readInt();
                         System.out.println("Minutes:" + minutes);
                         while (true) {
+                            fileBytes = bufferAudioBytesFromClient(dataInputStream, minutes * 60 * 88200);
                             isRecording = dataInputStream.readBoolean();
                             if (!isRecording) {
                                 break;
                             }
-                            fileBytes = bufferAudioBytesFromClient(dataInputStream, minutes * 60 * 88200);
                             fileSaving(fileName, fileBytes, username);
                         }
                     } else {
@@ -155,8 +155,12 @@ public class ServerThread implements Runnable {
         int len;
         while (true) {
             type = clientInputStream.readInt();
+            System.out.println("type: "+type);
             if (type == 2) {
                 break;
+            }
+            if (type != 0){
+                throw new RuntimeException("Socket transmission type error. Expected: 0, got: "+type);
             }
             len = clientInputStream.readInt();
             clientInputStream.readFully(buffer, 0, len);

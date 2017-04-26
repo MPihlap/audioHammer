@@ -64,8 +64,11 @@ public class AudioCaptureThread implements Runnable {
                     }
                     if (command.equals("buffer")){
                         try {
+                            System.out.println("In buffer");
                             servStream.writeInt(2); //End of audio transmission.
-                            servStream.writeInt(1); //Start new file
+                            servStream.writeBoolean(true); //Start new file
+                            servStream.writeInt(1);
+                            servStream.writeInt(microphone.getBufferSize()/5);
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -86,7 +89,7 @@ public class AudioCaptureThread implements Runnable {
             if (bufferedMode){
                 try {
                     servStream.writeInt(2); //Tell server we are done recording
-                    servStream.writeInt(2); //Tell server we do not want more files
+                    servStream.writeBoolean(false); //Tell server we do not want more files
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }

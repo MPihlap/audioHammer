@@ -56,7 +56,7 @@ public class Client {
     public void startBufferedRecording(int minutes)throws IOException{
         servStream.writeBoolean(true);
         servStream.writeInt(minutes);
-        servStream.writeBoolean(true);
+        //servStream.writeBoolean(true);
         recordingInfo.add("start");
         AudioCaptureThread audioCaptureThread = new AudioCaptureThread(new ByteArrayOutputStream(), servStream, recordingInfo);
         audioCaptureThread.setBufferedMode(true);
@@ -65,7 +65,7 @@ public class Client {
     }
     public void saveBuffer() throws IOException {
         recordingInfo.add("buffer");
-        servStream.writeBoolean(true);
+        //servStream.writeBoolean(true);
     }
 
     public void pauseRecording() {
