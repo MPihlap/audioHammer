@@ -37,6 +37,7 @@ public class AudioCaptureThread implements Runnable {
         try {
             TargetDataLine microphone = AudioSystem.getTargetDataLine(format);
             microphone.open(format);
+            System.out.println("Buffer size:"+microphone.getBufferSize());
             byte[] recordByteBuffer = new byte[microphone.getBufferSize() / 5];
             int numBytesRead;
             recordingQueue.take(); //Waits for initial input "start"

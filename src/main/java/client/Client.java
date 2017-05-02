@@ -32,8 +32,6 @@ public class Client {
     public void createConnection() throws IOException {
         this.servSocket = new Socket("localhost", 1337);
         this.servStream = new DataOutputStream(servSocket.getOutputStream());
-
-
     }
 
     public void closeConnection() throws IOException {
