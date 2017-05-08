@@ -1,6 +1,7 @@
 package server;
 
 import javax.sound.sampled.*;
+import javax.xml.crypto.Data;
 import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
@@ -31,12 +32,17 @@ public class ServerThread implements Runnable {
     @Override
     public void run() {
         try (InputStream inputStream = socket.getInputStream();
-             DataInputStream dataInputStream = new DataInputStream(inputStream)) {
+             DataInputStream dataInputStream = new DataInputStream(inputStream);
+             DataOutputStream clientOutputStream = new DataOutputStream(socket.getOutputStream())) {
+            username = LoginHandler.getLoginUsername(dataInputStream, clientOutputStream);
+
             while (true) {
                 String command = dataInputStream.readUTF();
+                /*
                 if (command.equals("username")) {           //Get name of current user
-                    username = dataInputStream.readUTF();
+                    this.username = dataInputStream.readUTF();
                 }
+                */
                 if (command.equals("filename")) {           //if filename is entered, start recording
                     fileName = dataInputStream.readUTF();
                     System.out.println(fileName);
@@ -53,11 +59,11 @@ public class ServerThread implements Runnable {
                             if (!isRecording) {
                                 break;
                             }
-                            fileSaving(fileName, fileBytes, username);
+                            fileSaving(fileName, fileBytes, this.username);
                         }
                     } else {
                         fileBytes = readAudioBytesFromClient(dataInputStream);
-                        fileSaving(fileName, fileBytes, username);
+                        fileSaving(fileName, fileBytes, this.username);
                     }
 
                 }
@@ -108,10 +114,11 @@ public class ServerThread implements Runnable {
 
     /**
      * Uses a ByteBuffer to store a certain number of bytes. If buffer is full, bytes from start are disgarded and the
-        buffer is shifted.
+     * buffer is shifted.
+     *
      * @param clientInputStream inputStream to receive bytes
-     * @param byteNumber size of internal ByteBuffer in bytes
-     * @return  ByteBuffer as array
+     * @param byteNumber        size of internal ByteBuffer in bytes
+     * @return ByteBuffer as array
      */
     private byte[] bufferAudioBytesFromClient(DataInputStream clientInputStream, int byteNumber) throws IOException {
         int type = clientInputStream.readInt(); //type of data to follow
@@ -127,12 +134,12 @@ public class ServerThread implements Runnable {
         int len;
         while (true) {
             type = clientInputStream.readInt();
-            System.out.println("type: "+type);
+            System.out.println("type: " + type);
             if (type == 2) {
                 break;
             }
-            if (type != 0){
-                throw new RuntimeException("Socket transmission type error. Expected: 0, got: "+type);
+            if (type != 0) {
+                throw new RuntimeException("Socket transmission type error. Expected: 0, got: " + type);
             }
             len = clientInputStream.readInt();
             clientInputStream.readFully(buffer, 0, len);

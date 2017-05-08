@@ -33,6 +33,7 @@ public class MainStage extends BaseStage {
 
     MainStage(Client client) {
         this.client = client;
+        /*
         try {
             if (!isCreated) {
                 client.createConnection();
@@ -48,6 +49,7 @@ public class MainStage extends BaseStage {
             errorAlert.setContentText("Could not create a connection. Please try again later.");
             errorAlert.showAndWait();
         }
+        */
     }
 
     /**

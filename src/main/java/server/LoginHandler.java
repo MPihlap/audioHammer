@@ -1,9 +1,7 @@
 package server;
 
 import javax.crypto.SecretKeyFactory;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
@@ -14,6 +12,21 @@ import java.util.Scanner;
  * Created by Meelis on 17/04/2017.
  */
 public class LoginHandler {
+
+    public static String getLoginUsername(DataInputStream clientInputStream, DataOutputStream clientOutputStream) throws IOException {
+        while (true) {
+            System.out.println("Waiting for username + password");
+            String username = clientInputStream.readUTF();
+            String password = clientInputStream.readUTF();
+            if (login(username, password)) {
+                clientOutputStream.writeBoolean(true);
+                return username;
+            }
+            else {
+                clientOutputStream.writeBoolean(false);
+            }
+        }
+    }
 
     /**
      *

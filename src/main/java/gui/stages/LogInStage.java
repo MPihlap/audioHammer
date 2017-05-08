@@ -1,6 +1,7 @@
 package gui.stages;
 
 import client.Client;
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -68,34 +69,44 @@ public class LogInStage extends BaseStage {
         wrongUsernameOrPasswordAlert.setContentText("You have inserted an incorrect username and/or password.");
         //Log in button
         Button logInButton = new Button("Log in");
+        this.setClient(); //starts up new client
+
         logInButton.setOnAction((ActionEvent event) -> {
-            this.setClient(); //starts up new client
-
-            if (userNameField.getText().equals("")) {
-                noUsernameAlert.showAndWait();
-            } else if (passwordField.getText().equals("")) {
-                noPasswordAlert.showAndWait();
-            } else {
-                try {
-                    boolean logInBoolean = logInCheck(passwordField.getText(), userNameField.getText());
-                    if (!logInBoolean) {
-                        wrongUsernameOrPasswordAlert.showAndWait();
-                    } else {
-                        MainStage mainStage = new MainStage(client);
-                        if (mainStage.isCreated()) {
+            try {
+                client.createConnection();
+                if (userNameField.getText().equals("")) {
+                    noUsernameAlert.showAndWait();
+                } else if (passwordField.getText().equals("")) {
+                    noPasswordAlert.showAndWait();
+                } else {
+                    try {
+                        boolean logInBoolean = client.sendUsername(userNameField.getText(), passwordField.getText());
+                        System.out.println("Login Boolean: "+logInBoolean);
+                        if (!logInBoolean) {
+                            wrongUsernameOrPasswordAlert.showAndWait();
+                        } else {
+                            client.setUsername(userNameField.getText());
+                            MainStage mainStage = new MainStage(client);
                             switchStage(mainStage);
+
                         }
-
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
                     }
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
 
+                }
+            } catch (IOException e) {
+                connectionError();
             }
         });
         //Sign up button
         Button signUpButton = new Button("Sign up");
         signUpButton.setOnAction((ActionEvent event) -> {
+            try {
+                client.createConnection();
+            } catch (IOException e) {
+                connectionError();
+            }
             switchStage(new SignUpStage());
         });
         //Offline mode button
@@ -122,6 +133,14 @@ public class LogInStage extends BaseStage {
         Scene scene = new Scene(gridPane, sizeW, sizeH);
         stage.setScene(scene);
         stage.show();
+    }
+
+    private void connectionError() {
+        Alert errorAlert = new Alert(Alert.AlertType.INFORMATION); //TODO use
+        errorAlert.setTitle("Error");
+        errorAlert.setHeaderText(null);
+        errorAlert.setContentText("Could not create a connection. Please try again later.");
+        errorAlert.showAndWait();
     }
 
     /**
