@@ -1,19 +1,14 @@
 package server;
 
 import javax.sound.sampled.*;
-import javax.xml.crypto.Data;
 import java.io.*;
 import java.net.Socket;
-import java.net.SocketException;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 
 
 /**
@@ -34,7 +29,13 @@ public class ServerThread implements Runnable {
         try (InputStream inputStream = socket.getInputStream();
              DataInputStream dataInputStream = new DataInputStream(inputStream);
              DataOutputStream clientOutputStream = new DataOutputStream(socket.getOutputStream())) {
-            username = LoginHandler.getLoginUsername(dataInputStream, clientOutputStream);
+            String loginOrSignUp = dataInputStream.readUTF();
+            if (loginOrSignUp.equals("login")) {
+                username = LoginHandler.getLoginUsername(dataInputStream, clientOutputStream);
+            }
+            else {
+                username = LoginHandler.signUp(dataInputStream,clientOutputStream);
+            }
 
             while (true) {
                 String command = dataInputStream.readUTF();

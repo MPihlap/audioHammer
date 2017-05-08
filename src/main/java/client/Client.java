@@ -20,6 +20,9 @@ public class Client {
     public String getUsername() {
         return username;
     }
+    public boolean isSocketCreated(){
+        return servSocket != null;
+    }
 
     public void setUsername(String username) {
         this.username = username;

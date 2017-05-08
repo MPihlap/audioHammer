@@ -1,7 +1,6 @@
 package gui.stages;
 
 import client.Client;
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -80,6 +79,7 @@ public class LogInStage extends BaseStage {
                     noPasswordAlert.showAndWait();
                 } else {
                     try {
+                        client.sendCommand("login");
                         boolean logInBoolean = client.sendUsername(userNameField.getText(), passwordField.getText());
                         System.out.println("Login Boolean: "+logInBoolean);
                         if (!logInBoolean) {
@@ -102,12 +102,19 @@ public class LogInStage extends BaseStage {
         //Sign up button
         Button signUpButton = new Button("Sign up");
         signUpButton.setOnAction((ActionEvent event) -> {
-            try {
-                client.createConnection();
-            } catch (IOException e) {
-                connectionError();
+            if (!client.isSocketCreated()) {
+                try {
+                    client.createConnection();
+                } catch (IOException e) {
+                    connectionError();
+                }
             }
-            switchStage(new SignUpStage());
+            try {
+                client.sendCommand("signup");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            switchStage(new SignUpStage(client));
         });
         //Offline mode button
         Button offlineMode = new Button("Offline mode");

@@ -12,10 +12,20 @@ import java.util.Scanner;
  * Created by Meelis on 17/04/2017.
  */
 public class LoginHandler {
+    public static String signUp(DataInputStream clientInputStream, DataOutputStream clientOutputStream) throws IOException {
+        while (true) {
+            String username = clientInputStream.readUTF();
+            String password = clientInputStream.readUTF();
+            boolean accountCreated = newUserAccount(username, password);
+            clientOutputStream.writeBoolean(accountCreated);
+            if (accountCreated){
+                return username;
+            }
+        }
+    }
 
     public static String getLoginUsername(DataInputStream clientInputStream, DataOutputStream clientOutputStream) throws IOException {
         while (true) {
-            System.out.println("Waiting for username + password");
             String username = clientInputStream.readUTF();
             String password = clientInputStream.readUTF();
             if (login(username, password)) {

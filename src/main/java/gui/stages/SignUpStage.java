@@ -18,6 +18,10 @@ import java.io.IOException;
 class SignUpStage extends BaseStage {
     private Client client;
 
+    public SignUpStage(Client client) {
+        this.client = client;
+    }
+
     /**
      * Shows SignUp page/stage
      */
@@ -123,9 +127,8 @@ class SignUpStage extends BaseStage {
 
         //Account creation before mainStage lines
         try {
-            if (LoginHandler.newUserAccount(username, password)) {
+            if (client.sendUsername(username, password)) {
                 accountCreated.showAndWait();
-                this.client = new Client();
                 client.setUsername(username);
                 (new File(System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator + username)).mkdir();
 
