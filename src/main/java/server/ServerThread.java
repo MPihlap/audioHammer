@@ -29,12 +29,18 @@ public class ServerThread implements Runnable {
         try (InputStream inputStream = socket.getInputStream();
              DataInputStream dataInputStream = new DataInputStream(inputStream);
              DataOutputStream clientOutputStream = new DataOutputStream(socket.getOutputStream())) {
-            String loginOrSignUp = dataInputStream.readUTF();
-            if (loginOrSignUp.equals("login")) {
-                username = LoginHandler.getLoginUsername(dataInputStream, clientOutputStream);
-            }
-            else {
-                username = LoginHandler.signUp(dataInputStream,clientOutputStream);
+            while (true) {
+                String loginOrSignUp = dataInputStream.readUTF();
+                if (loginOrSignUp.equals("login")) {
+                    username = LoginHandler.getLoginUsername(dataInputStream, clientOutputStream);
+                    if (username != null)
+                        break;
+                } else {
+                    username = LoginHandler.signUp(dataInputStream, clientOutputStream);
+                    if (username != null){
+                        break;
+                    }
+                }
             }
 
             while (true) {

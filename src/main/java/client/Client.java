@@ -86,6 +86,7 @@ public class Client {
         System.out.println("finished recording");
     }
     public boolean sendUsername(String username, String password) throws IOException {
+        servOutputStream.writeUTF("username"); // Indicate incoming user info
         servOutputStream.writeUTF(username);
         servOutputStream.writeUTF(password);
         return servInputStream.readBoolean();

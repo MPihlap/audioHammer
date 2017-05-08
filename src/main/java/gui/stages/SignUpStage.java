@@ -87,6 +87,11 @@ class SignUpStage extends BaseStage {
         //Back to lon in stage button
         Button backButton = new Button("Back");
         backButton.setOnAction((ActionEvent event) -> {
+            try {
+                client.sendCommand("cancel");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             switchStage(new LogInStage());
         });
         //Adding nodes to grid

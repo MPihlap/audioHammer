@@ -18,10 +18,10 @@ import java.io.IOException;
  */
 public class LogInStage extends BaseStage {
     private Client client;
-
     private void setClient() {
         this.client = new Client();
     }
+    private boolean isInLoginDialogue = false;
 
     /**
      * Shows LogIn page/stage
@@ -73,6 +73,7 @@ public class LogInStage extends BaseStage {
         logInButton.setOnAction((ActionEvent event) -> {
             try {
                 client.createConnection();
+                isInLoginDialogue = true;
                 if (userNameField.getText().equals("")) {
                     noUsernameAlert.showAndWait();
                 } else if (passwordField.getText().equals("")) {
@@ -81,7 +82,6 @@ public class LogInStage extends BaseStage {
                     try {
                         client.sendCommand("login");
                         boolean logInBoolean = client.sendUsername(userNameField.getText(), passwordField.getText());
-                        System.out.println("Login Boolean: "+logInBoolean);
                         if (!logInBoolean) {
                             wrongUsernameOrPasswordAlert.showAndWait();
                         } else {
@@ -110,6 +110,9 @@ public class LogInStage extends BaseStage {
                 }
             }
             try {
+                if (isInLoginDialogue){
+                    client.sendCommand("cancel");
+                }
                 client.sendCommand("signup");
             } catch (IOException e) {
                 throw new RuntimeException(e);

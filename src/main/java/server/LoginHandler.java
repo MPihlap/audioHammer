@@ -14,26 +14,37 @@ import java.util.Scanner;
 public class LoginHandler {
     public static String signUp(DataInputStream clientInputStream, DataOutputStream clientOutputStream) throws IOException {
         while (true) {
-            String username = clientInputStream.readUTF();
-            String password = clientInputStream.readUTF();
-            boolean accountCreated = newUserAccount(username, password);
-            clientOutputStream.writeBoolean(accountCreated);
-            if (accountCreated){
-                return username;
+            String type = clientInputStream.readUTF();
+            if (type.equals("username")) {
+                String username = clientInputStream.readUTF();
+                String password = clientInputStream.readUTF();
+                boolean accountCreated = newUserAccount(username, password);
+                clientOutputStream.writeBoolean(accountCreated);
+                if (accountCreated) {
+                    return username;
+                }
+            }
+            else {
+                return null;
             }
         }
     }
 
     public static String getLoginUsername(DataInputStream clientInputStream, DataOutputStream clientOutputStream) throws IOException {
         while (true) {
-            String username = clientInputStream.readUTF();
-            String password = clientInputStream.readUTF();
-            if (login(username, password)) {
-                clientOutputStream.writeBoolean(true);
-                return username;
+            String type = clientInputStream.readUTF();
+            if (type.equals("username")) {
+                String username = clientInputStream.readUTF();
+                String password = clientInputStream.readUTF();
+                if (login(username, password)) {
+                    clientOutputStream.writeBoolean(true);
+                    return username;
+                } else {
+                    clientOutputStream.writeBoolean(false);
+                }
             }
             else {
-                clientOutputStream.writeBoolean(false);
+                return null;
             }
         }
     }
