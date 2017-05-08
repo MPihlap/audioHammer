@@ -16,8 +16,6 @@ import java.time.format.DateTimeFormatter;
  */
 public class ServerThread implements Runnable {
     private Socket socket;
-    private String username;
-    private String fileName;
 
 
     public ServerThread(Socket socket) {
@@ -30,54 +28,42 @@ public class ServerThread implements Runnable {
              DataInputStream dataInputStream = new DataInputStream(inputStream);
              DataOutputStream clientOutputStream = new DataOutputStream(socket.getOutputStream())) {
             while (true) {
-                String loginOrSignUp = dataInputStream.readUTF();
-                if (loginOrSignUp.equals("login")) {
-                    username = LoginHandler.getLoginUsername(dataInputStream, clientOutputStream);
-                    if (username != null)
-                        break;
-                } else {
-                    username = LoginHandler.signUp(dataInputStream, clientOutputStream);
-                    if (username != null){
+                String username;
+                username = setUsername(dataInputStream, clientOutputStream);
+                while (true) {
+                    String command = dataInputStream.readUTF();
+                    if (command.equals("logout")) {
                         break;
                     }
-                }
-            }
-
-            while (true) {
-                String command = dataInputStream.readUTF();
-                /*
-                if (command.equals("username")) {           //Get name of current user
-                    this.username = dataInputStream.readUTF();
-                }
-                */
-                if (command.equals("filename")) {           //if filename is entered, start recording
-                    fileName = dataInputStream.readUTF();
-                    System.out.println(fileName);
-                    boolean bufferedMode = dataInputStream.readBoolean(); //Buffered recording or regular recording
-                    System.out.println("Buffer: " + bufferedMode);
-                    byte[] fileBytes;
-                    boolean isRecording;
-                    if (bufferedMode) {
-                        int minutes = dataInputStream.readInt();    //length of recorded buffer
-                        System.out.println("Minutes:" + minutes);
-                        while (true) {
-                            fileBytes = bufferAudioBytesFromClient(dataInputStream, minutes * 60 * 88200);
-                            isRecording = dataInputStream.readBoolean();
-                            if (!isRecording) {
-                                break;
+                    if (command.equals("filename")) {           //if filename is entered, start recording
+                        String fileName = dataInputStream.readUTF();
+                        System.out.println(fileName);
+                        boolean bufferedMode = dataInputStream.readBoolean(); //Buffered recording or regular recording
+                        System.out.println("Buffer: " + bufferedMode);
+                        byte[] fileBytes;
+                        boolean isRecording;
+                        if (bufferedMode) {
+                            int minutes = dataInputStream.readInt();    //length of recorded buffer
+                            System.out.println("Minutes:" + minutes);
+                            while (true) {
+                                fileBytes = bufferAudioBytesFromClient(dataInputStream, minutes * 60 * 88200);
+                                isRecording = dataInputStream.readBoolean();
+                                if (!isRecording) {
+                                    break;
+                                }
+                                fileSaving(fileName, fileBytes, username);
                             }
-                            fileSaving(fileName, fileBytes, this.username);
+                        } else {
+                            fileBytes = readAudioBytesFromClient(dataInputStream);
+                            fileSaving(fileName, fileBytes, username);
                         }
-                    } else {
-                        fileBytes = readAudioBytesFromClient(dataInputStream);
-                        fileSaving(fileName, fileBytes, this.username);
+
                     }
 
-                }
-
-                if (false) { //Sign out will be added here
-                    socket.close();
-                    break;
+                    if (false) { //Sign out will be added here
+                        socket.close();
+                        break;
+                    }
                 }
             }
         } catch (IOException e) {
@@ -89,6 +75,24 @@ public class ServerThread implements Runnable {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    private String setUsername(DataInputStream dataInputStream, DataOutputStream clientOutputStream) throws IOException {
+        String username;
+        while (true) {
+            String loginOrSignUp = dataInputStream.readUTF();
+            if (loginOrSignUp.equals("login")) {
+                username = LoginHandler.getLoginUsername(dataInputStream, clientOutputStream);
+                if (username != null)
+                    break;
+            } else {
+                username = LoginHandler.signUp(dataInputStream, clientOutputStream);
+                if (username != null) {
+                    break;
+                }
+            }
+        }
+        return username;
     }
 
 

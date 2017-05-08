@@ -14,6 +14,8 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
+import java.io.IOException;
+
 /**
  * Constructs a Main stage.
  * Created by Helen on 20.04.2017.
@@ -90,7 +92,11 @@ public class MainStage extends BaseStage {
         //Log out button
         Button logOutButton = new Button("Log out");
         logOutButton.setOnAction((ActionEvent event) -> {
-            logOut();
+            try {
+                logOut();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         });
 
         //Adding nodes to grid
@@ -114,7 +120,7 @@ public class MainStage extends BaseStage {
     /**
      * Logs user out of the application
      */
-    private void logOut() {
+    private void logOut() throws IOException {
         //TODO logout before LogInStage lines
 
         //Logout confirmation
@@ -134,6 +140,11 @@ public class MainStage extends BaseStage {
         });
         Button yesButton = new Button("Yes");
         yesButton.setOnAction((ActionEvent event) -> {
+            try {
+                client.sendCommand("logout");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             logoutStage.close();
             switchStage(new LogInStage());
         });
