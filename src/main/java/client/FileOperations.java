@@ -17,7 +17,6 @@ public class FileOperations{
     private ArrayList<Path> allFilesWithPath = new ArrayList<>();
     private final String path;
 
-
     public FileOperations(String username) {
         this.path = System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator + username;
     }
@@ -114,7 +113,4 @@ public class FileOperations{
         }
         return fileName;
     }
-
-
-
 }

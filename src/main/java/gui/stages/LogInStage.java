@@ -146,7 +146,7 @@ public class LogInStage extends BaseStage {
     }
 
     private void connectionError() {
-        Alert errorAlert = new Alert(Alert.AlertType.INFORMATION); //TODO use
+        Alert errorAlert = new Alert(Alert.AlertType.INFORMATION); //TODO
         errorAlert.setTitle("Error");
         errorAlert.setHeaderText(null);
         errorAlert.setContentText("Could not create a connection. Please try again later.");
