@@ -35,23 +35,6 @@ public class MainStage extends BaseStage {
 
     MainStage(Client client) {
         this.client = client;
-        /*
-        try {
-            if (!isCreated) {
-                client.createConnection();
-                this.isCreated = true;
-                client.sendCommand("username");
-                client.sendCommand(client.getUsername());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            Alert errorAlert = new Alert(Alert.AlertType.INFORMATION); //TODO use
-            errorAlert.setTitle("Error");
-            errorAlert.setHeaderText(null);
-            errorAlert.setContentText("Could not create a connection. Please try again later.");
-            errorAlert.showAndWait();
-        }
-        */
     }
 
     /**
@@ -121,7 +104,6 @@ public class MainStage extends BaseStage {
      * Logs user out of the application
      */
     private void logOut() throws IOException {
-        //TODO logout before LogInStage lines
 
         //Logout confirmation
         Stage logoutStage = new Stage();
@@ -159,7 +141,5 @@ public class MainStage extends BaseStage {
         logoutStage.initModality(Modality.APPLICATION_MODAL);
         logoutStage.setTitle("Log out");
         logoutStage.showAndWait();
-
     }
-
 }
