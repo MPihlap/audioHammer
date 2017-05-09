@@ -1,13 +1,19 @@
 package client;
+
 import java.io.IOException;
 import java.util.Scanner;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
 /**
  * Created by Meelis on 09/05/2017.
  */
 public class CommandLineClient {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
+        BlockingQueue<String> arrayBlockingQueue = new ArrayBlockingQueue<>(5);
         Client client = new Client();
+        ListenGPIO listenGPIO = new ListenGPIO(client, arrayBlockingQueue);
+        new Thread(listenGPIO).start();
         client.createConnection();
         try (Scanner sc = new Scanner(System.in)) {
             String username = loginClient(client, sc);
@@ -30,24 +36,35 @@ public class CommandLineClient {
                                 System.out.println("Please enter an integer");
                             }
                         }
+                        while (true) {
+                            System.out.println("Please press the start button to start recording.");
+                            String take = arrayBlockingQueue.take();
+                            if (take.equals("start"))
+                                break;
+                        }
                         client.startBufferedRecording(minutes);
-                        System.out.println("Enter 'stop' to stop recording");
-                        while (true){
-                            if (sc.nextLine().equals("stop")){
+                        System.out.println("Please press the stop button to stop recording");
+                        while (true) {
+                            if (arrayBlockingQueue.take().equals("stop")) {
                                 client.stopRecording();
                                 break;
                             }
                         }
                         break;
                     } else if (response.equals("R")) {
+                        while (true) {
+                            String take = arrayBlockingQueue.take();
+                            if (take.equals("start"))
+                                break;
+                        }
                         client.startRecording();
-                        while (true){
-                            System.out.println("Enter 'pause' to pause the recording or 'stop' to stop recording");
-                            String input = sc.nextLine();
-                            if (input.equals("pause")){
+                        while (true) {
+                            System.out.println("Press the stop button to stop recording");
+                            String input = arrayBlockingQueue.take();
+                            if (input.equals("pause")) {
                                 client.pauseRecording();
                             }
-                            if (input.equals("stop")){
+                            if (input.equals("stop")) {
                                 client.stopRecording();
                                 break;
                             }
@@ -103,8 +120,7 @@ public class CommandLineClient {
             boolean loginSuccessful = client.sendUsername(username, password);
             if (loginSuccessful) {
                 break;
-            }
-            else {
+            } else {
                 System.out.println("Wrong password!");
             }
         }
