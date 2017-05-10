@@ -15,7 +15,7 @@ public class Client {
     private DataOutputStream servOutputStream;
     private DataInputStream servInputStream;
     private BlockingQueue<String> recordingInfo = new ArrayBlockingQueue<String>(5);
-    Thread captureThread;
+    private Thread captureThread;
 
     public String getUsername() {
         return username;
@@ -46,8 +46,7 @@ public class Client {
     public void startRecording() throws IOException {
         servOutputStream.writeBoolean(false);
         recordingInfo.add("start");
-        AudioCaptureThread audioCaptureThread = new AudioCaptureThread(new ByteArrayOutputStream(), servOutputStream, recordingInfo);
-        audioCaptureThread.setBufferedMode(false);
+        AudioCaptureThread audioCaptureThread = new AudioCaptureThread(new ByteArrayOutputStream(), servOutputStream, recordingInfo, false);
         this.captureThread = new Thread(audioCaptureThread);
         captureThread.start();
         System.out.println("hakkas lindistama");
@@ -56,8 +55,7 @@ public class Client {
         servOutputStream.writeBoolean(true);
         servOutputStream.writeInt(minutes);
         recordingInfo.add("start");
-        AudioCaptureThread audioCaptureThread = new AudioCaptureThread(new ByteArrayOutputStream(), servOutputStream, recordingInfo);
-        audioCaptureThread.setBufferedMode(true);
+        AudioCaptureThread audioCaptureThread = new AudioCaptureThread(new ByteArrayOutputStream(), servOutputStream, recordingInfo, true);
         this.captureThread = new Thread(audioCaptureThread);
         captureThread.start();
     }

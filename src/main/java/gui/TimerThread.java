@@ -7,7 +7,7 @@ import javafx.scene.control.Label;
 /**
  * Created by Helen on 18.04.2017.
  */
-public class TimerThread extends Thread implements Runnable {
+public class TimerThread implements Runnable {
     private Label timer;
     private boolean recordingBoolean;
     private boolean pauseBoolean;
