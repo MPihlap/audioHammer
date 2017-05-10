@@ -39,21 +39,26 @@ public class ListenGPIO implements Runnable{
             startButton.setShutdownOptions(true);
             stopButton.setShutdownOptions(true);
 
+
             // create and register gpio pin listener
             startButton.addListener(new GpioPinListenerDigital() {
                 @Override
                 public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
                     // display pin state on console
                     System.out.println(" --> GPIO PIN STATE CHANGE: " + event.getPin() + " = " + event.getState());
-                    commandQueue.add("start");
+                    if (event.getState() == PinState.HIGH){
+                        commandQueue.add("start");
+                    }
                 }
 
             });
             stopButton.addListener(new GpioPinListenerDigital() {
                 @Override
-                public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent gpioPinDigitalStateChangeEvent) {
-                    commandQueue.add("stop");
-                    System.out.println("Stopped");
+                public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
+                    if (event.getState() == PinState.HIGH) {
+                        commandQueue.add("stop");
+                        System.out.println("Stopped");
+                    }
                 }
             });
 
