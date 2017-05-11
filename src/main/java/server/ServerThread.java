@@ -1,5 +1,7 @@
 package server;
 
+import client.FileOperations;
+
 import javax.sound.sampled.*;
 import java.io.*;
 import java.net.Socket;
@@ -9,6 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 
 
 /**
@@ -16,7 +19,6 @@ import java.time.format.DateTimeFormatter;
  */
 public class ServerThread implements Runnable {
     private Socket socket;
-
 
     public ServerThread(Socket socket) {
         this.socket = socket;
@@ -34,6 +36,31 @@ public class ServerThread implements Runnable {
                     String command = dataInputStream.readUTF();
                     if (command.equals("logout")) {
                         break;
+                    }
+                    if (command.equals("MyCloud")){
+                        FileOperations fileOperations = new FileOperations(username);
+                        ArrayList<Path> allFiles = fileOperations.getAllFiles();
+                        clientOutputStream.writeInt(allFiles.size());
+                        for (Path path : allFiles) {
+                            clientOutputStream.writeUTF(path.toString());
+                        }
+                        while (!(command = dataInputStream.readUTF()).equals("back")){
+                            if (command.equals("Listen")){
+                                //TODO: Implement
+                            }
+                            else if (command.equals("Delete")){
+                                String filename = dataInputStream.readUTF(); //TODO: Implement clientside
+                                fileOperations.deleteFile(filename);
+                            }
+                            else if (command.equals("Download")){
+                                //TODO: Implement
+                            }
+                            else if (command.equals("Rename")){
+                                String oldFileName = dataInputStream.readUTF();
+                                String newFileName = dataInputStream.readUTF();
+                                clientOutputStream.writeBoolean(fileOperations.renameFile(oldFileName,newFileName));
+                            }
+                        }
                     }
                     if (command.equals("filename")) {           //if filename is entered, start recording
                         String fileName = dataInputStream.readUTF();
@@ -165,7 +192,7 @@ public class ServerThread implements Runnable {
 
     //Saves file
     private void fileSaving(String filename, byte[] fileBytes, String username) throws IOException {
-        String serverFilename = "ServerFile_" + filename + ".wav";
+        String serverFilename = filename + ".wav";
         LocalDate localDate = LocalDate.now();
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         String directory = dateTimeFormatter.format(localDate);

@@ -3,6 +3,8 @@ package client;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
@@ -24,6 +26,14 @@ public class Client {
         return servSocket != null;
     }
 
+    public List<String> getAllFilesFromCloud() throws IOException {
+        List<String> allFiles = new ArrayList<>();
+        int nrOfFiles = servInputStream.readInt();
+        for (int i = 0; i < nrOfFiles; i++) {
+            allFiles.add(servInputStream.readUTF());
+        }
+        return allFiles;
+    }
     public void setUsername(String username) {
         this.username = username;
         System.out.println("sain username");
@@ -82,6 +92,16 @@ public class Client {
             throw new RuntimeException(e);
         }
         System.out.println("finished recording");
+    }
+    public boolean renameFile(String oldName,String newName) throws IOException {
+        servOutputStream.writeUTF("Rename");
+        servOutputStream.writeUTF(oldName);
+        servOutputStream.writeUTF(newName);
+        return servInputStream.readBoolean();
+    }
+    public boolean deleteFile(String filename) throws IOException {
+        servOutputStream.writeUTF(filename);
+        return servInputStream.readBoolean();
     }
     public boolean sendUsername(String username, String password) throws IOException {
         servOutputStream.writeUTF("username"); // Indicate incoming user info

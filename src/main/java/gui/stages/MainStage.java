@@ -64,6 +64,11 @@ public class MainStage extends BaseStage {
         //MyCloud stage button
         Button myCloudButton = new Button("MyCloud");
         myCloudButton.setOnAction((ActionEvent event) -> {
+            try {
+                client.sendCommand("MyCloud");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             switchStage(new MyCloudStage(client));
         });
         //Settings stage button
