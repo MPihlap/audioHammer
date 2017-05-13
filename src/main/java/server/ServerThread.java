@@ -29,10 +29,10 @@ public class ServerThread implements Runnable {
         try (InputStream inputStream = socket.getInputStream();
              DataInputStream dataInputStream = new DataInputStream(inputStream);
              DataOutputStream clientOutputStream = new DataOutputStream(socket.getOutputStream())) {
-            while (true) {
+            while (true) { //Login screen loop
                 String username;
                 username = setUsername(dataInputStream, clientOutputStream);
-                while (true) {
+                while (true) { // MainStage loop
                     String command = dataInputStream.readUTF();
                     if (command.equals("logout")) {
                         break;
@@ -44,12 +44,12 @@ public class ServerThread implements Runnable {
                         for (Path path : allFiles) {
                             clientOutputStream.writeUTF(path.toString());
                         }
-                        while (!(command = dataInputStream.readUTF()).equals("back")){
+                        while (!(command = dataInputStream.readUTF()).equals("back")){ //MyCloud loop
                             if (command.equals("Listen")){
                                 //TODO: Implement
                             }
                             else if (command.equals("Delete")){
-                                String filename = dataInputStream.readUTF(); //TODO: Implement clientside
+                                String filename = dataInputStream.readUTF();
                                 fileOperations.deleteFile(filename);
                             }
                             else if (command.equals("Download")){
