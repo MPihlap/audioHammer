@@ -37,7 +37,7 @@ public class PlayExistingFile implements Runnable, LineListener {
 
     /**
      * Could be used in stage 3 to implement custom media player;
-     * @param event
+     * @param event Event could be either start or stop playback
      */
     @Override
     public void update(LineEvent event) {

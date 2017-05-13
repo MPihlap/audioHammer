@@ -17,6 +17,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -86,7 +87,11 @@ class MyCloudStage extends BaseStage {
             } else if ((((MenuItem) event.getTarget()).getText()).equals("Rename")) {
                 renameFileStage(myCloudFilesList.getSelectionModel().getSelectedItem());
             } else if ((((MenuItem) event.getTarget()).getText()).equals("Download")) {
-                downloadFile(myCloudFilesList.getSelectionModel().getSelectedItem());
+                try {
+                    downloadFile(myCloudFilesList.getSelectionModel().getSelectedItem());
+                } catch (IOException e) {
+                    System.err.println("Error while downloading file");
+                }
             } else {
                 try {
                     deleteFile(myCloudFilesList.getSelectionModel().getSelectedItem());
@@ -281,7 +286,9 @@ class MyCloudStage extends BaseStage {
      *
      * @param fileName the filename of the file that will be downloaded
      */
-    private void downloadFile(String fileName) {
+    private void downloadFile(String fileName) throws IOException {
+        String downloadFile = parentAndFile.get(fileName) + File.separator + fileName;
+        client.downloadFile(downloadFile, fileName);
         unassigned();
     }
 

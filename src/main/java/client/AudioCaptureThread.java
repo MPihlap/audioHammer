@@ -23,10 +23,6 @@ public class AudioCaptureThread implements Runnable {
         this.bufferedMode = bufferedMode;
     }
 
-    public ByteArrayOutputStream getCaptureOutputStream() {
-        return captureOutputStream;
-    }
-
     @Override
     public void run() {
         try {

@@ -1,10 +1,8 @@
 package server;
 
-import javax.crypto.SecretKeyFactory;
 import java.io.*;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Arrays;
 import java.util.Scanner;
 
 
@@ -83,7 +81,7 @@ public class LoginHandler {
                 if (userData[0].equals(username)) {
                     String storedPassword = userData[1];
                     String salt = userData[2];
-                    if (PasswordEncryption.passwordCheck(password, storedPassword, salt)) {
+                    if (PasswordHashing.passwordCheck(password, storedPassword, salt)) {
                         return true;
                     }
                     break;
@@ -138,7 +136,7 @@ public class LoginHandler {
         ) {
             isTaken = doesUsernameExist(username, file);
             if (!isTaken) {
-                fileWriter.write(username + ":" + PasswordEncryption.passwordEncrypter(password) + '\n');
+                fileWriter.write(username + ":" + PasswordHashing.passwordHasher(password) + '\n');
                 System.out.println("kirjutasin?");
             }
             else {

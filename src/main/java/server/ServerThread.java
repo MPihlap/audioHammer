@@ -53,7 +53,12 @@ public class ServerThread implements Runnable {
                                 fileOperations.deleteFile(filename);
                             }
                             else if (command.equals("Download")){
-                                //TODO: Implement
+                                String filename = dataInputStream.readUTF();
+                                try {
+                                    fileOperations.downloadFile(filename, clientOutputStream);
+                                } catch (UnsupportedAudioFileException e) {
+                                    //TODO sth
+                                }
                             }
                             else if (command.equals("Rename")){
                                 String oldFileName = dataInputStream.readUTF();
@@ -85,11 +90,6 @@ public class ServerThread implements Runnable {
                             fileSaving(fileName, fileBytes, username);
                         }
 
-                    }
-
-                    if (false) { //Sign out will be added here
-                        socket.close();
-                        break;
                     }
                 }
             }
@@ -146,7 +146,6 @@ public class ServerThread implements Runnable {
             byteArrayOut.write(buffer, 0, len);
         }
 
-        byte[] audioBytes = byteArrayOut.toByteArray();
         return byteArrayOut.toByteArray();
     }
 
@@ -203,14 +202,7 @@ public class ServerThread implements Runnable {
 
         Files.createDirectories(path.getParent());
         File newFile = new File(pathString);
-
-
-        ByteArrayInputStream bais = new ByteArrayInputStream(fileBytes);
-        AudioFormat audioFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 44100, 16, 1, 2, 44100, true);
-        AudioInputStream ais = new AudioInputStream(bais, audioFormat, fileBytes.length / audioFormat.getFrameSize());
-
-        AudioSystem.write(ais, AudioFileFormat.Type.WAVE, newFile);
-
+        FileOperations.createWAV(fileBytes, newFile);
 
         System.out.println("File " + filename + " is saved as " + path.getFileName());
     }
@@ -252,6 +244,8 @@ public class ServerThread implements Runnable {
 
 
     }
+
+
 
 
 }

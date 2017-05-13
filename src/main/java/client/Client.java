@@ -1,8 +1,13 @@
 package client;
 
 
+import server.ServerThread;
+
 import java.io.*;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -18,6 +23,7 @@ public class Client {
     private DataInputStream servInputStream;
     private BlockingQueue<String> recordingInfo = new ArrayBlockingQueue<String>(5);
     private Thread captureThread;
+    private Path downloadPath = Paths.get(System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator + "Downloads");
 
     public String getUsername() {
         return username;
@@ -100,9 +106,44 @@ public class Client {
         return servInputStream.readBoolean();
     }
     public boolean deleteFile(String filename) throws IOException {
+        servOutputStream.writeUTF("Delete");
         servOutputStream.writeUTF(filename);
         return servInputStream.readBoolean();
     }
+
+    public void downloadFile(String filePath, String fileName) throws IOException {
+        servOutputStream.writeUTF("Download");
+        servOutputStream.writeUTF(filePath);
+        long totalFrames = 0;
+        int framesRead;
+        int bytesRead;
+        long fileSize = servInputStream.readLong();
+        int byteSize = servInputStream.readInt();
+        long frameSize = servInputStream.readLong();
+        byte[] buffer = new byte[8192*byteSize];
+
+        System.out.println(fileSize);
+        if(fileSize>0) {
+            Files.createDirectories(downloadPath);
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                while (totalFrames!=frameSize) {
+                    bytesRead = servInputStream.read(buffer);
+                    byteArrayOutputStream.write(buffer, 0, bytesRead);
+                    framesRead = bytesRead/byteSize;
+                    totalFrames+=framesRead;
+                    System.out.println(totalFrames);
+                    if(totalFrames == frameSize) {
+                        System.out.println("File received");
+                        FileOperations.createWAV(byteArrayOutputStream.toByteArray(), new File(downloadPath + File.separator + fileName));
+                        System.out.println("file created");
+                        break;
+                    }
+                }
+        }
+
+    }
+
+
     public boolean sendUsername(String username, String password) throws IOException {
         servOutputStream.writeUTF("username"); // Indicate incoming user info
         servOutputStream.writeUTF(username);
