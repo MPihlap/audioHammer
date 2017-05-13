@@ -14,6 +14,8 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
+import java.io.IOException;
+
 /**
  * Constructs a Main stage.
  * Created by Helen on 20.04.2017.
@@ -33,21 +35,6 @@ public class MainStage extends BaseStage {
 
     MainStage(Client client) {
         this.client = client;
-        try {
-            if (!isCreated) {
-                client.createConnection();
-                this.isCreated = true;
-                client.sendCommand("username");
-                client.sendCommand(client.getUsername());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            Alert errorAlert = new Alert(Alert.AlertType.INFORMATION); //TODO use
-            errorAlert.setTitle("Error");
-            errorAlert.setHeaderText(null);
-            errorAlert.setContentText("Could not create a connection. Please try again later.");
-            errorAlert.showAndWait();
-        }
     }
 
     /**
@@ -77,6 +64,11 @@ public class MainStage extends BaseStage {
         //MyCloud stage button
         Button myCloudButton = new Button("MyCloud");
         myCloudButton.setOnAction((ActionEvent event) -> {
+            try {
+                client.sendCommand("MyCloud");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             switchStage(new MyCloudStage(client));
         });
         //Settings stage button
@@ -88,7 +80,11 @@ public class MainStage extends BaseStage {
         //Log out button
         Button logOutButton = new Button("Log out");
         logOutButton.setOnAction((ActionEvent event) -> {
-            logOut();
+            try {
+                logOut();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         });
 
         //Adding nodes to grid
@@ -112,8 +108,7 @@ public class MainStage extends BaseStage {
     /**
      * Logs user out of the application
      */
-    private void logOut() {
-        //TODO logout before LogInStage lines
+    private void logOut() throws IOException {
 
         //Logout confirmation
         Stage logoutStage = new Stage();
@@ -132,6 +127,11 @@ public class MainStage extends BaseStage {
         });
         Button yesButton = new Button("Yes");
         yesButton.setOnAction((ActionEvent event) -> {
+            try {
+                client.sendCommand("logout");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             logoutStage.close();
             switchStage(new LogInStage());
         });
@@ -146,7 +146,5 @@ public class MainStage extends BaseStage {
         logoutStage.initModality(Modality.APPLICATION_MODAL);
         logoutStage.setTitle("Log out");
         logoutStage.showAndWait();
-
     }
-
 }

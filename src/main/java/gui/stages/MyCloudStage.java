@@ -19,8 +19,10 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Constructs a MyCloud stage.
@@ -29,14 +31,13 @@ import java.util.HashMap;
 
 class MyCloudStage extends BaseStage {
     private Client client;
-    private FileOperations fileOperations;
+    //private FileOperations fileOperations;
     private HashMap<String, String> parentAndFile;
     private ListView<String> myCloudFilesList;
 
     MyCloudStage(Client client) {
         this.client = client;
-        this.fileOperations = new FileOperations(client.getUsername());
-
+        //this.fileOperations = new FileOperations(client.getUsername());
     }
 
     /**
@@ -151,7 +152,12 @@ class MyCloudStage extends BaseStage {
      * @throws IOException when error occurs while getting the filenames
      */
     private ArrayList<String> myCloudFiles() throws IOException {
-        ArrayList<Path> allFilesWithPath = fileOperations.getAllFiles();
+        //ArrayList<Path> allFilesWithPath = fileOperations.getAllFiles();
+        List<String> allFiles = client.getAllFilesFromCloud();
+        ArrayList<Path> allFilesWithPath = new ArrayList<>();
+        for (String path : allFiles) {
+            allFilesWithPath.add(Paths.get(path));
+        }
 
         //this HashMap is meant for making fileOperations easier
         this.parentAndFile = new HashMap<>();
@@ -222,7 +228,7 @@ class MyCloudStage extends BaseStage {
      */
     private boolean renameFile(String oldFilename, String newFilename) throws IOException {
         String oldFile = parentAndFile.get(oldFilename) + File.separator + oldFilename;
-        if (fileOperations.renameFile(oldFile, newFilename)) {
+        if (client.renameFile(oldFile,newFilename)) {
             Alert success = new Alert(Alert.AlertType.INFORMATION);
             success.setTitle("Success!");
             success.setHeaderText(null);
@@ -249,7 +255,7 @@ class MyCloudStage extends BaseStage {
         //TODO: ask for confirmation for delete; make list automatically update
 
         String deleteFile = parentAndFile.get(fileName) + File.separator + fileName;
-        fileOperations.deleteFile(deleteFile);
+        client.deleteFile(deleteFile);
         Alert unassignedButton = new Alert(Alert.AlertType.INFORMATION);
         unassignedButton.setTitle("Success!");
         unassignedButton.setHeaderText(null);

@@ -18,6 +18,10 @@ import java.io.IOException;
 class SignUpStage extends BaseStage {
     private Client client;
 
+    public SignUpStage(Client client) {
+        this.client = client;
+    }
+
     /**
      * Shows SignUp page/stage
      */
@@ -83,6 +87,11 @@ class SignUpStage extends BaseStage {
         //Back to lon in stage button
         Button backButton = new Button("Back");
         backButton.setOnAction((ActionEvent event) -> {
+            try {
+                client.sendCommand("cancel");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             switchStage(new LogInStage());
         });
         //Adding nodes to grid
@@ -123,9 +132,8 @@ class SignUpStage extends BaseStage {
 
         //Account creation before mainStage lines
         try {
-            if (LoginHandler.newUserAccount(username, password)) {
+            if (client.sendUsername(username, password)) {
                 accountCreated.showAndWait();
-                this.client = new Client();
                 client.setUsername(username);
                 (new File(System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator + username)).mkdir();
 

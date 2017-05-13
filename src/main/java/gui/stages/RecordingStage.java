@@ -150,7 +150,7 @@ class RecordingStage extends BaseStage {
                         checkBoxCloud.setDisable(true);
                         checkBoxLocal.setDisable(true);
                         filename.setDisable(true);
-                        timerThread.start();
+                        new Thread(timerThread).start();
                     } else {
                         noFilenameAlert.showAndWait();
                     }
@@ -293,7 +293,7 @@ class RecordingStage extends BaseStage {
                         checkBoxCloud.setDisable(true);
                         checkBoxLocal.setDisable(true);
                         filename.setDisable(true);
-                        timerThread.start();
+                        new Thread(timerThread).start();
                     } else {
                         noFilenameAlert.showAndWait();
                     }

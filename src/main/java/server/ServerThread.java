@@ -1,18 +1,17 @@
 package server;
 
+import client.FileOperations;
+
 import javax.sound.sampled.*;
 import java.io.*;
 import java.net.Socket;
-import java.net.SocketException;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
+import java.util.ArrayList;
 
 
 /**
@@ -20,9 +19,6 @@ import java.util.Arrays;
  */
 public class ServerThread implements Runnable {
     private Socket socket;
-    private String username;
-    private String fileName;
-
 
     public ServerThread(Socket socket) {
         this.socket = socket;
@@ -31,40 +27,70 @@ public class ServerThread implements Runnable {
     @Override
     public void run() {
         try (InputStream inputStream = socket.getInputStream();
-             DataInputStream dataInputStream = new DataInputStream(inputStream)) {
-            while (true) {
-                String command = dataInputStream.readUTF();
-                if (command.equals("username")) {           //Get name of current user
-                    username = dataInputStream.readUTF();
-                }
-                if (command.equals("filename")) {           //if filename is entered, start recording
-                    fileName = dataInputStream.readUTF();
-                    System.out.println(fileName);
-                    boolean bufferedMode = dataInputStream.readBoolean(); //Buffered recording or regular recording
-                    System.out.println("Buffer: " + bufferedMode);
-                    byte[] fileBytes;
-                    boolean isRecording;
-                    if (bufferedMode) {
-                        int minutes = dataInputStream.readInt();    //length of recorded buffer
-                        System.out.println("Minutes:" + minutes);
-                        while (true) {
-                            fileBytes = bufferAudioBytesFromClient(dataInputStream, minutes * 60 * 88200);
-                            isRecording = dataInputStream.readBoolean();
-                            if (!isRecording) {
-                                break;
+             DataInputStream dataInputStream = new DataInputStream(inputStream);
+             DataOutputStream clientOutputStream = new DataOutputStream(socket.getOutputStream())) {
+            while (true) { //Login screen loop
+                String username;
+                username = setUsername(dataInputStream, clientOutputStream);
+                while (true) { // MainStage loop
+                    String command = dataInputStream.readUTF();
+                    if (command.equals("logout")) {
+                        break;
+                    }
+                    if (command.equals("MyCloud")){
+                        FileOperations fileOperations = new FileOperations(username);
+                        ArrayList<Path> allFiles = fileOperations.getAllFiles();
+                        clientOutputStream.writeInt(allFiles.size());
+                        for (Path path : allFiles) {
+                            clientOutputStream.writeUTF(path.toString());
+                        }
+                        while (!(command = dataInputStream.readUTF()).equals("back")){ //MyCloud loop
+                            if (command.equals("Listen")){
+                                //TODO: Implement
                             }
+                            else if (command.equals("Delete")){
+                                String filename = dataInputStream.readUTF();
+                                fileOperations.deleteFile(filename);
+                            }
+                            else if (command.equals("Download")){
+                                //TODO: Implement
+                            }
+                            else if (command.equals("Rename")){
+                                String oldFileName = dataInputStream.readUTF();
+                                String newFileName = dataInputStream.readUTF();
+                                clientOutputStream.writeBoolean(fileOperations.renameFile(oldFileName,newFileName));
+                            }
+                        }
+                    }
+                    if (command.equals("filename")) {           //if filename is entered, start recording
+                        String fileName = dataInputStream.readUTF();
+                        System.out.println(fileName);
+                        boolean bufferedMode = dataInputStream.readBoolean(); //Buffered recording or regular recording
+                        System.out.println("Buffer: " + bufferedMode);
+                        byte[] fileBytes;
+                        boolean isRecording;
+                        if (bufferedMode) {
+                            int minutes = dataInputStream.readInt();    //length of recorded buffer
+                            System.out.println("Minutes:" + minutes);
+                            while (true) {
+                                fileBytes = bufferAudioBytesFromClient(dataInputStream, minutes * 60 * 88200);
+                                isRecording = dataInputStream.readBoolean();
+                                if (!isRecording) {
+                                    break;
+                                }
+                                fileSaving(fileName, fileBytes, username);
+                            }
+                        } else {
+                            fileBytes = readAudioBytesFromClient(dataInputStream);
                             fileSaving(fileName, fileBytes, username);
                         }
-                    } else {
-                        fileBytes = readAudioBytesFromClient(dataInputStream);
-                        fileSaving(fileName, fileBytes, username);
+
                     }
 
-                }
-
-                if (false) { //Sign out will be added here
-                    socket.close();
-                    break;
+                    if (false) { //Sign out will be added here
+                        socket.close();
+                        break;
+                    }
                 }
             }
         } catch (IOException e) {
@@ -76,6 +102,24 @@ public class ServerThread implements Runnable {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    private String setUsername(DataInputStream dataInputStream, DataOutputStream clientOutputStream) throws IOException {
+        String username;
+        while (true) {
+            String loginOrSignUp = dataInputStream.readUTF();
+            if (loginOrSignUp.equals("login")) {
+                username = LoginHandler.getLoginUsername(dataInputStream, clientOutputStream);
+                if (username != null)
+                    break;
+            } else {
+                username = LoginHandler.signUp(dataInputStream, clientOutputStream);
+                if (username != null) {
+                    break;
+                }
+            }
+        }
+        return username;
     }
 
 
@@ -108,10 +152,11 @@ public class ServerThread implements Runnable {
 
     /**
      * Uses a ByteBuffer to store a certain number of bytes. If buffer is full, bytes from start are disgarded and the
-        buffer is shifted.
+     * buffer is shifted.
+     *
      * @param clientInputStream inputStream to receive bytes
-     * @param byteNumber size of internal ByteBuffer in bytes
-     * @return  ByteBuffer as array
+     * @param byteNumber        size of internal ByteBuffer in bytes
+     * @return ByteBuffer as array
      */
     private byte[] bufferAudioBytesFromClient(DataInputStream clientInputStream, int byteNumber) throws IOException {
         int type = clientInputStream.readInt(); //type of data to follow
@@ -127,12 +172,12 @@ public class ServerThread implements Runnable {
         int len;
         while (true) {
             type = clientInputStream.readInt();
-            System.out.println("type: "+type);
+            System.out.println("type: " + type);
             if (type == 2) {
                 break;
             }
-            if (type != 0){
-                throw new RuntimeException("Socket transmission type error. Expected: 0, got: "+type);
+            if (type != 0) {
+                throw new RuntimeException("Socket transmission type error. Expected: 0, got: " + type);
             }
             len = clientInputStream.readInt();
             clientInputStream.readFully(buffer, 0, len);
@@ -147,7 +192,7 @@ public class ServerThread implements Runnable {
 
     //Saves file
     private void fileSaving(String filename, byte[] fileBytes, String username) throws IOException {
-        String serverFilename = "ServerFile_" + filename + ".wav";
+        String serverFilename = filename + ".wav";
         LocalDate localDate = LocalDate.now();
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         String directory = dateTimeFormatter.format(localDate);
