@@ -64,6 +64,10 @@ public class ServerThread implements Runnable {
                 username = setUsername(dataInputStream, clientOutputStream);
                 while (true) { // MainStage loop
                     String command = dataInputStream.readUTF();
+                    if(command.equals("pwChange")) {
+                        String password = dataInputStream.readUTF();
+                        clientOutputStream.writeBoolean(LoginHandler.changePassword(username, password));
+                    }
                     if (command.equals("logout")) {
                         break;
                     }

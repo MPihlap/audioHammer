@@ -91,9 +91,32 @@ public class LoginHandler {
             throw new RuntimeException(e);
         }
         return false;
+    }
+    public static boolean changePassword(String username, String password) throws IOException {
+        String tempFile = "src/resources/UserInfo.temp";
+        String userpath = "src/resources/UserInfo.txt";
+
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(userpath));
+             BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(tempFile))) {
+                String userLine;
+                while ((userLine = bufferedReader.readLine()) != null) {
+                    String[] userData = userLine.split(":");
+                    if (!userData[0].equals(username)) {
+                        bufferedWriter.write(userLine);
+                        bufferedWriter.newLine();
+                    }
+                }
+                bufferedWriter.write(username + ":" +  PasswordHashing.passwordHasher(password));
+                bufferedWriter.newLine();
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            return false;
+        }
+        File oldFile = new File(userpath);
+        oldFile.delete();
+        new File(tempFile).renameTo(oldFile);
+        return true;
 
     }
-
     /**
      *
      * @param username Username of client
@@ -132,12 +155,13 @@ public class LoginHandler {
         String userpath = "src/resources/UserInfo.txt";
         File file = new File(userpath);
 
-        try (FileWriter fileWriter = new FileWriter(file, true)
+        try (BufferedWriter fileWriter = new BufferedWriter(new FileWriter(file, true))
         ) {
             isTaken = doesUsernameExist(username, file);
             if (!isTaken) {
-                fileWriter.write(username + ":" + PasswordHashing.passwordHasher(password) + '\n');
-                System.out.println("kirjutasin?");
+
+                fileWriter.write(username + ":" + PasswordHashing.passwordHasher(password));
+                fileWriter.newLine();
             }
             else {
                 return false;
