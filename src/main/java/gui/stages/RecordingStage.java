@@ -81,6 +81,11 @@ class RecordingStage extends BaseStage {
             if (recordingBoolean){
                 stillRecording();
             }else{
+                try {
+                    client.sendCommand("MyCloud");
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
                 switchStage(new MyCloudStage(client));
             }
         });
@@ -228,6 +233,11 @@ class RecordingStage extends BaseStage {
             if (recordingBoolean){
                 stillRecording();
             }else{
+                try {
+                    client.sendCommand("back");
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
                 switchStage(new MainStage(client));
             }
         });

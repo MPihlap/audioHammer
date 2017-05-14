@@ -58,6 +58,11 @@ public class MainStage extends BaseStage {
         //Recording stage button
         Button recordingButton = new Button("Recording");
         recordingButton.setOnAction((ActionEvent event) -> {
+            try {
+                client.sendCommand("Recording");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             switchStage(new RecordingStage(client));
         });
         //MyCloud stage button

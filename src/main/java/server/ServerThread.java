@@ -74,29 +74,41 @@ public class ServerThread implements Runnable {
                     if (command.equals("MyCloud")){
                         handleMyCloud(username,dataInputStream,clientOutputStream);
                     }
-                    if (command.equals("filename")) {           //if filename is entered, start recording
-                        String fileName = dataInputStream.readUTF();
-                        System.out.println(fileName);
-                        boolean bufferedMode = dataInputStream.readBoolean(); //Buffered recording or regular recording
-                        System.out.println("Buffer: " + bufferedMode);
-                        byte[] fileBytes;
-                        boolean isRecording;
-                        if (bufferedMode) {
-                            int minutes = dataInputStream.readInt();    //length of recorded buffer
-                            System.out.println("Minutes:" + minutes);
-                            while (true) {
-                                fileBytes = bufferAudioBytesFromClient(dataInputStream, minutes * 60 * 88200);
-                                isRecording = dataInputStream.readBoolean();
-                                if (!isRecording) {
-                                    break;
-                                }
-                                fileSaving(fileName, fileBytes, username);
+                    if (command.equals("Recording")) { //if filename is entered, start recording
+                        while (true) {
+                            command = dataInputStream.readUTF();
+                            if (command.equals("MyCloud")){
+                                handleMyCloud(username,dataInputStream,clientOutputStream);
                             }
-                        } else {
-                            fileBytes = readAudioBytesFromClient(dataInputStream);
-                            fileSaving(fileName, fileBytes, username);
-                        }
+                            if (command.equals("back")){
+                                break;
+                            }
+                            if (command.equals("filename")) {
+                                String fileName = dataInputStream.readUTF();
+                                System.out.println(fileName);
+                                boolean bufferedMode = dataInputStream.readBoolean(); //Buffered recording or regular recording
+                                System.out.println("Buffer: " + bufferedMode);
+                                byte[] fileBytes;
+                                boolean isRecording;
+                                if (bufferedMode) {
+                                    int minutes = dataInputStream.readInt();    //length of recorded buffer
+                                    System.out.println("Minutes:" + minutes);
+                                    while (true) {
+                                        fileBytes = bufferAudioBytesFromClient(dataInputStream, minutes * 60 * 88200);
+                                        isRecording = dataInputStream.readBoolean();
+                                        if (!isRecording) {
+                                            break;
+                                        }
+                                        fileSaving(fileName, fileBytes, username);
+                                    }
+                                } else {
+                                    fileBytes = readAudioBytesFromClient(dataInputStream);
+                                    fileSaving(fileName, fileBytes, username);
+                                }
 
+                            }
+
+                        }
                     }
                 }
             }
