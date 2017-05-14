@@ -155,6 +155,11 @@ class MyCloudStage extends BaseStage {
         //Back to main stage
         Button backButton = new Button("Back");
         backButton.setOnAction((ActionEvent event) -> {
+            try {
+                client.sendCommand("back");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             switchStage(new MainStage(client));
         });
         //Adding nodes to grid

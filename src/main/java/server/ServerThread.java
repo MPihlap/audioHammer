@@ -51,7 +51,6 @@ public class ServerThread implements Runnable {
                                 System.out.println("Läksin DL (servThread)");
                                 String filename = dataInputStream.readUTF(); //receives filepath
                                 System.out.println(FileOperations.sendFile(filename, clientOutputStream));
-
                             }
                             else if (command.equals("Rename")){
                                 String oldFileName = dataInputStream.readUTF();
