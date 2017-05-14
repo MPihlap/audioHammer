@@ -77,11 +77,22 @@ class RecordingStage extends BaseStage {
         //Button which switch to MyCloud window
         Button openCloud = new Button("MyCloud");
         openCloud.setMinWidth(100);
-        openCloud.setOnAction(event -> myCloudButton());
+        openCloud.setOnAction((ActionEvent event) -> {
+            if (recordingBoolean){
+                stillRecording();
+            }else{
+                switchStage(new MyCloudStage(client));
+            }
+        });
+
         //Back to main stage button
         Button backToMain = new Button("Back");
         backToMain.setOnAction((ActionEvent event) -> {
-            mainStage();
+            if (recordingBoolean){
+                stillRecording();
+            }else{
+                switchStage(new MainStage(client));
+            }
         });
         backToMain.setMinWidth(100);
         //Recording timer (format hh:mm:ss:msms)
@@ -204,11 +215,21 @@ class RecordingStage extends BaseStage {
         //Button which switch to MyCloud window
         Button openCloud = new Button("MyCloud");
         openCloud.setMinWidth(100);
-        openCloud.setOnAction(event -> myCloudButton());
+        openCloud.setOnAction((ActionEvent event) -> {
+            if (recordingBoolean){
+                stillRecording();
+            }else{
+                switchStage(new MyCloudStage(client));
+            }
+        });
         //Back to main stage button
         Button backToMain = new Button("Back");
         backToMain.setOnAction((ActionEvent event) -> {
-            mainStage();
+            if (recordingBoolean){
+                stillRecording();
+            }else{
+                switchStage(new MainStage(client));
+            }
         });
         backToMain.setMinWidth(100);
         //Recording Pause-Resume button
@@ -330,21 +351,6 @@ class RecordingStage extends BaseStage {
     }
 
     /**
-     * Switches to MyCloud page/stage
-     */
-    private void myCloudButton() {
-        if (recordingBoolean) {
-            Alert stillRecordingAlert = new Alert(Alert.AlertType.INFORMATION);
-            stillRecordingAlert.setTitle("Still recording!");
-            stillRecordingAlert.setHeaderText(null);
-            stillRecordingAlert.setContentText("Please stop recording before visiting MyCloud.");
-            stillRecordingAlert.showAndWait();
-        } else {
-            switchStage(new MyCloudStage(client));
-        }
-    }
-
-    /**
      * Starts recording
      *
      * @throws IOException from Client class
@@ -353,6 +359,7 @@ class RecordingStage extends BaseStage {
         client.startRecording();
         time = System.currentTimeMillis();
     }
+
     private void bufferedRecordingStart(int minutes) throws IOException {
         client.startBufferedRecording(minutes);
         time = System.currentTimeMillis();
@@ -375,18 +382,15 @@ class RecordingStage extends BaseStage {
     }
 
     /**
-     * Switches to Main page/stage
+     * Shows alert if it\s still recording
      */
-    private void mainStage() {
-        if (recordingBoolean) {
-            Alert stillRecordingAlert = new Alert(Alert.AlertType.INFORMATION);
-            stillRecordingAlert.setTitle("Still recording!");
-            stillRecordingAlert.setHeaderText(null);
-            stillRecordingAlert.setContentText("Please stop recording before returing to Main page.");
-            stillRecordingAlert.showAndWait();
-        } else {
-            switchStage(new MainStage(client));
-        }
+
+    private void stillRecording() {
+        Alert stillRecordingAlert = new Alert(Alert.AlertType.INFORMATION);
+        stillRecordingAlert.setTitle("Still recording!");
+        stillRecordingAlert.setHeaderText(null);
+        stillRecordingAlert.setContentText("Please stop recording before switching the page.");
+        stillRecordingAlert.showAndWait();
     }
 }
 
