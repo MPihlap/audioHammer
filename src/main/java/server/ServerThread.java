@@ -59,6 +59,12 @@ public class ServerThread implements Runnable {
                                 clientOutputStream.writeBoolean(fileOperations.renameFile(oldFileName,newFileName));
                                 writeAllFilesToClient(clientOutputStream, fileOperations);
                             }
+                            else if(command.equals("Data")) {
+                                String filePath = dataInputStream.readUTF();
+                                String[] data = fileOperations.getFileData(filePath);
+                                clientOutputStream.writeUTF(data[0]);
+                                clientOutputStream.writeUTF(data[1]);
+                            }
                         }
                     }
                     if (command.equals("filename")) {           //if filename is entered, start recording
