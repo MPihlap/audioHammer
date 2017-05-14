@@ -38,24 +38,21 @@ public class ServerThread implements Runnable {
                     if (command.equals("logout")) {
                         break;
                     }
-                    if (command.equals("MyCloud")){
+                    if (command.equals("MyCloud")) {
                         FileOperations fileOperations = new FileOperations(username);
                         sendFilenamesToClient(clientOutputStream, fileOperations);
-                        while (!(command = dataInputStream.readUTF()).equals("back")){ //MyCloud loop
-                            if (command.equals("Listen")){
+                        while (!(command = dataInputStream.readUTF()).equals("back")) { //MyCloud loop
+                            if (command.equals("Listen")) {
                                 //TODO: Implement
-                            }
-                            else if (command.equals("Delete")){
+                            } else if (command.equals("Delete")) {
                                 String filename = dataInputStream.readUTF();
                                 fileOperations.deleteFile(filename);
-                            }
-                            else if (command.equals("Download")){
+                            } else if (command.equals("Download")) {
                                 //TODO: Implement
-                            }
-                            else if (command.equals("Rename")){
+                            } else if (command.equals("Rename")) {
                                 String oldFileName = dataInputStream.readUTF();
                                 String newFileName = dataInputStream.readUTF();
-                                clientOutputStream.writeBoolean(fileOperations.renameFile(oldFileName,newFileName));
+                                clientOutputStream.writeBoolean(fileOperations.renameFile(oldFileName, newFileName));
                                 sendFilenamesToClient(clientOutputStream, fileOperations);
                             }
                         }
@@ -77,10 +74,12 @@ public class ServerThread implements Runnable {
                                 if (!isRecording) {
                                     break;
                                 }
+                                saveByteArrayToFile(fileName,username,fileBytes,audioFormat.getSampleRate(),
+                                        audioFormat.getSampleSizeInBits(),audioFormat.getChannels());
                                 fileSaving(fileName, fileBytes, username);
                             }
                         } else {
-                            readAudioBytesToFile(dataInputStream,username,fileName);
+                            readAudioBytesToFile(dataInputStream, username, fileName,audioFormat);
                             fileBytes = readAudioBytesFromClient(dataInputStream);
                             fileSaving(fileName, fileBytes, username);
                         }
@@ -103,24 +102,27 @@ public class ServerThread implements Runnable {
             }
         }
     }
-    private void saveByteArrayToFile(String filename, String username, byte[] bytes) throws IOException {
+
+    private void saveByteArrayToFile(String filename, String username, byte[] bytes, float sampleRate, int sampleSize, int channels) throws IOException {
         String pathString = getFilePath(filename, username);
         System.out.println(pathString);
         pathString = fileCheck(pathString);
         Path path = Paths.get(pathString);
         Files.createDirectories(path.getParent());
         File newFile = new File(pathString);
-        try (DataOutputStream dataOutputStream = new DataOutputStream(new FileOutputStream(newFile))){
+        try (DataOutputStream dataOutputStream = new DataOutputStream(new FileOutputStream(newFile))) {
             dataOutputStream.write(bytes);
+            writeFooter(dataOutputStream, sampleRate, sampleSize, channels, bytes.length);
         }
     }
+
     private AudioFormat readFormat(DataInputStream dataInputStream) throws IOException {
         float sampleRate = dataInputStream.readFloat();
         int sampleSize = dataInputStream.readInt();
         int channels = dataInputStream.readInt();
         boolean signed = dataInputStream.readBoolean();
         boolean bigEndian = dataInputStream.readBoolean();
-        return new AudioFormat(sampleRate,sampleSize,channels,signed,bigEndian);
+        return new AudioFormat(sampleRate, sampleSize, channels, signed, bigEndian);
     }
 
     private void sendFilenamesToClient(DataOutputStream clientOutputStream, FileOperations fileOperations) throws IOException {
@@ -149,7 +151,7 @@ public class ServerThread implements Runnable {
         return username;
     }
 
-    private void readAudioBytesToFile(DataInputStream dataInputStream, String username, String filename) throws IOException {
+    private void readAudioBytesToFile(DataInputStream dataInputStream, String username, String filename, AudioFormat audioFormat) throws IOException {
         String pathString = getFilePath(filename, username);
         System.out.println(pathString);
         pathString = fileCheck(pathString);
@@ -157,42 +159,42 @@ public class ServerThread implements Runnable {
 
         Files.createDirectories(path.getParent());
         File newFile = new File(pathString);
-        try (DataOutputStream fileOutputStream = new DataOutputStream(new FileOutputStream(newFile))){
+        try (DataOutputStream fileOutputStream = new DataOutputStream(new FileOutputStream(newFile))) {
             int type = dataInputStream.readInt(); // type of data to follow
             byte[] buffer;
-            float sampleRate;
-            int sampleSize;
-            int channels;
-            boolean signed;
-            boolean bigEndian;
+            float sampleRate = audioFormat.getSampleRate();
+            int sampleSize = audioFormat.getSampleSizeInBits();
+            int channels = audioFormat.getChannels();
             if (type == 1) {
                 buffer = new byte[dataInputStream.readInt()];
-                sampleRate = dataInputStream.readFloat();
-                sampleSize = dataInputStream.readInt();
-                channels = dataInputStream.readInt();
-                signed = dataInputStream.readBoolean();
-                bigEndian = dataInputStream.readBoolean();
+
             } else {
                 throw new RuntimeException("Socket Transmission type error: " + type);
             }
             int bytesRead;
-            while (true){
+            int totalBytesRead = 0;
+            while (true) {
                 type = dataInputStream.readInt();
-                if (type == 2){
+                if (type == 2) {
                     break;
                 }
                 bytesRead = dataInputStream.readInt();
-                dataInputStream.readFully(buffer,0,bytesRead);
-                fileOutputStream.write(buffer,0,bytesRead);
+                dataInputStream.readFully(buffer, 0, bytesRead);
+                fileOutputStream.write(buffer, 0, bytesRead);
+                totalBytesRead += bytesRead;
             }
-            fileOutputStream.writeFloat(sampleRate); // 4 bytes
-            fileOutputStream.writeInt(sampleSize); // 4 bytes
-            fileOutputStream.writeInt(channels); // 4 bytes
-            fileOutputStream.writeBoolean(signed); // 1 byte
-            fileOutputStream.writeBoolean(bigEndian); // 1 byte
-                                                        // = 14 bytes
+            writeFooter(fileOutputStream, sampleRate, sampleSize, channels, totalBytesRead); //16 bytes
+
         }
     }
+
+    private void writeFooter(DataOutputStream fileOutputStream, float sampleRate, int sampleSize, int channels, int totalBytesRead) throws IOException {
+        fileOutputStream.writeFloat(sampleRate); // 4 bytes
+        fileOutputStream.writeInt(sampleSize); // 4 bytes
+        fileOutputStream.writeInt(channels); // 4 bytes
+        fileOutputStream.writeInt(totalBytesRead); // 4 bytes
+    }
+
     //Reads sent audio as bytearray
     private byte[] readAudioBytesFromClient(DataInputStream dataInputStream) throws IOException {
         int type = dataInputStream.readInt(); // type of data to follow
@@ -218,6 +220,7 @@ public class ServerThread implements Runnable {
 
         return byteArrayOut.toByteArray();
     }
+
     /**
      * Uses a ByteBuffer to store a certain number of bytes. If buffer is full, bytes from start are disgarded and the
      * buffer is shifted.
