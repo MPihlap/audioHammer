@@ -107,7 +107,6 @@ class MyCloudStage extends BaseStage {
         //Shows right-click menu on left click and hides on left-click
         myCloudFilesList.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
 
-        /**
             //get and set info about selected file
             String fileData;
             try {
@@ -121,7 +120,8 @@ class MyCloudStage extends BaseStage {
                     ((Label) node).setText(fileData);
                 }
             }
-        **/
+
+
             //If right click on filename
             String[] targetInfo = e.getTarget().toString().split("'");
             if (e.getButton() == MouseButton.SECONDARY && ((targetInfo.length == 2 && !targetInfo[1].equals("null"))) || (targetInfo.length == 1)) {
@@ -289,6 +289,15 @@ class MyCloudStage extends BaseStage {
         unassignedButton.setContentText("File " + fileName + " succesfully deleted.");
         unassignedButton.showAndWait();
         refreshListView();
+    }
+
+    private String getFileData(String fileName) throws IOException { //TODO implement into GUI
+        String filePath = parentAndFile.get(fileName) + File.separator + fileName;
+        String[] fileData = client.getFileData(filePath);
+
+        return "Last modified: " + fileData[0] + "; Length: " + fileData[1] + "s";
+
+
     }
 
     /**

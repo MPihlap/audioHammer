@@ -49,8 +49,7 @@ public class FileOperations {
         System.out.println("Jõudsin aga siia");
         System.out.println(oldFilename + " " + newFilename);
         System.out.println(Paths.get(oldFilename).getParent() + File.separator + newFilename + ".wav");
-        return ((new File(oldFilename).renameTo(new File(Paths.get(oldFilename).getParent() + File.separator + newFilename + ".wav"))));
-        /**
+        //return ((new File(oldFilename).renameTo(new File(Paths.get(oldFilename).getParent() + File.separator + newFilename + ".wav"))));
         try {
             Files.move(new File(oldFilename).toPath(), new File(oldFilename).toPath().resolveSibling(newFilename + ".wav"));
             return true;
@@ -58,7 +57,6 @@ public class FileOperations {
             System.out.println(e);
             return false;
         }
-         **/
     }
 
     //deletes file
@@ -110,9 +108,11 @@ public class FileOperations {
             format = audioInputStream.getFormat();
             frames = audioInputStream.getFrameLength();
             length = String.valueOf((frames) / format.getFrameRate()); //gets length of file in seconds
+            audioInputStream.close();
         } catch (UnsupportedAudioFileException e) {
             length = "Not available";
         }
+
         return new String[]{mod.toString(), length};
     }
 
