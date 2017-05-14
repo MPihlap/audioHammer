@@ -181,6 +181,7 @@ class MyCloudStage extends BaseStage {
     private void renameFileStage(String fileName) {
         //New file name popup window
         Stage newFilenameStage = new Stage();
+        newFilenameStage.setResizable(false);
         FlowPane newFilename = new FlowPane();
         newFilename.setStyle("-fx-padding: 10px");
         GridPane gridPane = new GridPane();
@@ -257,7 +258,7 @@ class MyCloudStage extends BaseStage {
      * @param fileName the filename of the file that will be deleted
      */
     private void deleteFile(String fileName) throws IOException {
-        //TODO: ask for confirmation for delete; make list automatically update
+        //TODO: ask for confirmation for delete
 
         String deleteFile = parentAndFile.get(fileName) + File.separator + fileName;
         client.deleteFile(deleteFile);

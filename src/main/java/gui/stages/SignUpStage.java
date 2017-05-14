@@ -5,6 +5,7 @@ import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.GridPane;
 import server.LoginHandler;
 
@@ -82,6 +83,22 @@ class SignUpStage extends BaseStage {
                 } else {
                     passwordsDoNotMatch.showAndWait();
                 }
+            }
+        });
+        // Enter for username and password fields
+        usernameField.setOnKeyPressed(event -> {
+            if (event.getCode().equals(KeyCode.ENTER)){
+                createAccountButton.fire();
+            }
+        });
+        passwordFieldFirst.setOnKeyPressed(event -> {
+            if (event.getCode().equals(KeyCode.ENTER)){
+                createAccountButton.fire();
+            }
+        });
+        passwordFieldConfirm.setOnKeyPressed(event -> {
+            if (event.getCode().equals(KeyCode.ENTER)){
+                createAccountButton.fire();
             }
         });
         //Back to lon in stage button

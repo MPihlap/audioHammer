@@ -4,7 +4,6 @@ import client.Client;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -75,7 +74,7 @@ public class MainStage extends BaseStage {
         Image imageSettings = new Image(getClass().getClassLoader().getResourceAsStream("settings.png"));
         Button settingsButton = new Button("", new ImageView(imageSettings));
         settingsButton.setOnAction((ActionEvent event) -> {
-            unassigned();
+            switchStage(new SettingsStage(client));
         });
         //Log out button
         Button logOutButton = new Button("Log out");

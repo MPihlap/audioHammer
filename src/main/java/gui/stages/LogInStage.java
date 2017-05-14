@@ -2,10 +2,13 @@ package gui.stages;
 
 import client.Client;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Font;
 import server.LoginHandler;
@@ -47,6 +50,7 @@ public class LogInStage extends BaseStage {
         TextField userNameField = new TextField();
         userNameField.setPromptText("Username");
         userNameField.setMaxWidth(sizeW - 35);
+
         Label passwordLabel = new Label("Password: ");
         PasswordField passwordField = new PasswordField();
         passwordField.setPromptText("Password");
@@ -97,6 +101,17 @@ public class LogInStage extends BaseStage {
                 }
             } catch (IOException e) {
                 connectionError();
+            }
+        });
+        //Enter for username and Password fields
+        userNameField.setOnKeyPressed(event -> {
+            if (event.getCode().equals(KeyCode.ENTER)){
+                logInButton.fire();
+            }
+        });
+        passwordField.setOnKeyPressed(event -> {
+            if (event.getCode().equals(KeyCode.ENTER)){
+                logInButton.fire();
             }
         });
         //Sign up button
