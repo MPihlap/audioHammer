@@ -53,12 +53,10 @@ public class ServerThread implements Runnable {
                                 fileOperations.deleteFile(filename);
                             }
                             else if (command.equals("Download")){
+                                System.out.println("Läksin DL (servThread)");
                                 String filename = dataInputStream.readUTF();
-                                try {
-                                    fileOperations.downloadFile(filename, clientOutputStream);
-                                } catch (UnsupportedAudioFileException e) {
-                                    //TODO sth
-                                }
+                                System.out.println(FileOperations.sendFile(filename, clientOutputStream));
+
                             }
                             else if (command.equals("Rename")){
                                 String oldFileName = dataInputStream.readUTF();

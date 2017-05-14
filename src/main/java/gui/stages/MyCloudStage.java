@@ -289,7 +289,6 @@ class MyCloudStage extends BaseStage {
     private void downloadFile(String fileName) throws IOException {
         String downloadFile = parentAndFile.get(fileName) + File.separator + fileName;
         client.downloadFile(downloadFile, fileName);
-        unassigned();
     }
 
     /**

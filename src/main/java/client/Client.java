@@ -114,6 +114,8 @@ public class Client {
     public void downloadFile(String filePath, String fileName) throws IOException {
         servOutputStream.writeUTF("Download");
         servOutputStream.writeUTF(filePath);
+        System.out.println(FileOperations.receiveFile(fileName,servInputStream));
+        /**
         long totalFrames = 0;
         int framesRead;
         int bytesRead;
@@ -139,7 +141,9 @@ public class Client {
                         break;
                     }
                 }
+
         }
+         */
 
     }
 

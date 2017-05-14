@@ -57,61 +57,92 @@ public class FileOperations {
     }
 
     /**
-    public byte[] readWAV(String filePath) throws IOException {
-        byte[] audioBytes;
-        File file = new File(filePath);
-        try (ByteArrayOutputStream out = new ByteArrayOutputStream();
-             BufferedInputStream in = new BufferedInputStream(new FileInputStream(file))) {
-            int read;
-            byte[] buff = new byte[1024];
-            while ((read = in.read(buff)) > 0) {
-                out.write(buff, 0, read);
-            }
-            audioBytes = out.toByteArray();
-        }
-        return audioBytes;
-    }
-
-    public void sendWAV(byte[] fileBytes, DataOutputStream dataOutputStream) throws IOException {
-        long lengthAudioBytes = fileBytes.length;
-            dataOutputStream.writeLong(lengthAudioBytes);
-            dataOutputStream.write(fileBytes);
-
-
-    }
-
+     * public byte[] readWAV(String filePath) throws IOException {
+     * byte[] audioBytes;
+     * File file = new File(filePath);
+     * try (ByteArrayOutputStream out = new ByteArrayOutputStream();
+     * BufferedInputStream in = new BufferedInputStream(new FileInputStream(file))) {
+     * int read;
+     * byte[] buff = new byte[1024];
+     * while ((read = in.read(buff)) > 0) {
+     * out.write(buff, 0, read);
+     * }
+     * audioBytes = out.toByteArray();
+     * }
+     * return audioBytes;
+     * }
+     * <p>
+     * public void sendWAV(byte[] fileBytes, DataOutputStream dataOutputStream) throws IOException {
+     * long lengthAudioBytes = fileBytes.length;
+     * dataOutputStream.writeLong(lengthAudioBytes);
+     * dataOutputStream.write(fileBytes);
+     * <p>
+     * <p>
+     * }
      **/
+    public static boolean sendFile(String filename, DataOutputStream dataOutputStream) throws IOException {
+        System.out.println("in sendFile");
+        File file = new File(filename);
+        long size = file.length();
+        dataOutputStream.writeLong(size);
+        int bytesRead;
+        byte[] buffer = new byte[1024];
+        try (FileInputStream fileInputStream = new FileInputStream(file)) {
+            while ((bytesRead = fileInputStream.read(buffer, 0, buffer.length)) > 0) {
+                dataOutputStream.write(buffer, 0, bytesRead);
+            }
+        }
+        return true;
+    }
+
+    public static boolean receiveFile(String filename, DataInputStream dataInputStream) {
+        System.out.println("In rcv file");
+        try {
+            long fileSize = dataInputStream.readLong();
+            byte[] buffer = new byte[1024];
+            long totalBytesRead = 0;
+            try (FileOutputStream fileOutputStream = new FileOutputStream("C:\\Users\\Meelis\\AudioHammer\\Downloads\\test.wav")) {
+                while (totalBytesRead < fileSize) {
+                    int bytesRead = dataInputStream.read(buffer, 0, buffer.length);
+                    totalBytesRead += bytesRead;
+                    fileOutputStream.write(buffer, 0, bytesRead);
+                }
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return true;
+    }
+
     public boolean downloadFile(String filename, DataOutputStream dataOutputStream) throws IOException, UnsupportedAudioFileException {
         long totalFramesRead = 0;
         int framesRead;
         int bytesRead;
         long fileSize = new File(filename).length();
-        long bytesSent=0;
+        long bytesSent = 0;
         System.out.println(fileSize);
         AudioFormat audioFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 44100, 16, 1, 2, 44100, true);
 
 
-
-
         try (AudioInputStream inputStream = AudioSystem.getAudioInputStream(new File(filename))) {
             int bytesPerFrame = inputStream.getFormat().getFrameSize();
-            byte[] buffer = new byte[8192*bytesPerFrame];
+            byte[] buffer = new byte[8192 * bytesPerFrame];
             dataOutputStream.writeLong(fileSize);
             dataOutputStream.writeInt(bytesPerFrame);
             dataOutputStream.writeLong(inputStream.getFrameLength());
             System.out.println(inputStream.getFrameLength());
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            while (totalFramesRead!=inputStream.getFrameLength()) {
+            while (totalFramesRead != inputStream.getFrameLength()) {
                 bytesRead = inputStream.read(buffer);
                 dataOutputStream.write(buffer, 0, bytesRead);
                 byteArrayOutputStream.write(buffer);
-                framesRead = bytesRead/bytesPerFrame;
-                totalFramesRead +=framesRead;
+                framesRead = bytesRead / bytesPerFrame;
+                totalFramesRead += framesRead;
                 System.out.println(totalFramesRead);
             }
             byteArrayOutputStream.flush();
             byte[] a = byteArrayOutputStream.toByteArray();
-            createWAV(a, new File("C:\\Users\\Alo\\AudioHammer\\Downloads\\test.wav"));
+            createWAV(a, new File("C:\\Users\\Meelis\\AudioHammer\\Downloads\\test.wav"));
             byteArrayOutputStream.close();
             System.out.println("läbi");
             return true;
