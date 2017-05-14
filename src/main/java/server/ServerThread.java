@@ -2,6 +2,7 @@ package server;
 
 import client.FileOperations;
 
+import javax.xml.crypto.Data;
 import java.io.*;
 import java.net.Socket;
 import java.nio.ByteBuffer;
@@ -22,7 +23,37 @@ public class ServerThread implements Runnable {
     public ServerThread(Socket socket) {
         this.socket = socket;
     }
-
+    private void handleMyCloud(String username, DataInputStream dataInputStream, DataOutputStream clientOutputStream) throws IOException {
+        FileOperations fileOperations = new FileOperations(username);
+        writeAllFilesToClient(clientOutputStream, fileOperations);
+        String command;
+        while (!(command = dataInputStream.readUTF()).equals("back")){ //MyCloud loop
+            if (command.equals("Listen")){
+                //TODO: Implement
+            }
+            else if (command.equals("Delete")){
+                String filename = dataInputStream.readUTF();
+                fileOperations.deleteFile(filename);
+            }
+            else if (command.equals("Download")){
+                System.out.println("Läksin DL (servThread)");
+                String filename = dataInputStream.readUTF(); //receives filepath
+                System.out.println(FileOperations.sendFile(filename, clientOutputStream));
+            }
+            else if (command.equals("Rename")){
+                String oldFileName = dataInputStream.readUTF();
+                String newFileName = dataInputStream.readUTF();
+                clientOutputStream.writeBoolean(fileOperations.renameFile(oldFileName,newFileName));
+                writeAllFilesToClient(clientOutputStream, fileOperations);
+            }
+            else if(command.equals("Data")) {
+                String filePath = dataInputStream.readUTF();
+                String[] data = fileOperations.getFileData(filePath);
+                clientOutputStream.writeUTF(data[0]);
+                clientOutputStream.writeUTF(data[1]);
+            }
+        }
+    }
     @Override
     public void run() {
         try (InputStream inputStream = socket.getInputStream();
@@ -37,34 +68,7 @@ public class ServerThread implements Runnable {
                         break;
                     }
                     if (command.equals("MyCloud")){
-                        FileOperations fileOperations = new FileOperations(username);
-                        writeAllFilesToClient(clientOutputStream, fileOperations);
-                        while (!(command = dataInputStream.readUTF()).equals("back")){ //MyCloud loop
-                            if (command.equals("Listen")){
-                                //TODO: Implement
-                            }
-                            else if (command.equals("Delete")){
-                                String filename = dataInputStream.readUTF();
-                                fileOperations.deleteFile(filename);
-                            }
-                            else if (command.equals("Download")){
-                                System.out.println("Läksin DL (servThread)");
-                                String filename = dataInputStream.readUTF(); //receives filepath
-                                System.out.println(FileOperations.sendFile(filename, clientOutputStream));
-                            }
-                            else if (command.equals("Rename")){
-                                String oldFileName = dataInputStream.readUTF();
-                                String newFileName = dataInputStream.readUTF();
-                                clientOutputStream.writeBoolean(fileOperations.renameFile(oldFileName,newFileName));
-                                writeAllFilesToClient(clientOutputStream, fileOperations);
-                            }
-                            else if(command.equals("Data")) {
-                                String filePath = dataInputStream.readUTF();
-                                String[] data = fileOperations.getFileData(filePath);
-                                clientOutputStream.writeUTF(data[0]);
-                                clientOutputStream.writeUTF(data[1]);
-                            }
-                        }
+                        handleMyCloud(username,dataInputStream,clientOutputStream);
                     }
                     if (command.equals("filename")) {           //if filename is entered, start recording
                         String fileName = dataInputStream.readUTF();
