@@ -47,39 +47,40 @@ public class SettingsStage extends BaseStage {
         });
 
         //Directory chooser Local
-        Label informationDirectoryLocal=new Label("Local recorded files destination:");
-        TextField directoryLocalSaves=new TextField();
+        Label informationDirectoryLocal = new Label("Local recorded files destination:");
+        TextField directoryLocalSaves = new TextField();
         directoryLocalSaves.setPromptText("No directory chosen"); //TODO võib panna hetkel valitud kasuta, aga see tuleb siis kuskilt infost fetchida. Sellisel juhul mitte PromptText vaid lihtsalt .setText
-        Button chooseDirectoryLocalSaves= new Button("...");
-        chooseDirectoryLocalSaves.setOnAction((ActionEvent event)->{
-            String directoryString=directoriChooser();
+        Button chooseDirectoryLocalSaves = new Button("...");
+        chooseDirectoryLocalSaves.setOnAction((ActionEvent event) -> {
+            String directoryString = directoriChooser();
             directoryLocalSaves.setText(directoryString);
         });
         //Directory choose download
-        Label informationDirectoryDownload=new Label("Downloaded files destination:");
-        TextField directoryDownload=new TextField();
+        Label informationDirectoryDownload = new Label("Downloaded files destination:");
+        TextField directoryDownload = new TextField();
         directoryDownload.setPromptText("No directory chosen"); //TODO võib panna hetkel valitud kasuta, aga see tuleb siis kuskilt infost fetchida. Sellisel juhul mitte PromptText vaid lihtsalt .setTex
-        Button chooseDirectoryDownload= new Button("...");
-        chooseDirectoryDownload.setOnAction((ActionEvent event)->{
-            String directoryString=directoriChooser();
-            directoryLocalSaves.setText(directoryString);
+        Button chooseDirectoryDownload = new Button("...");
+        chooseDirectoryDownload.setOnAction((ActionEvent event) -> {
+            String directoryString = directoriChooser();
+            directoryDownload.setText(directoryString);
+            
         });
         Button back = new Button("Back");
         back.setOnAction((ActionEvent event) -> { //TODO salvesta valitud kasutad jm vajalik
-            String localPath=directoryLocalSaves.getText();
-            String downloadPath=directoryDownload.getText();
+            String localPath = directoryLocalSaves.getText();
+            String downloadPath = directoryDownload.getText();
             switchStage(new MainStage(client));
         });
         gridPane.setVgap(10);
         gridPane.setHgap(10);
         gridPane.setPadding(new Insets(5, 10, 5, 10));
         gridPane.add(baseLabel, 0, 0, 2, 1);
-        gridPane.add(informationDirectoryLocal,0,1,2,1);
-        gridPane.add(directoryLocalSaves,0,2,1,1);
+        gridPane.add(informationDirectoryLocal, 0, 1, 2, 1);
+        gridPane.add(directoryLocalSaves, 0, 2, 1, 1);
         gridPane.add(chooseDirectoryLocalSaves, 1, 2, 1, 1);
-        gridPane.add(informationDirectoryDownload,0,3,2,1);
-        gridPane.add(directoryDownload,0,4,1,1);
-        gridPane.add(chooseDirectoryDownload,1,4,1,1);
+        gridPane.add(informationDirectoryDownload, 0, 3, 2, 1);
+        gridPane.add(directoryDownload, 0, 4, 1, 1);
+        gridPane.add(chooseDirectoryDownload, 1, 4, 1, 1);
         gridPane.add(changePassword, 0, 6, 1, 1);
         gridPane.add(back, 0, 7, 1, 1);
 
@@ -91,8 +92,12 @@ public class SettingsStage extends BaseStage {
 
     private String directoriChooser() {
         DirectoryChooser directoryChooser = new DirectoryChooser();
-        File selectedDirectory= directoryChooser.showDialog(stage);
-        return selectedDirectory.getAbsolutePath();
+        File selectedDirectory = directoryChooser.showDialog(stage);
+        if (selectedDirectory != null) {
+            return selectedDirectory.getAbsolutePath();
+        } else {
+            return null;
+        }
     }
 
     private void resetPasswordStage() {
@@ -170,6 +175,7 @@ public class SettingsStage extends BaseStage {
         nameExists.setContentText(text);
         nameExists.showAndWait();
     }
+
     private void alertPasswordChangeConfirm() {
         Alert nameExists = new Alert(Alert.AlertType.INFORMATION);
         nameExists.setTitle("Success");

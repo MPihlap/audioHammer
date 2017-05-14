@@ -300,10 +300,7 @@ class MyCloudStage extends BaseStage {
     private String getFileData(String fileName) throws IOException { //TODO implement into GUI
         String filePath = parentAndFile.get(fileName) + File.separator + fileName;
         String[] fileData = client.getFileData(filePath);
-
         return "Last modified: " + fileData[0] + "; Length: " + fileData[1] + "s";
-
-
     }
 
     /**
