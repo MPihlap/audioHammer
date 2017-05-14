@@ -1,6 +1,7 @@
 package gui.stages;
 
 import client.Client;
+import client.FileOperations;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -11,8 +12,11 @@ import javafx.scene.text.Font;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import server.LoginHandler;
+import server.PasswordHashing;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * Constructs a Settings stage.
@@ -137,13 +141,31 @@ public class SettingsStage extends BaseStage {
             final String currentPasswordInput = currentPassword.getText();
             final String newPasswordInput1 = newPasswordOne.getText();
             final String newPasswordInput2 = newPasswordTwo.getText();
-            alertPasswordChange("You inserted wrong current password! Try again.");
-            alertPasswordChange("New passwords do not match! Try again.");
-            alertPasswordChange("New inserted password is too short");//TODO Kasuta, kui probleemid paroolidega
             // TODO Paroolide kontrollimine ja muutmine
 
-            alertPasswordChangeConfirm(); //TODO kasuta kui parool edukalt muudetud
-            resetPasswordStage.close();
+            try {
+                if(!LoginHandler.login(client.getUsername(), currentPasswordInput)) {
+                    alertPasswordChange("You inserted wrong current password! Try again.");
+                }
+                else if (!newPasswordInput1.equals(newPasswordInput2)){
+                    alertPasswordChange("New passwords do not match! Try again.");
+                }
+                else if(newPasswordInput1.length()<6 || newPasswordInput1.length()==0) {
+                    alertPasswordChange("New inserted password is too short!");
+                }
+                else{
+                    if(LoginHandler.changePassword(client.getUsername(), newPasswordInput1)) {
+                        alertPasswordChangeConfirm();
+                        resetPasswordStage.close();
+                    }
+                    else {
+                        alertPasswordChange("Something went wrong.");
+                    }
+
+                }
+            } catch (IOException e) {
+                alertPasswordChange("You inserted wrong current password! Try again.");
+            }
         });
         //Adding nodes to gridpane
         gridPane.add(information, 0, 0, 2, 1);
