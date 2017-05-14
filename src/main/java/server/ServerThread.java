@@ -130,13 +130,23 @@ public class ServerThread implements Runnable {
 
     //Reads sent audio as bytearray
 
-    private byte[] readAudioBytesFromClient(DataInputStream dataInputStream) throws IOException {
+    private byte[] readAudioBytesFromClient(DataInputStream dataInputStream,String filename,String username) throws IOException {
         int type = dataInputStream.readInt(); // type of data to follow
         byte[] buffer;
         if (type == 1) {
             buffer = new byte[dataInputStream.readInt()];
         } else {
             throw new RuntimeException("Socket Transmission type error: " + type);
+        }
+        String pathString = getFilePath(filename, username);
+        System.out.println(pathString);
+        pathString = fileCheck(pathString);
+        Path path = Paths.get(pathString);
+
+        Files.createDirectories(path.getParent());
+        File newFile = new File(pathString);
+        try (FileOutputStream fileOutputStream = new FileOutputStream(newFile)){
+
         }
         ByteArrayOutputStream byteArrayOut = new ByteArrayOutputStream();
         int len;
@@ -197,11 +207,7 @@ public class ServerThread implements Runnable {
 
     //Saves file
     private void fileSaving(String filename, byte[] fileBytes, String username) throws IOException {
-        String serverFilename = filename + ".wav";
-        LocalDate localDate = LocalDate.now();
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-        String directory = dateTimeFormatter.format(localDate);
-        String pathString = System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator + username + File.separator + directory + File.separator + serverFilename;
+        String pathString = getFilePath(filename, username);
         System.out.println(pathString);
         pathString = fileCheck(pathString);
         Path path = Paths.get(pathString);
@@ -218,6 +224,14 @@ public class ServerThread implements Runnable {
 
 
         System.out.println("File " + filename + " is saved as " + path.getFileName());
+    }
+
+    private String getFilePath(String filename, String username) {
+        String serverFilename = filename + ".wav";
+        LocalDate localDate = LocalDate.now();
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        String directory = dateTimeFormatter.format(localDate);
+        return System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator + username + File.separator + directory + File.separator + serverFilename;
     }
 
     //Checks if file name is unique in this folder. Adds "(Copyxx)" if needed
