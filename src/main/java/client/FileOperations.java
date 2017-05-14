@@ -8,10 +8,7 @@ import java.io.*;
 import java.net.Socket;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by Alo on 18-Apr-17.
@@ -45,10 +42,21 @@ public class FileOperations {
         for (Path file :
                 allFilesWithPath) {
             if (file.getFileName().toString().equals(newFilename + ".wav")) {
+                System.out.println(file.getFileName());
                 return false;
             }
         }
-        return (new File(oldFilename).renameTo(new File(Paths.get(oldFilename).getParent() + File.separator + newFilename + ".wav")));
+        System.out.println("Jõudsin aga siia");
+        System.out.println(oldFilename + " " + newFilename);
+        System.out.println(Paths.get(oldFilename).getParent() + File.separator + newFilename + ".wav");
+        //return ((new File(oldFilename).renameTo(new File(Paths.get(oldFilename).getParent() + File.separator + newFilename + ".wav"))));
+        try {
+            Files.move(new File(oldFilename).toPath(), new File(oldFilename).toPath().resolveSibling(newFilename + ".wav"));
+            return true;
+        } catch (IOException e) {
+            System.out.println(e);
+            return false;
+        }
     }
 
     //deletes file
@@ -68,15 +76,18 @@ public class FileOperations {
                 dataOutputStream.write(buffer, 0, bytesRead);
             }
             return true;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return false;
         }
+
     }
+
     public static void createWAV(byte[] fileBytes, File file) throws IOException {
-        ByteArrayInputStream bais = new ByteArrayInputStream(fileBytes);
-        AudioFormat audioFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 44100, 16, 1, 2, 44100, true);
-        AudioInputStream ais = new AudioInputStream(bais, audioFormat, fileBytes.length / audioFormat.getFrameSize());
+        AudioInputStream ais;
+        try (ByteArrayInputStream bais = new ByteArrayInputStream(fileBytes)) {
+            AudioFormat audioFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 44100, 16, 1, 2, 44100, true);
+            ais = new AudioInputStream(bais, audioFormat, fileBytes.length / audioFormat.getFrameSize());
+        }
 
         AudioSystem.write(ais, AudioFileFormat.Type.WAVE, file);
     }
@@ -85,6 +96,24 @@ public class FileOperations {
     public ArrayList<Path> getAllFiles() throws IOException {
         listFiles();
         return allFilesWithPath;
+    }
+
+    public String[] getFileData(String filePath) throws IOException {
+        String length;
+        File file = new File(filePath);
+        Date mod = new Date(file.lastModified());
+        AudioFormat format;
+        long frames;
+        try (AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(file)) {
+            format = audioInputStream.getFormat();
+            frames = audioInputStream.getFrameLength();
+            length = String.valueOf((frames) / format.getFrameRate()); //gets length of file in seconds
+            audioInputStream.close();
+        } catch (UnsupportedAudioFileException e) {
+            length = "Not available";
+        }
+
+        return new String[]{mod.toString(), length};
     }
 
 

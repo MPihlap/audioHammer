@@ -119,6 +119,15 @@ public class Client {
     }
 
 
+    public String[] getFileData(String filePath) throws IOException {
+        servOutputStream.writeUTF("Data");
+        servOutputStream.writeUTF(filePath);
+        String[] data = new String[2];
+        data[0] = servInputStream.readUTF();
+        data[1] = servInputStream.readUTF();
+        return data;
+    }
+
     public boolean sendUsername(String username, String password) throws IOException {
         servOutputStream.writeUTF("username"); // Indicate incoming user info
         servOutputStream.writeUTF(username);

@@ -6,7 +6,9 @@ import client.PlayExistingFile;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
@@ -19,11 +21,12 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
+import java.util.*;
 
 /**
  * Constructs a MyCloud stage.
@@ -102,11 +105,28 @@ class MyCloudStage extends BaseStage {
             }
         });
         //Shows right-click menu on left click and hides on left-click
-        myCloudFilesList.addEventHandler(MouseEvent.MOUSE_CLICKED, (MouseEvent e) -> {
-            String[] targetInfo = e.getTarget().toString().split("'");
+        myCloudFilesList.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
+
+            //get and set info about selected file
+            String fileData;
+            try {
+                fileData = getFileData(myCloudFilesList.getSelectionModel().getSelectedItem());
+            } catch (IOException e1) {
+                fileData = "Not available";
+            }
+            for (Node node :
+                    gridPane.getChildren()) {
+                if(node instanceof Label && GridPane.getColumnIndex(node)==0 && GridPane.getRowIndex(node)==2) {
+                    ((Label) node).setText(fileData);
+                }
+            }
+
+
             //If right click on filename
+            String[] targetInfo = e.getTarget().toString().split("'");
             if (e.getButton() == MouseButton.SECONDARY && ((targetInfo.length == 2 && !targetInfo[1].equals("null"))) || (targetInfo.length == 1)) {
                 if (myCloudFilesList.getSelectionModel().getSelectedItem() != null) {
+
                     cm.show(myCloudFilesList, e.getScreenX(), e.getScreenY());
                 }
                 //If right click on empty space
@@ -126,13 +146,20 @@ class MyCloudStage extends BaseStage {
 
             }
         });
+
+
         myCloudFilesList.setMaxSize(sizeW - 35, 150);
         myCloudFilesList.setMinSize(sizeW - 35, 150);
         //information label TODO Text editing (Helen)
-        Label information = new Label("Here comes some information about chosen file. Date,Length,etc");
+        Label information = new Label("");
         //Back to main stage
         Button backButton = new Button("Back");
         backButton.setOnAction((ActionEvent event) -> {
+            try {
+                client.sendCommand("back");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             switchStage(new MainStage(client));
         });
         //Adding nodes to grid
@@ -270,6 +297,15 @@ class MyCloudStage extends BaseStage {
         refreshListView();
     }
 
+    private String getFileData(String fileName) throws IOException { //TODO implement into GUI
+        String filePath = parentAndFile.get(fileName) + File.separator + fileName;
+        String[] fileData = client.getFileData(filePath);
+
+        return "Last modified: " + fileData[0] + "; Length: " + fileData[1] + "s";
+
+
+    }
+
     /**
      * Plays recorded file with given name from server
      *
@@ -312,4 +348,6 @@ class MyCloudStage extends BaseStage {
         ObservableList<String> myCloudFiles = FXCollections.observableArrayList(myCloudFiles());
         myCloudFilesList.setItems(myCloudFiles);
     }
+
+
 }

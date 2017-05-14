@@ -2,7 +2,6 @@ package server;
 
 import client.FileOperations;
 
-import javax.sound.sampled.*;
 import java.io.*;
 import java.net.Socket;
 import java.nio.ByteBuffer;
@@ -52,13 +51,18 @@ public class ServerThread implements Runnable {
                                 System.out.println("Läksin DL (servThread)");
                                 String filename = dataInputStream.readUTF(); //receives filepath
                                 System.out.println(FileOperations.sendFile(filename, clientOutputStream));
-
                             }
                             else if (command.equals("Rename")){
                                 String oldFileName = dataInputStream.readUTF();
                                 String newFileName = dataInputStream.readUTF();
                                 clientOutputStream.writeBoolean(fileOperations.renameFile(oldFileName,newFileName));
                                 writeAllFilesToClient(clientOutputStream, fileOperations);
+                            }
+                            else if(command.equals("Data")) {
+                                String filePath = dataInputStream.readUTF();
+                                String[] data = fileOperations.getFileData(filePath);
+                                clientOutputStream.writeUTF(data[0]);
+                                clientOutputStream.writeUTF(data[1]);
                             }
                         }
                     }
