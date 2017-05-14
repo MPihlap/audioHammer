@@ -3,6 +3,7 @@ package server;
 import client.FileOperations;
 
 import javax.sound.sampled.*;
+import javax.xml.crypto.Data;
 import java.io.*;
 import java.net.Socket;
 import java.nio.ByteBuffer;
@@ -62,6 +63,7 @@ public class ServerThread implements Runnable {
                     if (command.equals("filename")) {           //if filename is entered, start recording
                         String fileName = dataInputStream.readUTF();
                         System.out.println(fileName);
+                        AudioFormat audioFormat = readFormat(dataInputStream);
                         boolean bufferedMode = dataInputStream.readBoolean(); //Buffered recording or regular recording
                         System.out.println("Buffer: " + bufferedMode);
                         byte[] fileBytes;
@@ -78,6 +80,7 @@ public class ServerThread implements Runnable {
                                 fileSaving(fileName, fileBytes, username);
                             }
                         } else {
+                            readAudioBytesToFile(dataInputStream,username,fileName);
                             fileBytes = readAudioBytesFromClient(dataInputStream);
                             fileSaving(fileName, fileBytes, username);
                         }
@@ -99,6 +102,25 @@ public class ServerThread implements Runnable {
                 throw new RuntimeException(e);
             }
         }
+    }
+    private void saveByteArrayToFile(String filename, String username, byte[] bytes) throws IOException {
+        String pathString = getFilePath(filename, username);
+        System.out.println(pathString);
+        pathString = fileCheck(pathString);
+        Path path = Paths.get(pathString);
+        Files.createDirectories(path.getParent());
+        File newFile = new File(pathString);
+        try (DataOutputStream dataOutputStream = new DataOutputStream(new FileOutputStream(newFile))){
+            dataOutputStream.write(bytes);
+        }
+    }
+    private AudioFormat readFormat(DataInputStream dataInputStream) throws IOException {
+        float sampleRate = dataInputStream.readFloat();
+        int sampleSize = dataInputStream.readInt();
+        int channels = dataInputStream.readInt();
+        boolean signed = dataInputStream.readBoolean();
+        boolean bigEndian = dataInputStream.readBoolean();
+        return new AudioFormat(sampleRate,sampleSize,channels,signed,bigEndian);
     }
 
     private void sendFilenamesToClient(DataOutputStream clientOutputStream, FileOperations fileOperations) throws IOException {
@@ -127,17 +149,7 @@ public class ServerThread implements Runnable {
         return username;
     }
 
-
-    //Reads sent audio as bytearray
-
-    private byte[] readAudioBytesFromClient(DataInputStream dataInputStream,String filename,String username) throws IOException {
-        int type = dataInputStream.readInt(); // type of data to follow
-        byte[] buffer;
-        if (type == 1) {
-            buffer = new byte[dataInputStream.readInt()];
-        } else {
-            throw new RuntimeException("Socket Transmission type error: " + type);
-        }
+    private void readAudioBytesToFile(DataInputStream dataInputStream, String username, String filename) throws IOException {
         String pathString = getFilePath(filename, username);
         System.out.println(pathString);
         pathString = fileCheck(pathString);
@@ -145,9 +157,52 @@ public class ServerThread implements Runnable {
 
         Files.createDirectories(path.getParent());
         File newFile = new File(pathString);
-        try (FileOutputStream fileOutputStream = new FileOutputStream(newFile)){
-
+        try (DataOutputStream fileOutputStream = new DataOutputStream(new FileOutputStream(newFile))){
+            int type = dataInputStream.readInt(); // type of data to follow
+            byte[] buffer;
+            float sampleRate;
+            int sampleSize;
+            int channels;
+            boolean signed;
+            boolean bigEndian;
+            if (type == 1) {
+                buffer = new byte[dataInputStream.readInt()];
+                sampleRate = dataInputStream.readFloat();
+                sampleSize = dataInputStream.readInt();
+                channels = dataInputStream.readInt();
+                signed = dataInputStream.readBoolean();
+                bigEndian = dataInputStream.readBoolean();
+            } else {
+                throw new RuntimeException("Socket Transmission type error: " + type);
+            }
+            int bytesRead;
+            while (true){
+                type = dataInputStream.readInt();
+                if (type == 2){
+                    break;
+                }
+                bytesRead = dataInputStream.readInt();
+                dataInputStream.readFully(buffer,0,bytesRead);
+                fileOutputStream.write(buffer,0,bytesRead);
+            }
+            fileOutputStream.writeFloat(sampleRate); // 4 bytes
+            fileOutputStream.writeInt(sampleSize); // 4 bytes
+            fileOutputStream.writeInt(channels); // 4 bytes
+            fileOutputStream.writeBoolean(signed); // 1 byte
+            fileOutputStream.writeBoolean(bigEndian); // 1 byte
+                                                        // = 14 bytes
         }
+    }
+    //Reads sent audio as bytearray
+    private byte[] readAudioBytesFromClient(DataInputStream dataInputStream) throws IOException {
+        int type = dataInputStream.readInt(); // type of data to follow
+        byte[] buffer;
+        if (type == 1) {
+            buffer = new byte[dataInputStream.readInt()];
+        } else {
+            throw new RuntimeException("Socket Transmission type error: " + type);
+        }
+
         ByteArrayOutputStream byteArrayOut = new ByteArrayOutputStream();
         int len;
         while (true) {
@@ -161,10 +216,8 @@ public class ServerThread implements Runnable {
             byteArrayOut.write(buffer, 0, len);
         }
 
-        byte[] audioBytes = byteArrayOut.toByteArray();
         return byteArrayOut.toByteArray();
     }
-
     /**
      * Uses a ByteBuffer to store a certain number of bytes. If buffer is full, bytes from start are disgarded and the
      * buffer is shifted.

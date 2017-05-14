@@ -13,19 +13,22 @@ public class AudioCaptureThread implements Runnable {
     private final boolean bufferedMode;
     private final BlockingQueue<String> recordingQueue;
     private final DataOutputStream servStream;
-    private final AudioFormat format = new AudioFormat(44100, 16, 1, true, true);
+    private final AudioFormat format;
     private final ByteArrayOutputStream captureOutputStream;
 
-    public AudioCaptureThread(ByteArrayOutputStream captureOutputStream, DataOutputStream servStream, BlockingQueue<String> recordingQueue, boolean bufferedMode) {
+    public AudioCaptureThread(ByteArrayOutputStream captureOutputStream, DataOutputStream servStream,
+                              BlockingQueue<String> recordingQueue, boolean bufferedMode, AudioFormat format) {
         this.captureOutputStream = captureOutputStream;
         this.servStream = servStream;
         this.recordingQueue = recordingQueue;
         this.bufferedMode = bufferedMode;
+        this.format = format;
     }
 
     public ByteArrayOutputStream getCaptureOutputStream() {
         return captureOutputStream;
     }
+
 
     @Override
     public void run() {
