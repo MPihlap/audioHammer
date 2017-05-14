@@ -185,7 +185,7 @@ class MyCloudStage extends BaseStage {
      */
     private ArrayList<String> myCloudFiles() throws IOException {
         //ArrayList<Path> allFilesWithPath = fileOperations.getAllFiles();
-        List<String> allFiles = client.getAllFilesFromCloud();
+        List<String> allFiles = client.getAllFilesFromCloud(); //TODO vigane rida, jookseb kokku
         ArrayList<Path> allFilesWithPath = new ArrayList<>();
         for (String path : allFiles) {
             allFilesWithPath.add(Paths.get(path));
@@ -300,10 +300,7 @@ class MyCloudStage extends BaseStage {
     private String getFileData(String fileName) throws IOException { //TODO implement into GUI
         String filePath = parentAndFile.get(fileName) + File.separator + fileName;
         String[] fileData = client.getFileData(filePath);
-
         return "Last modified: " + fileData[0] + "; Length: " + fileData[1] + "s";
-
-
     }
 
     /**
