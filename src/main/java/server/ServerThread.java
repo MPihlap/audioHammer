@@ -39,11 +39,7 @@ public class ServerThread implements Runnable {
                     }
                     if (command.equals("MyCloud")){
                         FileOperations fileOperations = new FileOperations(username);
-                        ArrayList<Path> allFiles = fileOperations.getAllFiles();
-                        clientOutputStream.writeInt(allFiles.size());
-                        for (Path path : allFiles) {
-                            clientOutputStream.writeUTF(path.toString());
-                        }
+                        sendFilenamesToClient(clientOutputStream, fileOperations);
                         while (!(command = dataInputStream.readUTF()).equals("back")){ //MyCloud loop
                             if (command.equals("Listen")){
                                 //TODO: Implement
@@ -59,6 +55,7 @@ public class ServerThread implements Runnable {
                                 String oldFileName = dataInputStream.readUTF();
                                 String newFileName = dataInputStream.readUTF();
                                 clientOutputStream.writeBoolean(fileOperations.renameFile(oldFileName,newFileName));
+                                sendFilenamesToClient(clientOutputStream, fileOperations);
                             }
                         }
                     }
@@ -101,6 +98,14 @@ public class ServerThread implements Runnable {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+        }
+    }
+
+    private void sendFilenamesToClient(DataOutputStream clientOutputStream, FileOperations fileOperations) throws IOException {
+        ArrayList<Path> allFiles = fileOperations.getAllFiles();
+        clientOutputStream.writeInt(allFiles.size());
+        for (Path path : allFiles) {
+            clientOutputStream.writeUTF(path.toString());
         }
     }
 
