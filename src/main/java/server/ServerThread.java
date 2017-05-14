@@ -54,7 +54,7 @@ public class ServerThread implements Runnable {
                             }
                             else if (command.equals("Download")){
                                 System.out.println("Läksin DL (servThread)");
-                                String filename = dataInputStream.readUTF();
+                                String filename = dataInputStream.readUTF(); //receives filepath
                                 System.out.println(FileOperations.sendFile(filename, clientOutputStream));
 
                             }

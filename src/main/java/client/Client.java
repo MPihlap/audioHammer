@@ -111,40 +111,11 @@ public class Client {
         return servInputStream.readBoolean();
     }
 
-    public void downloadFile(String filePath, String fileName) throws IOException {
+    public boolean downloadFile(String filePath, String fileName) throws IOException {
         servOutputStream.writeUTF("Download");
         servOutputStream.writeUTF(filePath);
-        System.out.println(FileOperations.receiveFile(fileName,servInputStream));
-        /**
-        long totalFrames = 0;
-        int framesRead;
-        int bytesRead;
-        long fileSize = servInputStream.readLong();
-        int byteSize = servInputStream.readInt();
-        long frameSize = servInputStream.readLong();
-        byte[] buffer = new byte[8192*byteSize];
-
-        System.out.println(fileSize);
-        if(fileSize>0) {
-            Files.createDirectories(downloadPath);
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                while (totalFrames!=frameSize) {
-                    bytesRead = servInputStream.read(buffer);
-                    byteArrayOutputStream.write(buffer, 0, bytesRead);
-                    framesRead = bytesRead/byteSize;
-                    totalFrames+=framesRead;
-                    System.out.println(totalFrames);
-                    if(totalFrames == frameSize) {
-                        System.out.println("File received");
-                        FileOperations.createWAV(byteArrayOutputStream.toByteArray(), new File(downloadPath + File.separator + fileName));
-                        System.out.println("file created");
-                        break;
-                    }
-                }
-
-        }
-         */
-
+        String clientPath = downloadPath + File.separator + fileName;
+        return receiveFile(clientPath, servInputStream);
     }
 
 
@@ -154,5 +125,25 @@ public class Client {
         servOutputStream.writeUTF(password);
         return servInputStream.readBoolean();
     }
+
+    private static boolean receiveFile(String fileName, DataInputStream dataInputStream) {
+        try {
+            long fileSize = dataInputStream.readLong();
+            byte[] buffer = new byte[1024];
+            long totalBytesRead = 0;
+            try (FileOutputStream fileOutputStream = new FileOutputStream(fileName)) {
+                while (totalBytesRead < fileSize) {
+                    int bytesRead = dataInputStream.read(buffer, 0, buffer.length);
+                    totalBytesRead += bytesRead;
+                    fileOutputStream.write(buffer, 0, bytesRead);
+                }
+            }
+        } catch (IOException e) {
+           return false;
+        }
+        return true;
+    }
 }
+
+
 

@@ -288,7 +288,20 @@ class MyCloudStage extends BaseStage {
      */
     private void downloadFile(String fileName) throws IOException {
         String downloadFile = parentAndFile.get(fileName) + File.separator + fileName;
-        client.downloadFile(downloadFile, fileName);
+        if(client.downloadFile(downloadFile, fileName)) {
+            Alert downloadSuccessAlert  = new Alert(Alert.AlertType.INFORMATION);
+            downloadSuccessAlert.setTitle("Success!");
+            downloadSuccessAlert.setHeaderText(null);
+            downloadSuccessAlert.setContentText("File " + fileName + " succesfully downloaded.");
+            downloadSuccessAlert.showAndWait();
+        }
+        else {
+            Alert downloadSuccessButton  = new Alert(Alert.AlertType.INFORMATION);
+            downloadSuccessButton.setTitle("Success!");
+            downloadSuccessButton.setHeaderText(null);
+            downloadSuccessButton.setContentText("Something went wrong. Please try again later.");
+            downloadSuccessButton.showAndWait();
+        }
     }
 
     /**
