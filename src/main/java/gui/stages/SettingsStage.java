@@ -159,7 +159,7 @@ public class SettingsStage extends BaseStage {
                     alertPasswordChange("New inserted password is too short!");
                 }
                 else{
-                    if(LoginHandler.changePassword(client.getUsername(), newPasswordInput1)) {
+                    if(client.passwordChange(newPasswordInput1)) {
                         alertPasswordChangeConfirm();
                         resetPasswordStage.close();
                     }

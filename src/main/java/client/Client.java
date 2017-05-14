@@ -128,6 +128,11 @@ public class Client {
         return data;
     }
 
+    public boolean passwordChange(String password) throws IOException {
+        servOutputStream.writeUTF("pwChange");
+        servOutputStream.writeUTF(password);
+        return (servInputStream.readBoolean());
+    }
     public boolean sendUsername(String username, String password) throws IOException {
         servOutputStream.writeUTF("username"); // Indicate incoming user info
         servOutputStream.writeUTF(username);
