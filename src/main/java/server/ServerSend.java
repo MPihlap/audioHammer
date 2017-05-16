@@ -33,6 +33,7 @@ public class ServerSend implements Runnable {
                 for (Path path : files) {
                     System.out.println("Saadan selle: " +
                             "" + path);
+                    dataOutputStream.writeUTF(path.getFileName().toString());
                     sendFile(path.toString(), dataOutputStream);
                     File file = new File(path.toString());
                     boolean delete=file.delete();
@@ -40,10 +41,9 @@ public class ServerSend implements Runnable {
                         throw new RuntimeException("ei kustutanud oioi");
                     }
                 }
-
+                break;
             } catch (IOException e) {
-                e.printStackTrace();
-
+                System.err.println("Ootan ühendust");
             }
         }
     }

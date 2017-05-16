@@ -19,10 +19,9 @@ public class Server {
             System.out.println("ok");
             ExecutorService executor = null;
             try {
-                executor = Executors.newFixedThreadPool(1);
-                ServerSend serverSend=new ServerSend();
-                serverSend.run();
+                executor = Executors.newFixedThreadPool(2);
                 while (true) {
+                    executor.execute(new Thread(new ServerSend()));
                     Socket socket = serverSocket.accept();
                     System.out.println("Sees");
                     executor.execute(new Thread(new ServerThread(socket)));
