@@ -13,6 +13,11 @@ public class ListenGPIO implements Runnable{
     private final Client client;
     private boolean readyToRecord;
     private final BlockingQueue<String> commandQueue;
+    boolean bufferedMode;
+
+    public void setBufferedMode(boolean bufferedMode) {
+        this.bufferedMode = bufferedMode;
+    }
 
     public void setReadyToRecord(boolean readyToRecord) {
         this.readyToRecord = readyToRecord;
@@ -51,9 +56,17 @@ public class ListenGPIO implements Runnable{
                 public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
                     // display pin state on console
                     System.out.println(" --> Start STATE CHANGE: " + event.getPin() + " = " + event.getState());
-                    if (event.getState() == PinState.HIGH && readyToRecord){
-                        commandQueue.add("start");
-                        System.out.println("Started");
+                    if (!bufferedMode) {
+                        if (event.getState() == PinState.HIGH && readyToRecord) {
+                            commandQueue.add("start");
+                            System.out.println("Started");
+                        }
+                    }
+                    else {
+                        if (event.getState() == PinState.HIGH && readyToRecord) {
+                            commandQueue.add("buffer");
+                            System.out.println("Buffered! Starting new recording");
+                        }
                     }
                 }
 
