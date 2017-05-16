@@ -26,7 +26,6 @@ public class ListenGPIO implements Runnable{
 
     @Override
     public void run() {
-            System.out.println("<--Pi4J--> GPIO Listen Example ... started.");
 
             // create gpio controller
             final GpioController gpio = GpioFactory.getInstance();
@@ -39,15 +38,22 @@ public class ListenGPIO implements Runnable{
             startButton.setShutdownOptions(true);
             stopButton.setShutdownOptions(true);
 
-
+            stopButton.addListener(new GpioPinListenerDigital() {
+                @Override
+                public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
+                    System.out.println("Stop button state change: "+event.getPin()+event.getState());
+                    commandQueue.add("stop");
+                }
+            });
             // create and register gpio pin listener
             startButton.addListener(new GpioPinListenerDigital() {
                 @Override
                 public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
                     // display pin state on console
-                    System.out.println(" --> GPIO PIN STATE CHANGE: " + event.getPin() + " = " + event.getState());
-                    if (event.getState() == PinState.HIGH){
+                    System.out.println(" --> Start STATE CHANGE: " + event.getPin() + " = " + event.getState());
+                    if (event.getState() == PinState.HIGH && readyToRecord){
                         commandQueue.add("start");
+                        System.out.println("Started");
                     }
                 }
 
@@ -55,14 +61,12 @@ public class ListenGPIO implements Runnable{
             stopButton.addListener(new GpioPinListenerDigital() {
                 @Override
                 public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
-                    if (event.getState() == PinState.HIGH) {
+                    if (event.getState() == PinState.HIGH && readyToRecord) {
                         commandQueue.add("stop");
                         System.out.println("Stopped");
                     }
                 }
             });
-
-            System.out.println(" ... complete the GPIO #02 circuit and see the listener feedback here in the console.");
 
             // keep program running until user aborts (CTRL-C)
             while(true) {
