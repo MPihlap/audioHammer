@@ -3,6 +3,7 @@ package client;
 
 import server.ServerThread;
 
+import javax.sound.sampled.AudioFormat;
 import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
@@ -17,6 +18,7 @@ import java.util.concurrent.BlockingQueue;
  * Created by Helen on 12-Mar-17.
  */
 public class Client {
+    private AudioFormat audioFormat = new AudioFormat(44100,16,1,true,true);
     private String username;
     private Socket servSocket;
     private DataOutputStream servOutputStream;
@@ -31,7 +33,13 @@ public class Client {
     public boolean isSocketCreated(){
         return servSocket != null;
     }
-
+    private void sendFormat() throws IOException {
+        servOutputStream.writeFloat(audioFormat.getSampleRate());
+        servOutputStream.writeInt(audioFormat.getSampleSizeInBits());
+        servOutputStream.writeInt(audioFormat.getChannels());
+        servOutputStream.writeBoolean(true);
+        servOutputStream.writeBoolean(true);
+    }
     public List<String> getAllFilesFromCloud() throws IOException {
         List<String> allFiles = new ArrayList<>();
         int nrOfFiles = servInputStream.readInt();
@@ -60,6 +68,7 @@ public class Client {
     }
 
     public void startRecording() throws IOException {
+        sendFormat();
         servOutputStream.writeBoolean(false);
         recordingInfo.add("start");
         AudioCaptureThread audioCaptureThread = new AudioCaptureThread(new ByteArrayOutputStream(), servOutputStream, recordingInfo, false);
@@ -68,6 +77,7 @@ public class Client {
         System.out.println("hakkas lindistama");
     }
     public void startBufferedRecording(int minutes)throws IOException{
+        sendFormat();
         servOutputStream.writeBoolean(true);
         servOutputStream.writeInt(minutes);
         recordingInfo.add("start");

@@ -2,6 +2,7 @@ package server;
 
 import client.FileOperations;
 
+import javax.sound.sampled.AudioFormat;
 import javax.xml.crypto.Data;
 import java.io.*;
 import java.net.Socket;
@@ -84,8 +85,10 @@ public class ServerThread implements Runnable {
                                 break;
                             }
                             if (command.equals("filename")) {
+                                AudioFormat audioFormat;
                                 String fileName = dataInputStream.readUTF();
                                 System.out.println(fileName);
+                                audioFormat = readFormat(dataInputStream);
                                 boolean bufferedMode = dataInputStream.readBoolean(); //Buffered recording or regular recording
                                 System.out.println("Buffer: " + bufferedMode);
                                 byte[] fileBytes;
@@ -99,11 +102,11 @@ public class ServerThread implements Runnable {
                                         if (!isRecording) {
                                             break;
                                         }
-                                        fileSaving(fileName, fileBytes, username);
+                                        fileSaving(fileName, fileBytes, username,audioFormat);
                                     }
                                 } else {
                                     fileBytes = readAudioBytesFromClient(dataInputStream);
-                                    fileSaving(fileName, fileBytes, username);
+                                    fileSaving(fileName, fileBytes, username,audioFormat);
                                 }
 
                             }
@@ -122,7 +125,14 @@ public class ServerThread implements Runnable {
             }
         }
     }
-
+    private AudioFormat readFormat(DataInputStream dataInputStream) throws IOException {
+        float sampleRate = dataInputStream.readFloat();
+        int sampleSize = dataInputStream.readInt();
+        int channels = dataInputStream.readInt();
+        boolean signed = dataInputStream.readBoolean();
+        boolean bigEndian = dataInputStream.readBoolean();
+        return new AudioFormat(sampleRate, sampleSize, channels, signed, bigEndian);
+    }
     private void writeAllFilesToClient(DataOutputStream clientOutputStream, FileOperations fileOperations) throws IOException {
         ArrayList<Path> allFiles = fileOperations.getAllFiles();
         clientOutputStream.writeInt(allFiles.size());
@@ -217,7 +227,7 @@ public class ServerThread implements Runnable {
     }
 
     //Saves file
-    private void fileSaving(String filename, byte[] fileBytes, String username) throws IOException {
+    private void fileSaving(String filename, byte[] fileBytes, String username, AudioFormat audioFormat) throws IOException {
         String serverFilename = filename + ".wav";
         LocalDate localDate = LocalDate.now();
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
@@ -229,7 +239,7 @@ public class ServerThread implements Runnable {
 
         Files.createDirectories(path.getParent());
         File newFile = new File(pathString);
-        FileOperations.createWAV(fileBytes, newFile);
+        FileOperations.createWAV(fileBytes, newFile, audioFormat);
 
         System.out.println("File " + filename + " is saved as " + path.getFileName());
     }

@@ -82,10 +82,10 @@ public class FileOperations {
 
     }
 
-    public static void createWAV(byte[] fileBytes, File file) throws IOException {
+    public static void createWAV(byte[] fileBytes, File file, AudioFormat audioFormat) throws IOException {
         AudioInputStream ais;
         try (ByteArrayInputStream bais = new ByteArrayInputStream(fileBytes)) {
-            AudioFormat audioFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 44100, 16, 1, 2, 44100, true);
+            //AudioFormat audioFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 44100, 16, 1, 2, 44100, true);
             ais = new AudioInputStream(bais, audioFormat, fileBytes.length / audioFormat.getFrameSize());
         }
 
