@@ -76,6 +76,9 @@ public class Client {
         captureThread.start();
         System.out.println("hakkas lindistama");
     }
+    private void localRecording(){
+
+    }
     public void startBufferedRecording(int minutes)throws IOException{
         sendFormat();
         servOutputStream.writeBoolean(true);

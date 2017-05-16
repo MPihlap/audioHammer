@@ -7,21 +7,27 @@ import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
+import javafx.stage.DirectoryChooser;
 
+import java.io.File;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Constructs a Recording stage.
  * Created by Helen on 18.04.2017.
  */
 class RecordingStage extends BaseStage {
+    private boolean online;
     private boolean recordingBoolean;
     private long time;
     private TimerThread timerThread;
     private Client client;
 
-    RecordingStage(Client client) {
+    RecordingStage(Client client, boolean online) {
         this.client = client;
+        this.online = online;
     }
 
     /**
@@ -78,9 +84,9 @@ class RecordingStage extends BaseStage {
         Button openCloud = new Button("MyCloud");
         openCloud.setMinWidth(100);
         openCloud.setOnAction((ActionEvent event) -> {
-            if (recordingBoolean){
+            if (recordingBoolean) {
                 stillRecording();
-            }else{
+            } else {
                 try {
                     client.sendCommand("MyCloud");
                 } catch (IOException e) {
@@ -90,7 +96,13 @@ class RecordingStage extends BaseStage {
             }
         });
 
-        //Back to main stage button
+        //Back button
+        Button outButton = new Button("Log in");
+        outButton.setMinWidth(100);
+        outButton.setOnAction((ActionEvent event) -> {
+            LogInStage logInStage = new LogInStage();
+            switchStage(logInStage);
+        });
         Button backToMain = new Button("Back");
         backToMain.setOnAction((ActionEvent event) -> {
             backCheck();
@@ -117,7 +129,20 @@ class RecordingStage extends BaseStage {
         Button pauseButton = new Button("Pause");
         pauseButton.setMinWidth(100);
         pauseButton.setDisable(!recordingBoolean);
-        //Saving location checkboxes
+        //Saving location
+        TextField directoryLocalSaves = new TextField();
+        directoryLocalSaves.setMaxWidth(308);
+        directoryLocalSaves.setMinWidth(308);
+        LocalDate localDate = LocalDate.now();
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        String directory = dateTimeFormatter.format(localDate);
+        String pathString = System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator + directory;
+        directoryLocalSaves.setText(pathString);
+        Button chooseDirectoryLocalSaves = new Button("...");
+        chooseDirectoryLocalSaves.setOnAction((ActionEvent event) -> {
+            String directoryString = directoriChooser();
+            directoryLocalSaves.setText(directoryString);
+        });
         Label saveLocation = new Label("File saving location: ");
         CheckBox checkBoxLocal = new CheckBox("Local");
         CheckBox checkBoxCloud = new CheckBox("MyCloud");
@@ -143,14 +168,20 @@ class RecordingStage extends BaseStage {
                 } else {
                     if (filename.getText() != null && !filename.getText().equals("") && this.checkFilename(filename.getText())) {
                         try {
-                            client.sendCommand("filename");
-                            client.sendCommand(filename.getText());
+                            if (online){
+                                client.sendCommand("filename");
+                                client.sendCommand(filename.getText());
+                            }
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
 
                         try {
-                            recordingStart();
+                            if (!online){
+                                unassigned(); //TODO fix local recording
+                            }else{
+                                recordingStart();
+                            }
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -190,13 +221,20 @@ class RecordingStage extends BaseStage {
         gridPaneRecording.add(fileNameLabel, 0, 0, 3, 1);
         gridPaneRecording.add(filename, 0, 1, 3, 1);
         gridPaneRecording.add(saveLocation, 0, 2, 1, 1);
-        gridPaneRecording.add(checkBoxLocal, 1, 2, 1, 1);
-        gridPaneRecording.add(checkBoxCloud, 2, 2, 1, 1);
-        gridPaneRecording.add(recordingButton, 0, 3, 1, 1);
         gridPaneRecording.add(pauseButton, 1, 3, 1, 1);
+        if (online) {
+            gridPaneRecording.add(checkBoxLocal, 1, 2, 1, 1);
+            gridPaneRecording.add(checkBoxCloud, 2, 2, 1, 1);
+            gridPaneRecording.add(openCloud, 0, 4, 2, 1);
+            gridPaneRecording.add(backToMain, 1, 4, 1, 1);
+        } else {
+            checkBoxLocal.setSelected(true);
+            gridPaneRecording.add(directoryLocalSaves, 1, 2, 2, 1);
+            gridPaneRecording.add(chooseDirectoryLocalSaves, 3, 2, 1, 1);
+            gridPaneRecording.add(outButton, 0, 4, 1, 1);
+        }
+        gridPaneRecording.add(recordingButton, 0, 3, 1, 1);
         gridPaneRecording.add(timer, 2, 3, 1, 1);
-        gridPaneRecording.add(openCloud, 0, 4, 2, 1);
-        gridPaneRecording.add(backToMain, 1, 4, 1, 1);
         return gridPaneRecording;
     }
 
@@ -217,13 +255,19 @@ class RecordingStage extends BaseStage {
         Button openCloud = new Button("MyCloud");
         openCloud.setMinWidth(100);
         openCloud.setOnAction((ActionEvent event) -> {
-            if (recordingBoolean){
+            if (recordingBoolean) {
                 stillRecording();
-            }else{
+            } else {
                 switchStage(new MyCloudStage(client));
             }
         });
-        //Back to main stage button
+        //Back button
+        Button outButton = new Button("Log in");
+        outButton.setMinWidth(100);
+        outButton.setOnAction((ActionEvent event) -> {
+            LogInStage logInStage = new LogInStage();
+            switchStage(logInStage);
+        });
         Button backToMain = new Button("Back");
         backToMain.setOnAction((ActionEvent event) -> {
             backCheck();
@@ -250,12 +294,25 @@ class RecordingStage extends BaseStage {
         noSaveLocationAlert.setTitle("No saving location!");
         noSaveLocationAlert.setHeaderText(null);
         noSaveLocationAlert.setContentText("Please choose where you wish to save your files.");
-        //Saving location checkboxes
+        //Saving location
+        TextField directoryLocalSaves = new TextField();
+        directoryLocalSaves.setMaxWidth(308);
+        directoryLocalSaves.setMinWidth(308);
+        LocalDate localDate = LocalDate.now();
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        String directory = dateTimeFormatter.format(localDate);
+        String pathString = System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator + directory;
+        directoryLocalSaves.setText(pathString);
+        Button chooseDirectoryLocalSaves = new Button("...");
+        chooseDirectoryLocalSaves.setOnAction((ActionEvent event) -> {
+            String directoryString = directoriChooser();
+            directoryLocalSaves.setText(directoryString);
+        });
         Label saveLocation = new Label("File saving location: ");
         CheckBox checkBoxLocal = new CheckBox("Local");
         CheckBox checkBoxCloud = new CheckBox("MyCloud");
         //Buffertime slider
-        Label bufferTimeLabel = new Label("Choose buffertime (min): ");
+        Label bufferTimeLabel = new Label("Buffertime (min): ");
         Slider bufferTimeSlider = new Slider();
         bufferTimeSlider.setMin(1);
         bufferTimeSlider.setMax(10);
@@ -335,15 +392,23 @@ class RecordingStage extends BaseStage {
         gridPaneRecording.add(fileNameLabel, 0, 0, 3, 1);
         gridPaneRecording.add(filename, 0, 1, 3, 1);
         gridPaneRecording.add(saveLocation, 0, 2, 1, 1);
-        gridPaneRecording.add(checkBoxLocal, 1, 2, 1, 1);
-        gridPaneRecording.add(checkBoxCloud, 2, 2, 1, 1);
+        if (online){
+            gridPaneRecording.add(checkBoxLocal, 1, 2, 1, 1);
+            gridPaneRecording.add(checkBoxCloud, 2, 2, 1, 1);
+            gridPaneRecording.add(openCloud, 0, 5, 2, 1);
+            gridPaneRecording.add(backToMain, 1, 5, 1, 1);
+        }else{
+            gridPaneRecording.add(directoryLocalSaves,1,2,2,1);
+            gridPaneRecording.add(chooseDirectoryLocalSaves,3,2,1,1);
+            gridPaneRecording.add(outButton,0,5,1,1);
+
+            checkBoxLocal.setSelected(true);
+        }
         gridPaneRecording.add(bufferTimeLabel, 0, 3, 1, 1);
         gridPaneRecording.add(bufferTimeSlider, 1, 3, 2, 1);
         gridPaneRecording.add(recordingButton, 0, 4, 1, 1);
         gridPaneRecording.add(lapButton, 1, 4, 1, 1);
         gridPaneRecording.add(timer, 2, 4, 1, 1);
-        gridPaneRecording.add(openCloud, 0, 5, 2, 1);
-        gridPaneRecording.add(backToMain, 1, 5, 1, 1);
         return gridPaneRecording;
     }
 
@@ -391,15 +456,25 @@ class RecordingStage extends BaseStage {
     }
 
     public void backCheck() {
-        if (recordingBoolean){
+        if (recordingBoolean) {
             stillRecording();
-        }else{
+        } else {
             try {
                 client.sendCommand("back");
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
             switchStage(new MainStage(client));
+        }
+    }
+
+    private String directoriChooser() {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        File selectedDirectory = directoryChooser.showDialog(stage);
+        if (selectedDirectory != null) {
+            return selectedDirectory.getAbsolutePath();
+        } else {
+            return null;
         }
     }
 }

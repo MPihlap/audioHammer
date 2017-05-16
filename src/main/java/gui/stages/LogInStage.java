@@ -186,7 +186,8 @@ public class LogInStage extends BaseStage {
      * Allows to use application in offline mode/locally. Will be add later
      */
     private void offlineMode() {
-        unassigned();
+        RecordingStage recordingStage=new RecordingStage(client, false);
+        switchStage(recordingStage);
     }
 
 

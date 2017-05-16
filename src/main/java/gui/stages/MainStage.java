@@ -71,7 +71,7 @@ public class MainStage extends BaseStage {
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-                switchStage(new RecordingStage(client));
+                switchStage(new RecordingStage(client,true));
             }});
         //MyCloud stage button
         Button myCloudButton = new Button("MyCloud");
