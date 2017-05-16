@@ -16,6 +16,8 @@ import java.util.*;
 public class FileOperations {
     private ArrayList<Path> allFilesWithPath = new ArrayList<>();
     private final String path;
+    Double fileSizes = 0.0;
+
 
 
     public FileOperations(String username) {
@@ -35,6 +37,21 @@ public class FileOperations {
             }
         };
         Files.walkFileTree(Paths.get(path), simpleFileVisitor);
+    }
+
+    public double getFileSizes() throws IOException {
+        fileSizes = 0.0;
+        SimpleFileVisitor<Path> simpleFileVisitor = new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
+                if (path.toString().endsWith(".wav")) {
+                    fileSizes+=attrs.size()/(1048576.0);
+                }
+                return FileVisitResult.CONTINUE;
+            }
+        };
+        Files.walkFileTree(Paths.get(path), simpleFileVisitor);
+        return fileSizes;
     }
 
     //renames file

@@ -20,12 +20,14 @@ import java.util.ArrayList;
  */
 public class ServerThread implements Runnable {
     private Socket socket;
+    private String username;
+    private FileOperations fileOperations;
+
 
     public ServerThread(Socket socket) {
         this.socket = socket;
     }
-    private void handleMyCloud(String username, DataInputStream dataInputStream, DataOutputStream clientOutputStream) throws IOException {
-        FileOperations fileOperations = new FileOperations(username);
+    private void handleMyCloud(DataInputStream dataInputStream, DataOutputStream clientOutputStream) throws IOException {
         writeAllFilesToClient(clientOutputStream, fileOperations);
         String command;
         while (!(command = dataInputStream.readUTF()).equals("back")){ //MyCloud loop
@@ -61,25 +63,31 @@ public class ServerThread implements Runnable {
              DataInputStream dataInputStream = new DataInputStream(inputStream);
              DataOutputStream clientOutputStream = new DataOutputStream(socket.getOutputStream())) {
             while (true) { //Login screen loop
-                String username;
-                username = setUsername(dataInputStream, clientOutputStream);
+                this.username = setUsername(dataInputStream, clientOutputStream);
+                fileOperations = new FileOperations(this.username);
                 while (true) { // MainStage loop
                     String command = dataInputStream.readUTF();
+                    System.out.println(command);
                     if(command.equals("pwChange")) {
                         String password = dataInputStream.readUTF();
                         clientOutputStream.writeBoolean(LoginHandler.changePassword(username, password));
+                    }
+                    if(command.equals("filesizes")) {
+                        double fileSizes = fileOperations.getFileSizes();
+                        clientOutputStream.writeDouble(fileSizes);
                     }
                     if (command.equals("logout")) {
                         break;
                     }
                     if (command.equals("MyCloud")){
-                        handleMyCloud(username,dataInputStream,clientOutputStream);
+                        handleMyCloud(dataInputStream,clientOutputStream);
                     }
                     if (command.equals("Recording")) { //if filename is entered, start recording
                         while (true) {
                             command = dataInputStream.readUTF();
+                            System.out.println(command);
                             if (command.equals("MyCloud")){
-                                handleMyCloud(username,dataInputStream,clientOutputStream);
+                                handleMyCloud(dataInputStream,clientOutputStream);
                             }
                             if (command.equals("back")){
                                 break;

@@ -93,11 +93,7 @@ class RecordingStage extends BaseStage {
         //Back to main stage button
         Button backToMain = new Button("Back");
         backToMain.setOnAction((ActionEvent event) -> {
-            if (recordingBoolean){
-                stillRecording();
-            }else{
-                switchStage(new MainStage(client));
-            }
+            backCheck();
         });
         backToMain.setMinWidth(100);
         //Recording timer (format hh:mm:ss:msms)
@@ -230,16 +226,7 @@ class RecordingStage extends BaseStage {
         //Back to main stage button
         Button backToMain = new Button("Back");
         backToMain.setOnAction((ActionEvent event) -> {
-            if (recordingBoolean){
-                stillRecording();
-            }else{
-                try {
-                    client.sendCommand("back");
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                switchStage(new MainStage(client));
-            }
+            backCheck();
         });
         backToMain.setMinWidth(100);
         //Recording Pause-Resume button
@@ -401,6 +388,19 @@ class RecordingStage extends BaseStage {
         stillRecordingAlert.setHeaderText(null);
         stillRecordingAlert.setContentText("Please stop recording before switching the page.");
         stillRecordingAlert.showAndWait();
+    }
+
+    public void backCheck() {
+        if (recordingBoolean){
+            stillRecording();
+        }else{
+            try {
+                client.sendCommand("back");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            switchStage(new MainStage(client));
+        }
     }
 }
 

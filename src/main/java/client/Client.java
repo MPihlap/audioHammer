@@ -128,6 +128,11 @@ public class Client {
         return receiveFile(clientPath, servInputStream);
     }
 
+    public double getFileSizes() throws IOException {
+        servOutputStream.writeUTF("filesizes");
+        System.out.println("kas jõuan siia");
+        return servInputStream.readDouble();
+    }
 
     public String[] getFileData(String filePath) throws IOException {
         servOutputStream.writeUTF("Data");

@@ -22,6 +22,7 @@ import java.io.IOException;
 public class MainStage extends BaseStage {
     private Client client;
     private boolean isCreated = false;
+    private double fileSizes;
 
     /**
      * isCreated checks if user is connected to server
@@ -52,9 +53,14 @@ public class MainStage extends BaseStage {
         stage.setMinHeight(sizeH);
         //General information labels
         Label informationMain = new Label();
-        informationMain.setText("Information (Does not change):\nFree MyCloud room:\nLast recording:\n\n\n\n");
+        informationMain.setText("Information (Does not change):\nMyCloud room used:\nLast recording:\n\n\n\n");
         Label informationUser = new Label();
-        informationUser.setText("\n2GB\n11.03.2017\n\n\n");
+        try {
+            fileSizes = Math.round(getFileSizes());
+        } catch (IOException e) {
+            fileSizes = 0.0;
+        }
+        informationUser.setText("\n" + fileSizes +  " MB / 2GB\n11.03.2017\n\n\n");
         //Recording stage button
         Button recordingButton = new Button("Recording");
         recordingButton.setOnAction((ActionEvent event) -> {
@@ -150,5 +156,9 @@ public class MainStage extends BaseStage {
         logoutStage.initModality(Modality.APPLICATION_MODAL);
         logoutStage.setTitle("Log out");
         logoutStage.showAndWait();
+    }
+
+    public double getFileSizes() throws IOException {
+        return client.getFileSizes();
     }
 }
