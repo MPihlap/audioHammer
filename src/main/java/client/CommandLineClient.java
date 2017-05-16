@@ -60,6 +60,7 @@ public class CommandLineClient {
                             String take = recordingQueue.take();
                             if (take.equals("start")) {
                                 System.out.println("Buffered!");
+                                client.saveBuffer();
                                 break;
                             }
                             if (take.equals("stop")){
