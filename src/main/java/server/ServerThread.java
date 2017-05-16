@@ -62,12 +62,11 @@ public class ServerThread implements Runnable {
         try (InputStream inputStream = socket.getInputStream();
              DataInputStream dataInputStream = new DataInputStream(inputStream);
              DataOutputStream clientOutputStream = new DataOutputStream(socket.getOutputStream())) {
-            while (true) { //Login screen loop
+            //Login screen loop
                 this.username = setUsername(dataInputStream, clientOutputStream);
                 fileOperations = new FileOperations(this.username);
                 while (true) { // MainStage loop
                     String command = dataInputStream.readUTF();
-                    System.out.println(command);
                     if(command.equals("pwChange")) {
                         String password = dataInputStream.readUTF();
                         clientOutputStream.writeBoolean(LoginHandler.changePassword(username, password));
@@ -85,7 +84,6 @@ public class ServerThread implements Runnable {
                     if (command.equals("Recording")) { //if filename is entered, start recording
                         while (true) {
                             command = dataInputStream.readUTF();
-                            System.out.println(command);
                             if (command.equals("MyCloud")){
                                 handleMyCloud(dataInputStream,clientOutputStream);
                             }
@@ -122,7 +120,7 @@ public class ServerThread implements Runnable {
                         }
                     }
                 }
-            }
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         } finally {

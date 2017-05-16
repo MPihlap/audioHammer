@@ -4,6 +4,7 @@ import client.Client;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -60,17 +61,18 @@ public class MainStage extends BaseStage {
         } catch (IOException e) {
             fileSizes = 0.0;
         }
-        informationUser.setText("\n" + fileSizes +  " MB / 2GB\n11.03.2017\n\n\n");
+        informationUser.setText("\n" + fileSizes + " MB / 2GB\n11.03.2017\n\n\n");
         //Recording stage button
         Button recordingButton = new Button("Recording");
         recordingButton.setOnAction((ActionEvent event) -> {
-            try {
-                client.sendCommand("Recording");
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            switchStage(new RecordingStage(client));
-        });
+            if (fileSizeCheck()) {
+                try {
+                    client.sendCommand("Recording");
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                switchStage(new RecordingStage(client));
+            }});
         //MyCloud stage button
         Button myCloudButton = new Button("MyCloud");
         myCloudButton.setOnAction((ActionEvent event) -> {
@@ -161,4 +163,17 @@ public class MainStage extends BaseStage {
     public double getFileSizes() throws IOException {
         return client.getFileSizes();
     }
+
+    public boolean fileSizeCheck() {
+        if (fileSizes > 2010) {
+            Alert fileSizeOverAlert = new Alert(Alert.AlertType.INFORMATION);
+            fileSizeOverAlert.setTitle("Warning");
+            fileSizeOverAlert.setHeaderText(null);
+            fileSizeOverAlert.setContentText("Your myCloud storage capacity is reaching its limit. Please download or delete some files.");
+            fileSizeOverAlert.showAndWait();
+            return false;
+        }
+        return true;
+    }
 }
+

@@ -63,10 +63,6 @@ public class FileOperations {
                 return false;
             }
         }
-        System.out.println("Jõudsin aga siia");
-        System.out.println(oldFilename + " " + newFilename);
-        System.out.println(Paths.get(oldFilename).getParent() + File.separator + newFilename + ".wav");
-        //return ((new File(oldFilename).renameTo(new File(Paths.get(oldFilename).getParent() + File.separator + newFilename + ".wav"))));
         try {
             Files.move(new File(oldFilename).toPath(), new File(oldFilename).toPath().resolveSibling(newFilename + ".wav"));
             return true;
