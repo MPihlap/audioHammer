@@ -17,6 +17,7 @@ public class CommandLineClient {
         new Thread(listenGPIO).start();
         try (Scanner sc = new Scanner(System.in)) {
             while (true){
+                System.out.println("Insert IP");
                 String ip = sc.nextLine();
                 try {
                     client.createConnection(ip,1337);
@@ -27,7 +28,7 @@ public class CommandLineClient {
                     e.printStackTrace();
                 }
             }
-            loginClient(client, sc);
+            //loginClient(client, sc);
             while (true) {
                 System.out.println("Enter filename: ");
                 String filename = sc.nextLine();
