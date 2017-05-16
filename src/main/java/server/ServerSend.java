@@ -15,7 +15,7 @@ import java.util.stream.Stream;
 public class ServerSend implements Runnable {
 
     @Override
-    public void run() {/*
+    public void run() {
         while (true) {
             try (Socket socket = new Socket("172.17.202.205", 1338);
                  DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream())) {
@@ -30,20 +30,37 @@ public class ServerSend implements Runnable {
                         }
                     });
                 }
-                for (Path path:files){
+                for (Path path : files) {
                     System.out.println("Saadan selle: " +
-                            ""+path);
-                    File file=path.toFile();
-                    long length=file.length();
-                    DataInputStream inputStream=new DataInputStream(new FileInputStream(file)
-                    /*dataOutputStream
-
+                            "" + path);
+                    sendFile(path.toString(), dataOutputStream);
+                    File file = new File(path.toString());
+                    boolean delete=file.delete();
+                    if (!delete){
+                        throw new RuntimeException("ei kustutanud oioi");
                     }
+                }
 
-                } catch (IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
 
             }
         }
-    }*/
-}}
+    }
+    public static boolean sendFile(String filename, DataOutputStream dataOutputStream) throws IOException {
+        System.out.println("in sendFile");
+        File file = new File(filename);
+        long size = file.length();
+        dataOutputStream.writeLong(size);
+        int bytesRead;
+        byte[] buffer = new byte[1024];
+        try (FileInputStream fileInputStream = new FileInputStream(file)) {
+            while ((bytesRead = fileInputStream.read(buffer, 0, buffer.length)) > 0) {
+                dataOutputStream.write(buffer, 0, bytesRead);
+            }
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+}

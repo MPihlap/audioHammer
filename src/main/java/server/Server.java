@@ -20,8 +20,8 @@ public class Server {
             ExecutorService executor = null;
             try {
                 executor = Executors.newFixedThreadPool(1);
-               // ServerSend serverSend=new ServerSend();
-                //serverSend.run();
+                ServerSend serverSend=new ServerSend();
+                serverSend.run();
                 while (true) {
                     Socket socket = serverSocket.accept();
                     System.out.println("Sees");
