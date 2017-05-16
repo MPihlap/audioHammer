@@ -76,7 +76,6 @@ public class ServerThread implements Runnable {
             }
         }
     }
-    /*
     private String setUsername(DataInputStream dataInputStream, DataOutputStream clientOutputStream) throws IOException {
         String username;
         while (true) {
@@ -93,7 +92,7 @@ public class ServerThread implements Runnable {
             }
         }
         return username;
-    }*/
+    }
 
 
     //Reads sent audio as bytearray
@@ -169,7 +168,8 @@ public class ServerThread implements Runnable {
         LocalDate localDate = LocalDate.now();
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         String directory = dateTimeFormatter.format(localDate);
-        String pathString = System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator + username + File.separator + directory + File.separator + serverFilename;
+        String pathString = System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator + "Server" +
+                "" + File.separator + directory + File.separator + serverFilename;
         System.out.println(pathString);
         pathString = fileCheck(pathString);
         Path path = Paths.get(pathString);
