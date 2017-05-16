@@ -29,8 +29,8 @@ public class Client {
         System.out.println("sain username");
     }
 
-    public void createConnection() throws IOException {
-        this.servSocket = new Socket("localhost", 1337);
+    public void createConnection(String ip,int port) throws IOException {
+        this.servSocket = new Socket(ip,port);
         this.servOutputStream = new DataOutputStream(servSocket.getOutputStream());
         this.servInputStream = new DataInputStream(servSocket.getInputStream());
     }
