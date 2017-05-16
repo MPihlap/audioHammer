@@ -15,14 +15,16 @@ public class Server {
 
     public static void main(String[] args) throws IOException {
         try (ServerSocket serverSocket = new ServerSocket(1337)) {
-
-
             //noinspection InfiniteLoopStatement
+            System.out.println("ok");
             ExecutorService executor = null;
             try {
-                executor = Executors.newFixedThreadPool(4); //Needs testing
+                executor = Executors.newFixedThreadPool(1);
+               // ServerSend serverSend=new ServerSend();
+                //serverSend.run();
                 while (true) {
                     Socket socket = serverSocket.accept();
+                    System.out.println("Sees");
                     executor.execute(new Thread(new ServerThread(socket)));
                 }
             } finally {

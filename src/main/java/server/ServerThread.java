@@ -28,8 +28,8 @@ public class ServerThread implements Runnable {
              DataInputStream dataInputStream = new DataInputStream(inputStream);
              DataOutputStream clientOutputStream = new DataOutputStream(socket.getOutputStream())) {
             while (true) {
-                String username;
-                username = setUsername(dataInputStream, clientOutputStream);
+                //String username;
+                //username = setUsername(dataInputStream, clientOutputStream);
                 while (true) {
                     String command = dataInputStream.readUTF();
                     if (command.equals("logout")) {
@@ -51,11 +51,11 @@ public class ServerThread implements Runnable {
                                 if (!isRecording) {
                                     break;
                                 }
-                                fileSaving(fileName, fileBytes, username);
+                                fileSaving(fileName, fileBytes, "Server");
                             }
                         } else {
                             fileBytes = readAudioBytesFromClient(dataInputStream);
-                            fileSaving(fileName, fileBytes, username);
+                            fileSaving(fileName, fileBytes, "Server");
                         }
 
                     }
@@ -76,7 +76,7 @@ public class ServerThread implements Runnable {
             }
         }
     }
-
+    /*
     private String setUsername(DataInputStream dataInputStream, DataOutputStream clientOutputStream) throws IOException {
         String username;
         while (true) {
@@ -93,7 +93,7 @@ public class ServerThread implements Runnable {
             }
         }
         return username;
-    }
+    }*/
 
 
     //Reads sent audio as bytearray
@@ -222,9 +222,5 @@ public class ServerThread implements Runnable {
         }
 
         return pathStringFixed;
-
-
     }
-
-
 }
