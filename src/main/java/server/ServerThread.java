@@ -43,7 +43,7 @@ public class ServerThread implements Runnable {
                 int sampleRate = (int) format.getSampleRate();
                 audioInputStream.close();
                 int bytesRead;
-                randomAccessFile.seek(44);
+                randomAccessFile.seek(45);
                 System.out.println("Sample rate: " + sampleRate);
                 byte[] buffer = new byte[sampleRate * 5];
                 clientOutputStream.writeInt(Math.toIntExact(randomAccessFile.length() - 44));
