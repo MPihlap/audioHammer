@@ -45,9 +45,21 @@ public class FileOperations {
         };
         Files.walkFileTree(Paths.get(path), simpleFileVisitor);
     }
-
-
-
+    private Path filePath;
+    public Path getFilePath(String fileName) throws IOException {
+        SimpleFileVisitor<Path> simpleFileVisitor = new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
+                if (path.toString().endsWith(fileName)) {
+                    filePath = path;
+                    return FileVisitResult.TERMINATE;
+                }
+                return FileVisitResult.CONTINUE;
+            }
+        };
+        Files.walkFileTree(Paths.get(path), simpleFileVisitor);
+        return filePath;
+    }
     //Saves file
     public static void fileSaving(String filename, byte[] fileBytes, String username, AudioFormat audioFormat,boolean saveLocal, String localPath) throws IOException {
         String serverFilename = filename + ".wav";
@@ -56,7 +68,7 @@ public class FileOperations {
         String directory = dateTimeFormatter.format(localDate);
         String pathString;
         if (saveLocal) {
-            pathString = localPath.toString() + File.separator + serverFilename;
+            pathString = localPath + File.separator + serverFilename;
         }
         else {
             pathString = System.getProperty("user.home") + File.separator + "AudioHammerServer" + File.separator + username + File.separator + directory + File.separator + serverFilename;
@@ -203,6 +215,21 @@ public class FileOperations {
         return pathStringFixed;
 
 
+    }
+    public static AudioFormat readFormat(DataInputStream dataInputStream) throws IOException {
+        float sampleRate = dataInputStream.readFloat();
+        int sampleSize = dataInputStream.readInt();
+        int channels = dataInputStream.readInt();
+        boolean signed = dataInputStream.readBoolean();
+        boolean bigEndian = dataInputStream.readBoolean();
+        return new AudioFormat(sampleRate, sampleSize, channels, signed, bigEndian);
+    }
+    public static void sendFormat(DataOutputStream dataOutputStream,AudioFormat audioFormat) throws IOException {
+        dataOutputStream.writeFloat(audioFormat.getSampleRate());
+        dataOutputStream.writeInt(audioFormat.getSampleSizeInBits());
+        dataOutputStream.writeInt(audioFormat.getChannels());
+        dataOutputStream.writeBoolean(true);
+        dataOutputStream.writeBoolean(true);
     }
 
 

@@ -11,18 +11,18 @@ import java.io.*;
  * Currently replaced with PlayExistingFile
  */
 public class AudioPlaybackThread implements Runnable {
-    private final AudioFormat format = new AudioFormat(44100, 16, 1, true, true);
-    private final ByteArrayOutputStream captureOutputStream;
+    private final AudioFormat format;
+    //private final ByteArrayOutputStream captureOutputStream;
     private final DataInputStream servInputStream;
 
-    public AudioPlaybackThread(ByteArrayOutputStream captureOutputStream, DataInputStream servInputStream) {
-        this.captureOutputStream = captureOutputStream;
+    public AudioPlaybackThread(DataInputStream servInputStream,AudioFormat audioFormat) {
         this.servInputStream = servInputStream;
+        this.format = audioFormat;
     }
     private void streamAudioFromServer() throws IOException, LineUnavailableException {
         int filesize = servInputStream.readInt();
         int totalBytesRead = 0;
-        byte[] buffer = new byte[(int) format.getSampleRate()];
+        byte[] buffer = new byte[(int) format.getSampleRate()*5];
         SourceDataLine speakerDataLine = null;
         try {
             speakerDataLine = AudioSystem.getSourceDataLine(format);
@@ -32,6 +32,7 @@ public class AudioPlaybackThread implements Runnable {
                 int bytesToRead = servInputStream.readInt();
                 servInputStream.readFully(buffer,0,bytesToRead);
                 speakerDataLine.write(buffer,0,bytesToRead);
+                totalBytesRead += bytesToRead;
             }
         }
         finally {

@@ -3,6 +3,9 @@ package server;
 import client.FileOperations;
 
 import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.*;
 import java.net.Socket;
 import java.nio.ByteBuffer;
@@ -22,31 +25,47 @@ public class ServerThread implements Runnable {
     public ServerThread(Socket socket) {
         this.socket = socket;
     }
-    private void handleMyCloud(DataInputStream dataInputStream, DataOutputStream clientOutputStream) throws IOException {
+
+    private void handleMyCloud(DataInputStream dataInputStream, DataOutputStream clientOutputStream) throws IOException, UnsupportedAudioFileException {
         writeAllFilesToClient(clientOutputStream, fileOperations);
         String command;
-        while (!(command = dataInputStream.readUTF()).equals("back")){ //MyCloud loop
-            if (command.equals("Listen")){
+        while (!(command = dataInputStream.readUTF()).equals("back")) { //MyCloud loop
+            if (command.equals("Listen")) {
                 String filename = dataInputStream.readUTF();
-                //FileInputStream fileInputStream = new FileInputStream();
+                String filepath = fileOperations.getFilePath(filename).toString();
+                System.out.println(filepath);
+                RandomAccessFile randomAccessFile = new RandomAccessFile(filepath, "r");
+                randomAccessFile.seek(24);
+                randomAccessFile.seek(24);
+                AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File(filepath));
+                AudioFormat format = audioInputStream.getFormat();
+                FileOperations.sendFormat(clientOutputStream,format);
+                int sampleRate = (int) format.getSampleRate();
+                audioInputStream.close();
+                int bytesRead;
+                randomAccessFile.seek(44);
+                System.out.println("Sample rate: " + sampleRate);
+                byte[] buffer = new byte[sampleRate * 5];
+                clientOutputStream.writeInt(Math.toIntExact(randomAccessFile.length() - 44));
+                System.out.println("File length: "+Math.toIntExact(randomAccessFile.length() - 44));
+                while ((bytesRead = randomAccessFile.read(buffer, 0, buffer.length)) != -1) {
+                    clientOutputStream.writeInt(bytesRead);
+                    clientOutputStream.write(buffer, 0, bytesRead);
+                }
                 //TODO: Implement
-            }
-            else if (command.equals("Delete")){
+            } else if (command.equals("Delete")) {
                 String filename = dataInputStream.readUTF();
                 fileOperations.deleteFile(filename);
-            }
-            else if (command.equals("Download")){
+            } else if (command.equals("Download")) {
                 System.out.println("Läksin DL (servThread)");
                 String filename = dataInputStream.readUTF(); //receives filepath
                 System.out.println(FileOperations.sendFile(filename, clientOutputStream));
-            }
-            else if (command.equals("Rename")){
+            } else if (command.equals("Rename")) {
                 String oldFileName = dataInputStream.readUTF();
                 String newFileName = dataInputStream.readUTF();
-                clientOutputStream.writeBoolean(fileOperations.renameFile(oldFileName,newFileName));
+                clientOutputStream.writeBoolean(fileOperations.renameFile(oldFileName, newFileName));
                 writeAllFilesToClient(clientOutputStream, fileOperations);
-            }
-            else if(command.equals("Data")) {
+            } else if (command.equals("Data")) {
                 String filePath = dataInputStream.readUTF();
                 String[] data = fileOperations.getFileData(filePath);
                 clientOutputStream.writeUTF(data[0]);
@@ -54,71 +73,74 @@ public class ServerThread implements Runnable {
             }
         }
     }
+
     @Override
     public void run() {
         try (InputStream inputStream = socket.getInputStream();
              DataInputStream dataInputStream = new DataInputStream(inputStream);
              DataOutputStream clientOutputStream = new DataOutputStream(socket.getOutputStream())) {
             //Login screen loop
-                this.username = setUsername(dataInputStream, clientOutputStream);
-                fileOperations = new FileOperations(this.username);
-                while (true) { // MainStage loop
-                    String command = dataInputStream.readUTF();
-                    if(command.equals("pwChange")) {
-                        String password = dataInputStream.readUTF();
-                        clientOutputStream.writeBoolean(LoginHandler.changePassword(username, password));
-                    }
-                    if(command.equals("filesizes")) {
-                        double fileSizes = fileOperations.getFileSizes();
-                        clientOutputStream.writeDouble(fileSizes);
-                    }
-                    if (command.equals("logout")) {
-                        break;
-                    }
-                    if (command.equals("MyCloud")){
-                        handleMyCloud(dataInputStream,clientOutputStream);
-                    }
-                    if (command.equals("Recording")) { //if filename is entered, start recording
-                        while (true) {
-                            command = dataInputStream.readUTF();
-                            if (command.equals("MyCloud")){
-                                handleMyCloud(dataInputStream,clientOutputStream);
-                            }
-                            if (command.equals("back")){
-                                break;
-                            }
-                            if (command.equals("filename")) {
-                                AudioFormat audioFormat;
-                                String fileName = dataInputStream.readUTF();
-                                System.out.println(fileName);
-                                audioFormat = readFormat(dataInputStream);
-                                boolean bufferedMode = dataInputStream.readBoolean(); //Buffered recording or regular recording
-                                System.out.println("Buffer: " + bufferedMode);
-                                byte[] fileBytes;
-                                boolean isRecording;
-                                if (bufferedMode) {
-                                    int minutes = dataInputStream.readInt();    //length of recorded buffer
-                                    System.out.println("Minutes:" + minutes);
-                                    while (true) {                                                      // minutes * 60 * sample rate * samplesize/8 = How many bytes to store
-                                        fileBytes = bufferAudioBytesFromClient(dataInputStream, (int) (minutes * 60 * audioFormat.getSampleRate()*audioFormat.getSampleSizeInBits()/8));
-                                        isRecording = dataInputStream.readBoolean();
-                                        if (!isRecording) {
-                                            break;
-                                        }
-                                        FileOperations.fileSaving(fileName, fileBytes, username,audioFormat,false, null);
-                                    }
-                                } else {
-                                    fileBytes = readAudioBytesFromClient(dataInputStream);
-                                    FileOperations.fileSaving(fileName, fileBytes, username,audioFormat,false, null);
-                                }
+            this.username = setUsername(dataInputStream, clientOutputStream);
+            fileOperations = new FileOperations(this.username);
+            while (true) { // MainStage loop
+                String command = dataInputStream.readUTF();
+                if (command.equals("pwChange")) {
+                    String password = dataInputStream.readUTF();
+                    clientOutputStream.writeBoolean(LoginHandler.changePassword(username, password));
+                }
+                if (command.equals("filesizes")) {
+                    double fileSizes = fileOperations.getFileSizes();
+                    clientOutputStream.writeDouble(fileSizes);
+                }
+                if (command.equals("logout")) {
+                    break;
+                }
+                if (command.equals("MyCloud")) {
 
+                    handleMyCloud(dataInputStream, clientOutputStream);
+
+                }
+                if (command.equals("Recording")) { //if filename is entered, start recording
+                    while (true) {
+                        command = dataInputStream.readUTF();
+                        if (command.equals("MyCloud")) {
+                            handleMyCloud(dataInputStream, clientOutputStream);
+                        }
+                        if (command.equals("back")) {
+                            break;
+                        }
+                        if (command.equals("filename")) {
+                            AudioFormat audioFormat;
+                            String fileName = dataInputStream.readUTF();
+                            System.out.println(fileName);
+                            audioFormat = FileOperations.readFormat(dataInputStream);
+                            boolean bufferedMode = dataInputStream.readBoolean(); //Buffered recording or regular recording
+                            System.out.println("Buffer: " + bufferedMode);
+                            byte[] fileBytes;
+                            boolean isRecording;
+                            if (bufferedMode) {
+                                int minutes = dataInputStream.readInt();    //length of recorded buffer
+                                System.out.println("Minutes:" + minutes);
+                                while (true) {                                                      // minutes * 60 * sample rate * samplesize/8 = How many bytes to store
+                                    fileBytes = bufferAudioBytesFromClient(dataInputStream, (int) (minutes * 60 * audioFormat.getSampleRate() * audioFormat.getSampleSizeInBits() / 8));
+                                    isRecording = dataInputStream.readBoolean();
+                                    if (!isRecording) {
+                                        break;
+                                    }
+                                    FileOperations.fileSaving(fileName, fileBytes, username, audioFormat, false, null);
+                                }
+                            } else {
+                                fileBytes = readAudioBytesFromClient(dataInputStream);
+                                FileOperations.fileSaving(fileName, fileBytes, username, audioFormat, false, null);
                             }
 
                         }
+
                     }
                 }
+            }
 
-        } catch (IOException e) {
+        } catch (IOException | UnsupportedAudioFileException e) {
             throw new RuntimeException(e);
         } finally {
             try {
@@ -128,14 +150,9 @@ public class ServerThread implements Runnable {
             }
         }
     }
-    private AudioFormat readFormat(DataInputStream dataInputStream) throws IOException {
-        float sampleRate = dataInputStream.readFloat();
-        int sampleSize = dataInputStream.readInt();
-        int channels = dataInputStream.readInt();
-        boolean signed = dataInputStream.readBoolean();
-        boolean bigEndian = dataInputStream.readBoolean();
-        return new AudioFormat(sampleRate, sampleSize, channels, signed, bigEndian);
-    }
+
+
+
     private void writeAllFilesToClient(DataOutputStream clientOutputStream, FileOperations fileOperations) throws IOException {
         ArrayList<Path> allFiles = fileOperations.getAllFiles();
         clientOutputStream.writeInt(allFiles.size());
@@ -228,8 +245,6 @@ public class ServerThread implements Runnable {
         }
         return audioByteBuffer.array();
     }
-
-
 
 
 }

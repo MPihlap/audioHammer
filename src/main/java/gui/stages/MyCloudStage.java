@@ -1,5 +1,6 @@
 package gui.stages;
 
+import client.AudioPlaybackThread;
 import client.Client;
 import client.PlayExistingFile;
 import javafx.collections.FXCollections;
@@ -80,7 +81,11 @@ class MyCloudStage extends BaseStage {
         //Reads right-click menu choice
         cm.setOnAction(event -> {
             if ((((MenuItem) event.getTarget()).getText()).equals("Listen")) {
-                listenFile(myCloudFilesList.getSelectionModel().getSelectedItem());
+                try {
+                    listenFile(myCloudFilesList.getSelectionModel().getSelectedItem());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             } else if ((((MenuItem) event.getTarget()).getText()).equals("Rename")) {
                 renameFileStage(myCloudFilesList.getSelectionModel().getSelectedItem());
             } else if ((((MenuItem) event.getTarget()).getText()).equals("Download")) {
@@ -290,10 +295,10 @@ class MyCloudStage extends BaseStage {
      *
      * @param fileName the filename of the file that will be played
      */
-    private void listenFile(String fileName) {
-        String listenFile = parentAndFile.get(fileName) + File.separator + fileName;
-        new Thread(new PlayExistingFile(listenFile)).start();
-
+    private void listenFile(String fileName) throws IOException {
+        //String listenFile = parentAndFile.get(fileName) + File.separator + fileName;
+        //new Thread(new PlayExistingFile(listenFile)).start();
+        client.streamFileFromCloud(fileName);
         //TODO: implement
     }
 

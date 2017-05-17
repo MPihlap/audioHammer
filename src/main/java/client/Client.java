@@ -32,9 +32,16 @@ public class Client {
     private boolean saveLocally;
     private boolean saveRemote;
 
+    public void setAudioFormat(AudioFormat audioFormat) {
+        this.audioFormat = audioFormat;
+    }
 
-
-
+    public void streamFileFromCloud(String filename) throws IOException {
+        servOutputStream.writeUTF("Listen");
+        servOutputStream.writeUTF(filename);
+        AudioFormat audioFormat = FileOperations.readFormat(servInputStream);
+        new Thread(new AudioPlaybackThread(servInputStream,audioFormat)).start();
+    }
     public void setFilename(String filename) {
         this.filename = filename;
     }
@@ -49,20 +56,13 @@ public class Client {
 
 
 
-
     public String getUsername() {
         return username;
     }
     public boolean isSocketCreated(){
         return servSocket != null;
     }
-    private void sendFormat() throws IOException {
-        servOutputStream.writeFloat(audioFormat.getSampleRate());
-        servOutputStream.writeInt(audioFormat.getSampleSizeInBits());
-        servOutputStream.writeInt(audioFormat.getChannels());
-        servOutputStream.writeBoolean(true);
-        servOutputStream.writeBoolean(true);
-    }
+
     public List<String> getAllFilesFromCloud() throws IOException {
         List<String> allFiles = new ArrayList<>();
         int nrOfFiles = servInputStream.readInt();
@@ -110,7 +110,7 @@ public class Client {
         if (saveRemote) {
             servOutputStream.writeUTF("filename");
             servOutputStream.writeUTF(filename);
-            sendFormat();
+            FileOperations.sendFormat(servOutputStream,audioFormat);
             servOutputStream.writeBoolean(false);
         }
         recordingInfo.add("start");
@@ -125,7 +125,7 @@ public class Client {
         if (saveRemote) {
             servOutputStream.writeUTF("filename");
             servOutputStream.writeUTF(filename);
-            sendFormat();
+            FileOperations.sendFormat(servOutputStream,audioFormat);
             servOutputStream.writeBoolean(true);
             servOutputStream.writeInt(minutes);
         }
