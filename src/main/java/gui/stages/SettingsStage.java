@@ -15,6 +15,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import server.LoginHandler;
 
+import javax.sound.sampled.AudioFormat;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -250,36 +251,36 @@ public class SettingsStage extends BaseStage {
         Label mainInformation = new Label("Choose format parameters: ");
         //Format options
         Label information1 = new Label("Sample rate:");
-        TextField sampleRate = new TextField();
-        sampleRate.setMinWidth(100);
-        sampleRate.textProperty().addListener(new ChangeListener<String>() {
+        TextField sampleRateField = new TextField();
+        sampleRateField.setMinWidth(100);
+        sampleRateField.textProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
                 if (!newValue.matches("\\d*")) {
-                    sampleRate.setText(newValue.replaceAll("[^\\d]", ""));
+                    sampleRateField.setText(newValue.replaceAll("[^\\d]", ""));
                 }
             }
         });
 
         Label information2 = new Label("Sample size:");
-        TextField sampleSize = new TextField();
-        sampleSize.setMinWidth(100);
-        sampleSize.textProperty().addListener(new ChangeListener<String>() {
+        TextField sampleSizeField = new TextField();
+        sampleSizeField.setMinWidth(100);
+        sampleSizeField.textProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
                 if (!newValue.matches("\\d*")) {
-                    sampleSize.setText(newValue.replaceAll("[^\\d]", ""));
+                    sampleSizeField.setText(newValue.replaceAll("[^\\d]", ""));
                 }
             }
         });
         Label information3 = new Label("Channels:");
-        TextField channels = new TextField();
-        channels.setMinWidth(100);
-        channels.textProperty().addListener(new ChangeListener<String>() {
+        TextField channelsField = new TextField();
+        channelsField.setMinWidth(100);
+        channelsField.textProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
                 if (!newValue.matches("\\d*")) {
-                    channels.setText(newValue.replaceAll("[^\\d]", ""));
+                    channelsField.setText(newValue.replaceAll("[^\\d]", ""));
                 }
             }
         });
@@ -289,9 +290,12 @@ public class SettingsStage extends BaseStage {
         cancel.setOnAction((ActionEvent event) -> {
             chooseFormat.close();
         });
-        //Changing password button
         Button confirm = new Button("Confirm");
         confirm.setOnAction((ActionEvent event) -> {
+            int sampleRate = Integer.parseInt(sampleRateField.getText());
+            int sampleSize = Integer.parseInt(sampleSizeField.getText());
+            int channels = Integer.parseInt(channelsField.getText());
+            client.setAudioFormat(new AudioFormat(sampleRate,sampleSize,channels,true,true));
 
             // TODO set filesaving parameters
         });
@@ -300,9 +304,9 @@ public class SettingsStage extends BaseStage {
         gridPane.add(information1, 0, 1, 1, 1);
         gridPane.add(information2, 1, 1, 1, 1);
         gridPane.add(information3, 2, 1, 1, 1);
-        gridPane.add(sampleRate, 0, 2, 1, 1);
-        gridPane.add(sampleSize, 2, 2, 1, 1);
-        gridPane.add(channels, 1, 2, 1, 1);
+        gridPane.add(sampleRateField, 0, 2, 1, 1);
+        gridPane.add(sampleSizeField, 2, 2, 1, 1);
+        gridPane.add(channelsField, 1, 2, 1, 1);
         gridPane.add(cancel, 0, 3, 1, 1);
         gridPane.add(confirm, 1, 3, 1, 1);
 
