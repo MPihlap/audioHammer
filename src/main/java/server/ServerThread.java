@@ -43,7 +43,7 @@ public class ServerThread implements Runnable {
                 int bytesRead;
                 randomAccessFile.seek(45);
                 System.out.println("Sample rate: " + sampleRate);
-                byte[] buffer = new byte[sampleRate * 5];
+                byte[] buffer = new byte[sampleRate * 2];
                 clientOutputStream.writeInt(Math.toIntExact(randomAccessFile.length() - 44));
                 System.out.println("File length: "+Math.toIntExact(randomAccessFile.length() - 44));
                 while ((bytesRead = randomAccessFile.read(buffer, 0, buffer.length)) != -1) {

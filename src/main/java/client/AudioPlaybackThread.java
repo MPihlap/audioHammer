@@ -23,7 +23,7 @@ public class AudioPlaybackThread implements Runnable {
     private void streamAudioFromServer() throws IOException, LineUnavailableException {
         int filesize = servInputStream.readInt();
         int totalBytesRead = 0;
-        byte[] buffer = new byte[(int) format.getSampleRate()*5];
+        byte[] buffer = new byte[(int) format.getSampleRate()*2];
         SourceDataLine speakerDataLine = null;
         try {
             speakerDataLine = AudioSystem.getSourceDataLine(format);
@@ -34,7 +34,6 @@ public class AudioPlaybackThread implements Runnable {
                 servInputStream.readFully(buffer,0,bytesToRead);
                 speakerDataLine.write(buffer,0,bytesToRead);
                 totalBytesRead += bytesToRead;
-
             }
         } finally {
             if (speakerDataLine != null) {
@@ -51,29 +50,5 @@ public class AudioPlaybackThread implements Runnable {
         } catch (IOException | LineUnavailableException e) {
             throw new RuntimeException(e);
         }
-        /*
-        try {
-            System.out.println(captureOutputStream.size());
-            SourceDataLine speakerDataLine = AudioSystem.getSourceDataLine(format);
-            int bufferSize = (int) format.getSampleRate() * format.getFrameSize();
-            byte[] recordedAudioBytes = captureOutputStream.toByteArray();
-            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(recordedAudioBytes);
-            AudioInputStream playbackStream = new AudioInputStream(byteArrayInputStream, format, captureOutputStream.size());
-            byte[] playbackBuffer = new byte[bufferSize];
-            speakerDataLine.open(format);
-            speakerDataLine.start();
-            int len;
-            while ((len = playbackStream.read(playbackBuffer, 0, playbackBuffer.length)) != -1) {
-                if (len > 0) {
-                    speakerDataLine.write(playbackBuffer, 0, len);
-                }
-            }
-            speakerDataLine.stop();
-            speakerDataLine.close();
-        }
-        catch (IOException | LineUnavailableException e){
-            throw new RuntimeException(e);
-        }
-        */
     }
 }
