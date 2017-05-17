@@ -3,6 +3,7 @@ package gui.stages;
 import client.AudioPlaybackThread;
 import client.Client;
 import client.PlayExistingFile;
+import gui.Main;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -57,14 +58,13 @@ class MyCloudStage extends BaseStage {
         Label myCloudFilesListLabel = new Label("My files: ");
         //Files list
         this.myCloudFilesList = new ListView<>();
-        ObservableList<String> myCloudFiles;
+        ObservableList<String> myCloudFiles = null;
         try {
             myCloudFiles = FXCollections.observableArrayList(myCloudFiles());
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
         myCloudFilesList.setItems(myCloudFiles);
-        System.out.println(myCloudFiles);
         //right-click menu
         ContextMenu cm = new ContextMenu();
         MenuItem rightClickMIListen = new MenuItem("Listen");
@@ -79,6 +79,7 @@ class MyCloudStage extends BaseStage {
             }
         });
         //Reads right-click menu choice
+        Label information = new Label("");
         cm.setOnAction(event -> {
             if ((((MenuItem) event.getTarget()).getText()).equals("Listen")) {
                 try {
@@ -105,42 +106,42 @@ class MyCloudStage extends BaseStage {
         });
         //Shows right-click menu on left click and hides on left-click
         myCloudFilesList.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
-            String fileData;
 
-            //get and set info about selected file
-            try {
-                fileData = getFileData(myCloudFilesList.getSelectionModel().getSelectedItem());
-            } catch (IOException e1) {
-                fileData = "Not available";
-            }
-            for (Node node :
-                    gridPane.getChildren()) {
-                if (node instanceof Label && GridPane.getColumnIndex(node) == 0 && GridPane.getRowIndex(node) == 2) {
-                    ((Label) node).setText(fileData);
-                }
-            }
-
-
-            //If right click on filename
             String[] targetInfo = e.getTarget().toString().split("'");
+            //If right click on filename
             if (e.getButton() == MouseButton.SECONDARY && ((targetInfo.length == 2 && !targetInfo[1].equals("null"))) || (targetInfo.length == 1)) {
+                try {
+                    information.setText(getFileData(myCloudFilesList.getSelectionModel().getSelectedItem()));
+                } catch (IOException e1) {
+                    information.setText(" ");
+                }
                 if (myCloudFilesList.getSelectionModel().getSelectedItem() != null) {
-
-                    cm.show(myCloudFilesList, e.getScreenX(), e.getScreenY());
+                    if(e.getButton()==MouseButton.SECONDARY){
+                        cm.show(myCloudFilesList, e.getScreenX(), e.getScreenY());
+                    }
                 }
                 //If right click on empty space
                 else {
                     if (targetInfo.length != 1 && (targetInfo[1].equals("null"))) {
                         myCloudFilesList.getSelectionModel().clearSelection();
+                        information.setText(" ");
                     }
                 }
                 //If left click
             } else {
                 cm.hide();
+                System.out.println("ok3");
                 //If left click on empty space
                 if (myCloudFilesList.getSelectionModel().isSelected(myCloudFilesList.getSelectionModel().getSelectedIndex()) && targetInfo.length >= 2 &&
                         (targetInfo[1].equals("null"))) {
+                    information.setText("Choose a file");
                     myCloudFilesList.getSelectionModel().clearSelection();
+                }else if (myCloudFilesList.getSelectionModel().getSelectedItem() != null) {
+                    try {
+                        information.setText(getFileData(myCloudFilesList.getSelectionModel().getSelectedItem()));
+                    } catch (IOException e1) {
+                        information.setText(" ");
+                    }
                 }
 
             }
@@ -149,15 +150,14 @@ class MyCloudStage extends BaseStage {
 
         myCloudFilesList.setMaxSize(sizeW - 35, 150);
         myCloudFilesList.setMinSize(sizeW - 35, 150);
-        //information label TODO Text editing (Helen)
-        Label information = new Label("");
+        //information label
         //Back to main stage
         Button backButton = new Button("Back");
         backButton.setOnAction((ActionEvent event) -> {
             try {
                 client.sendCommand("back");
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                e.printStackTrace();
             }
             switchStage(new MainStage(client));
         });
@@ -276,18 +276,24 @@ class MyCloudStage extends BaseStage {
      * @param fileName the filename of the file that will be deleted
      */
     private void deleteFile(String fileName) throws IOException {
-        //TODO: ask for confirmation for delete
-
         String deleteFile = parentAndFile.get(fileName) + File.separator + fileName;
         client.deleteFile(deleteFile);
         alert("Success!", ("File " + fileName + " succesfully deleted."));
         refreshListView();
     }
 
+    /**
+     * Returns file infomration data
+     *
+     * @param fileName the name of the file which data is looked for
+     * @return file data
+     * @throws IOException
+     */
+
     private String getFileData(String fileName) throws IOException {
         String filePath = parentAndFile.get(fileName) + File.separator + fileName;
         String[] fileData = client.getFileData(filePath);
-        return "Last modified: " + fileData[0] + "; File size: " + fileData[1] + " mb";
+        return "Last modified: " + fileData[0] + "; File size: " + fileData[1] + " MB";
     }
 
     /**
@@ -321,13 +327,8 @@ class MyCloudStage extends BaseStage {
      */
     private void refreshListView() throws IOException {
         ObservableList<String> myCloudFiles = FXCollections.observableArrayList(myCloudFiles());
-        for (String string:myCloudFiles){
-            System.out.println(string);
-        }
         myCloudFilesList.setItems(myCloudFiles);
     }
-
-
 
 
 }
