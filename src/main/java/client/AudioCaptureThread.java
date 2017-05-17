@@ -23,6 +23,7 @@ public class AudioCaptureThread implements Runnable {
 
     /**
      * This method is used to send commands to client during buffered recording
+     *
      * @param commandsToClient
      */
     public void setCommandsToClient(BlockingQueue<String> commandsToClient) {
@@ -30,9 +31,8 @@ public class AudioCaptureThread implements Runnable {
     }
 
 
-
     public byte[] getRecordedBytes() {
-        if (bufferedMode){
+        if (bufferedMode) {
             return byteBuffer.array();
         }
         return captureOutputStream.toByteArray();
@@ -46,11 +46,15 @@ public class AudioCaptureThread implements Runnable {
         this.bufferedMode = bufferedMode;
     }
 
-    public AudioCaptureThread(boolean bufferedMode, BlockingQueue<String> commandsFromClient, ByteBuffer byteBuffer,DataOutputStream servStream) {
+    public AudioCaptureThread(boolean bufferedMode, BlockingQueue<String> commandsFromClient, ByteBuffer byteBuffer, DataOutputStream servStream) {
         this.bufferedMode = bufferedMode;
         this.commandsFromClient = commandsFromClient;
         this.byteBuffer = byteBuffer;
         this.servStream = servStream;
+    }
+
+    public void setSaveLocally(boolean saveLocally) {
+        this.saveLocally = saveLocally;
     }
 
     public void setSaveRemote(boolean saveRemote) {
@@ -65,7 +69,7 @@ public class AudioCaptureThread implements Runnable {
             microphone.open(format);
             System.out.println("Buffer size:" + microphone.getBufferSize());
             byte[] recordByteBuffer = new byte[microphone.getBufferSize() / 5];
-            recordAudioToServerOrClient(microphone,recordByteBuffer);
+            recordAudioToServerOrClient(microphone, recordByteBuffer);
 
         } catch (LineUnavailableException | InterruptedException | IOException e) {
             throw new RuntimeException(e);
@@ -85,26 +89,24 @@ public class AudioCaptureThread implements Runnable {
             String command = commandsFromClient.poll();
             if (command != null) {
                 if (command.equals("stop")) {
-                    if (bufferedMode){
+                    if (bufferedMode) {
                         commandsToClient.add("stop");
                     }
                     break;
-                }
-                else if (command.equals("pause")) {
+                } else if (command.equals("pause")) {
                     if (commandsFromClient.take().equals("stop")) {
                         break;
                     } else {
                         continue; //Waits for input "resume"
                     }
-                }
-                else if (command.equals("buffer")) {
+                } else if (command.equals("buffer")) {
                     if (saveRemote) {
                         servStream.writeInt(2); //End of audio transmission.
                         servStream.writeBoolean(true); //Start new file
                         servStream.writeInt(1);
                         servStream.writeInt(microphone.getBufferSize() / 5);
                     }
-                    if (saveLocally){
+                    if (saveLocally) {
                         commandsToClient.add("buffer");
                     }
                 }
@@ -118,12 +120,12 @@ public class AudioCaptureThread implements Runnable {
                 servStream.writeInt(numBytesRead);
                 servStream.write(recordByteBuffer, 0, numBytesRead);
             }
-            if (bufferedMode && saveLocally){
+            if (bufferedMode && saveLocally) {
                 if (byteBuffer.position() + numBytesRead > byteBuffer.capacity()) { //Check if size limit has been reached
                     byteBuffer.position(recordByteBuffer.length);               //Go to position after first buffer
                     byteBuffer.compact();                          //Remove bytes before position
                 }
-                byteBuffer.put(recordByteBuffer,0,numBytesRead);
+                byteBuffer.put(recordByteBuffer, 0, numBytesRead);
             }
         }
 
@@ -139,8 +141,5 @@ public class AudioCaptureThread implements Runnable {
         }
         microphone.stop();
         microphone.close();
-    }
-    public void setSaveLocally(boolean saveLocally) {
-        this.saveLocally = saveLocally;
     }
 }

@@ -19,13 +19,12 @@ public class FileOperations {
 
 
     /**
-     *
      * @param username name of client
      * @throws IOException when an error occurs when trying to locate path
      */
     public FileOperations(String username) throws IOException {
         this.path = System.getProperty("user.home") + File.separator + "AudioHammerServer" + File.separator + username;
-        if (!Files.exists(Paths.get(path))){
+        if (!Files.exists(Paths.get(path))) {
             Files.createDirectories(Paths.get(path));
             System.out.println("Tried to make directories");
         }
@@ -47,9 +46,8 @@ public class FileOperations {
     }
 
 
-
     //Saves file
-    public static void fileSaving(String filename, byte[] fileBytes, String username, AudioFormat audioFormat,boolean saveLocal, String localPath) throws IOException {
+    public static void fileSaving(String filename, byte[] fileBytes, String username, AudioFormat audioFormat, boolean saveLocal, String localPath) throws IOException {
         String serverFilename = filename + ".wav";
         LocalDate localDate = LocalDate.now();
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
@@ -57,8 +55,7 @@ public class FileOperations {
         String pathString;
         if (saveLocal) {
             pathString = localPath.toString() + File.separator + serverFilename;
-        }
-        else {
+        } else {
             pathString = System.getProperty("user.home") + File.separator + "AudioHammerServer" + File.separator + username + File.separator + directory + File.separator + serverFilename;
             pathString = fileCheck(pathString);
             Path path = Paths.get(pathString);
@@ -66,13 +63,12 @@ public class FileOperations {
         }
         File newFile = new File(pathString);
         FileOperations.createWAV(fileBytes, newFile, audioFormat);
-        System.out.println("File " + filename + " is saved as " +newFile.getName());
+        System.out.println("File " + filename + " is saved as " + newFile.getName());
 
 
     }
 
     /**
-     *
      * @return total sum of recorded files in myCloud
      * @throws IOException
      */
@@ -82,7 +78,7 @@ public class FileOperations {
             @Override
             public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
                 if (path.toString().endsWith(".wav")) {
-                    fileSizes+=attrs.size()/(1048576.0); //bytes to megabytes
+                    fileSizes += attrs.size() / (1048576.0); //bytes to megabytes
                 }
                 return FileVisitResult.CONTINUE;
             }
@@ -133,9 +129,8 @@ public class FileOperations {
     }
 
     /**
-     *
-     * @param fileBytes Audio data
-     * @param file file where audio is saved
+     * @param fileBytes   Audio data
+     * @param file        file where audio is saved
      * @param audioFormat predetermined audio format for WAV files
      * @throws IOException
      */
@@ -155,7 +150,6 @@ public class FileOperations {
     }
 
     /**
-     *
      * @param filePath path of desired file
      * @return Array of two strings, first being the date when the file was last modified; second string is the size of the file
      * @throws IOException
@@ -163,10 +157,11 @@ public class FileOperations {
     public String[] getFileData(String filePath) throws IOException {
         File file = new File(filePath);
         Date mod = new Date(file.lastModified());
-        String sizeString = String.valueOf((file.length()/1048576.0)).substring(0, 5);
+        String sizeString = String.valueOf((file.length() / 1048576.0)).substring(0, 5);
 
         return new String[]{mod.toString(), sizeString};
     }
+
     //Checks if file name is unique in this folder. Adds "(Copyxx)" if needed
     private static String fileCheck(String pathString) {
         String pathStringFixed = pathString;
