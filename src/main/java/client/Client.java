@@ -89,11 +89,9 @@ public class Client {
         this.settingsPath  = System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator + username + File.separator +  "settings.txt";
         if (!Files.exists(Paths.get(localPath))){
             Files.createDirectories(Paths.get(localPath));
+            createSettings();
         }
         else {
-            if (!Files.exists(Paths.get(settingsPath))){
-                createSettings();
-            }
             try (BufferedReader bufferedReader = new BufferedReader(new FileReader(settingsPath))) {
                 this.downloadPath = bufferedReader.readLine();
                 this.localPath = bufferedReader.readLine();
