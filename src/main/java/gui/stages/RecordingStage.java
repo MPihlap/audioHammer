@@ -87,7 +87,7 @@ class RecordingStage extends BaseStage {
         openCloud.setMinWidth(100);
         openCloud.setOnAction((ActionEvent event) -> {
             if (recordingBoolean) {
-                stillRecording();
+                alert ("Still recording!", "Please stop recording before switching the page.");
             } else {
                 try {
                     client.sendCommand("MyCloud");
@@ -254,7 +254,7 @@ class RecordingStage extends BaseStage {
         openCloud.setMinWidth(100);
         openCloud.setOnAction((ActionEvent event) -> {
             if (recordingBoolean) {
-                stillRecording();
+                alert ("Still recording!", "Please stop recording before switching the page.");
             } else {
                 switchStage(new MyCloudStage(client));
             }
@@ -279,19 +279,11 @@ class RecordingStage extends BaseStage {
         Label timer = new Label("00:00:00");
         timer.setMaxWidth(200);
         //No filename alert
-        Alert noFilenameAlert = new Alert(Alert.AlertType.INFORMATION);
-        noFilenameAlert.setTitle("No filename!");
-        noFilenameAlert.setHeaderText(null);
-        noFilenameAlert.setContentText("Please insert filename.");
+
         //Filename already used alert. TODO add checks and usage
         Alert filenameAlreadyUsedAlert = new Alert(Alert.AlertType.INFORMATION);
         filenameAlreadyUsedAlert.setTitle("Used filename!");
         filenameAlreadyUsedAlert.setHeaderText(null);
-        //Choose saving location alert
-        Alert noSaveLocationAlert = new Alert(Alert.AlertType.INFORMATION);
-        noSaveLocationAlert.setTitle("No saving location!");
-        noSaveLocationAlert.setHeaderText(null);
-        noSaveLocationAlert.setContentText("Please choose where you wish to save your files.");
         //Saving location
         TextField directoryLocalSaves = new TextField();
         directoryLocalSaves.setMaxWidth(308);
@@ -364,11 +356,11 @@ class RecordingStage extends BaseStage {
                         filename.setDisable(true);
                         new Thread(timerThread).start();
                     } else {
-                        noFilenameAlert.showAndWait();
+                        alert ("No filename!", "Please insert filename");
                     }
                 }
             } else {
-                noSaveLocationAlert.showAndWait();
+                alert ("No saving location!", "Please choose where you wish to save your files.");
             }
         });
         lapButton.setOnAction((ActionEvent event) -> {
@@ -415,6 +407,13 @@ class RecordingStage extends BaseStage {
         time = System.currentTimeMillis();
     }
 
+    /**
+     * Starts buffered recording saving
+     * @param minutes buffered recording time in minutes
+     * @param filename file name for buffered file
+     * @throws IOException
+     */
+
     private void bufferedRecordingStart(int minutes, String filename) throws IOException {
         client.startBufferedRecording(minutes, filename);
         time = System.currentTimeMillis();
@@ -426,31 +425,25 @@ class RecordingStage extends BaseStage {
      * @param filename the filename that was inserted into filename TextField
      * @return true if filename is suitable; false if it is not
      */
-    // Filename check
     private boolean checkFilename(String filename) {
         return !(filename.contains(")") || filename.contains("(")) && !filename.startsWith(".");
     }
 
-    //Saves last n minutes of the recording
+    /**
+     * Makes a lap in recording
+     * @param bufferedTimeSlider Slider for buffertime
+     * @throws IOException
+     */
     private void lapAction(Slider bufferedTimeSlider) throws IOException {
         client.saveBuffer();
     }
 
     /**
-     * Shows alert if it\s still recording
+     * Checks whether it is still recording
      */
-
-    private void stillRecording() {
-        Alert stillRecordingAlert = new Alert(Alert.AlertType.INFORMATION);
-        stillRecordingAlert.setTitle("Still recording!");
-        stillRecordingAlert.setHeaderText(null);
-        stillRecordingAlert.setContentText("Please stop recording before switching the page.");
-        stillRecordingAlert.showAndWait();
-    }
-
     public void backCheck() {
         if (recordingBoolean) {
-            stillRecording();
+            alert ("Still recording!", "Please stop recording before switching the page.");
         } else {
             try {
                 client.sendCommand("back");
@@ -461,6 +454,10 @@ class RecordingStage extends BaseStage {
         }
     }
 
+    /**
+     * Creates directory chooser
+     * @return
+     */
     private String directoriChooser() {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         File selectedDirectory = directoryChooser.showDialog(stage);
@@ -470,5 +467,6 @@ class RecordingStage extends BaseStage {
             return null;
         }
     }
+
 }
 
