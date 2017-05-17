@@ -1,9 +1,7 @@
 package client;
 
 import javax.sound.sampled.*;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.io.*;
 
 /**
  * Created by Meelis on 31/03/2017.
@@ -15,13 +13,42 @@ import java.io.IOException;
 public class AudioPlaybackThread implements Runnable {
     private final AudioFormat format = new AudioFormat(44100, 16, 1, true, true);
     private final ByteArrayOutputStream captureOutputStream;
+    private final DataInputStream servInputStream;
 
-    public AudioPlaybackThread(ByteArrayOutputStream captureOutputStream) {
+    public AudioPlaybackThread(ByteArrayOutputStream captureOutputStream, DataInputStream servInputStream) {
         this.captureOutputStream = captureOutputStream;
+        this.servInputStream = servInputStream;
     }
-
+    private void streamAudioFromServer() throws IOException, LineUnavailableException {
+        int filesize = servInputStream.readInt();
+        int totalBytesRead = 0;
+        byte[] buffer = new byte[(int) format.getSampleRate()];
+        SourceDataLine speakerDataLine = null;
+        try {
+            speakerDataLine = AudioSystem.getSourceDataLine(format);
+            speakerDataLine.open(format);
+            speakerDataLine.start();
+            while (totalBytesRead < filesize){
+                int bytesToRead = servInputStream.readInt();
+                servInputStream.readFully(buffer,0,bytesToRead);
+                speakerDataLine.write(buffer,0,bytesToRead);
+            }
+        }
+        finally {
+            if (speakerDataLine != null) {
+                speakerDataLine.stop();
+                speakerDataLine.close();
+            }
+        }
+    }
     @Override
     public void run() {
+        try {
+            streamAudioFromServer();
+        } catch (IOException | LineUnavailableException e) {
+            throw new RuntimeException(e);
+        }
+        /*
         try {
             System.out.println(captureOutputStream.size());
             SourceDataLine speakerDataLine = AudioSystem.getSourceDataLine(format);
@@ -44,5 +71,6 @@ public class AudioPlaybackThread implements Runnable {
         catch (IOException | LineUnavailableException e){
             throw new RuntimeException(e);
         }
+        */
     }
 }
