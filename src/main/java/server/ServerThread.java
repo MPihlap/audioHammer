@@ -35,8 +35,6 @@ public class ServerThread implements Runnable {
                 String filepath = fileOperations.getFilePath(filename).toString();
                 System.out.println(filepath);
                 RandomAccessFile randomAccessFile = new RandomAccessFile(filepath, "r");
-                randomAccessFile.seek(24);
-                randomAccessFile.seek(24);
                 AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File(filepath));
                 AudioFormat format = audioInputStream.getFormat();
                 FileOperations.sendFormat(clientOutputStream,format);
