@@ -17,7 +17,7 @@ import java.util.concurrent.BlockingQueue;
  * Created by Helen on 12-Mar-17.
  */
 public class Client {
-    private AudioFormat audioFormat = new AudioFormat(44100,16,1,true,true);
+    private AudioFormat audioFormat = new AudioFormat(44100, 16, 1, true, true);
     private String username;
     private Socket servSocket;
     private DataOutputStream servOutputStream;
@@ -36,12 +36,18 @@ public class Client {
         this.audioFormat = audioFormat;
     }
 
+
     public void streamFileFromCloud(String filename) throws IOException {
         servOutputStream.writeUTF("Listen");
         servOutputStream.writeUTF(filename);
         AudioFormat audioFormat = FileOperations.readFormat(servInputStream);
         new Thread(new AudioPlaybackThread(servInputStream,audioFormat)).start();
     }
+
+    public void setLocalPath(String localPath) {
+        this.localPath = localPath;
+    }
+
     public void setFilename(String filename) {
         this.filename = filename;
     }
@@ -55,11 +61,11 @@ public class Client {
     }
 
 
-
     public String getUsername() {
         return username;
     }
-    public boolean isSocketCreated(){
+
+    public boolean isSocketCreated() {
         return servSocket != null;
     }
 
@@ -71,6 +77,7 @@ public class Client {
         }
         return allFiles;
     }
+
     public void setUsername(String username) throws IOException {
         this.username = username;
         this.localPath = System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator + username;
@@ -86,12 +93,11 @@ public class Client {
     }
 
     public void directoryCheck() throws IOException {
-        this.settingsPath  = System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator + username + File.separator +  "settings.txt";
-        if (!Files.exists(Paths.get(localPath))){
+        this.settingsPath = System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator + username + File.separator + "settings.txt";
+        if (!Files.exists(Paths.get(localPath))) {
             Files.createDirectories(Paths.get(localPath));
             createSettings();
-        }
-        else {
+        } else {
             try (BufferedReader bufferedReader = new BufferedReader(new FileReader(settingsPath))) {
                 this.downloadPath = bufferedReader.readLine();
                 this.localPath = bufferedReader.readLine();
@@ -105,8 +111,8 @@ public class Client {
     }
 
     public void startRecording(String filename) throws IOException {
-        System.out.println("Remote: "+saveRemote);
-        System.out.println("Local "+saveLocally);
+        System.out.println("Remote: " + saveRemote);
+        System.out.println("Local " + saveLocally);
         if (saveRemote) {
             servOutputStream.writeUTF("filename");
             servOutputStream.writeUTF(filename);
@@ -121,7 +127,8 @@ public class Client {
         captureThread.start();
         System.out.println("hakkas lindistama");
     }
-    public void startBufferedRecording(int minutes,String filename) throws IOException {
+
+    public void startBufferedRecording(int minutes, String filename) throws IOException {
         if (saveRemote) {
             servOutputStream.writeUTF("filename");
             servOutputStream.writeUTF(filename);
@@ -131,8 +138,8 @@ public class Client {
         }
         ArrayBlockingQueue<String> bufferedCommands = new ArrayBlockingQueue<>(5);
         recordingInfo.add("start");
-        audioCaptureThread = new AudioCaptureThread(true,recordingInfo,
-                ByteBuffer.allocate((int) (minutes*60*audioFormat.getSampleRate())*audioFormat.getSampleSizeInBits()/8),
+        audioCaptureThread = new AudioCaptureThread(true, recordingInfo,
+                ByteBuffer.allocate((int) (minutes * 60 * audioFormat.getSampleRate()) * audioFormat.getSampleSizeInBits() / 8),
                 servOutputStream
         );
 
@@ -142,6 +149,7 @@ public class Client {
         this.captureThread = new Thread(audioCaptureThread);
         captureThread.start();
     }
+
     public void saveBuffer() throws IOException {
         recordingInfo.add("buffer");
         if (saveLocally) {
@@ -164,18 +172,20 @@ public class Client {
         System.out.println("stopped");
         try {
             captureThread.join();
-            FileOperations.fileSaving(filename,audioCaptureThread.getRecordedBytes(),username,audioFormat,true, localPath);
+            FileOperations.fileSaving(filename, audioCaptureThread.getRecordedBytes(), username, audioFormat, true, localPath);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
         System.out.println("finished recording");
     }
-    public boolean renameFile(String oldName,String newName) throws IOException {
+
+    public boolean renameFile(String oldName, String newName) throws IOException {
         servOutputStream.writeUTF("Rename");
         servOutputStream.writeUTF(oldName);
         servOutputStream.writeUTF(newName);
         return servInputStream.readBoolean();
     }
+
     public boolean deleteFile(String filename) throws IOException {
         servOutputStream.writeUTF("Delete");
         servOutputStream.writeUTF(filename);
@@ -209,6 +219,7 @@ public class Client {
         servOutputStream.writeUTF(password);
         return (servInputStream.readBoolean());
     }
+
     public boolean sendUsername(String username, String password) throws IOException {
         servOutputStream.writeUTF("username"); // Indicate incoming user info
         servOutputStream.writeUTF(username);
@@ -229,10 +240,11 @@ public class Client {
                 }
             }
         } catch (IOException e) {
-           return false;
+            return false;
         }
         return true;
     }
+
     private void createSettings() throws IOException {
 
         try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(settingsPath))) {
@@ -241,6 +253,7 @@ public class Client {
             bufferedWriter.write(localPath);
         }
     }
+
     public void updateSettings(String localPath, String downloadPath) throws IOException {
         if (localPath.equals(this.localPath) && downloadPath.equals(this.downloadPath)) {
             return;

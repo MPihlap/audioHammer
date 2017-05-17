@@ -54,7 +54,7 @@ public class MainStage extends BaseStage {
         stage.setMinHeight(sizeH);
         //General information labels
         Label informationMain = new Label();
-        informationMain.setText("Information (Does not change):\nMyCloud room used:\nLast recording:\n\n\n\n");
+        informationMain.setText("Information:\nMyCloud room used:\nLast recording:\n\n\n\n");
         Label informationUser = new Label();
         try {
             fileSizes = Math.round(getFileSizes());

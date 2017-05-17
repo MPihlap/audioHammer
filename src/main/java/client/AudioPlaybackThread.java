@@ -19,6 +19,7 @@ public class AudioPlaybackThread implements Runnable {
         this.servInputStream = servInputStream;
         this.format = audioFormat;
     }
+
     private void streamAudioFromServer() throws IOException, LineUnavailableException {
         int filesize = servInputStream.readInt();
         int totalBytesRead = 0;
@@ -28,20 +29,21 @@ public class AudioPlaybackThread implements Runnable {
             speakerDataLine = AudioSystem.getSourceDataLine(format);
             speakerDataLine.open(format);
             speakerDataLine.start();
-            while (totalBytesRead < filesize){
+            while (totalBytesRead < filesize) {
                 int bytesToRead = servInputStream.readInt();
                 servInputStream.readFully(buffer,0,bytesToRead);
                 speakerDataLine.write(buffer,0,bytesToRead);
                 totalBytesRead += bytesToRead;
+
             }
-        }
-        finally {
+        } finally {
             if (speakerDataLine != null) {
                 speakerDataLine.stop();
                 speakerDataLine.close();
             }
         }
     }
+
     @Override
     public void run() {
         try {
