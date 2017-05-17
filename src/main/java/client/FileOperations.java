@@ -18,7 +18,11 @@ public class FileOperations {
     private Double fileSizes = 0.0;
 
 
-
+    /**
+     *
+     * @param username name of client
+     * @throws IOException when an error occurs when trying to locate path
+     */
     public FileOperations(String username) throws IOException {
         this.path = System.getProperty("user.home") + File.separator + "AudioHammerServer" + File.separator + username;
         if (!Files.exists(Paths.get(path))){
@@ -66,13 +70,19 @@ public class FileOperations {
 
 
     }
+
+    /**
+     *
+     * @return total sum of recorded files in myCloud
+     * @throws IOException
+     */
     public double getFileSizes() throws IOException {
         fileSizes = 0.0;
         SimpleFileVisitor<Path> simpleFileVisitor = new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
                 if (path.toString().endsWith(".wav")) {
-                    fileSizes+=attrs.size()/(1048576.0);
+                    fileSizes+=attrs.size()/(1048576.0); //bytes to megabytes
                 }
                 return FileVisitResult.CONTINUE;
             }
@@ -122,10 +132,16 @@ public class FileOperations {
 
     }
 
+    /**
+     *
+     * @param fileBytes Audio data
+     * @param file file where audio is saved
+     * @param audioFormat predetermined audio format for WAV files
+     * @throws IOException
+     */
     public static void createWAV(byte[] fileBytes, File file, AudioFormat audioFormat) throws IOException {
         AudioInputStream ais;
         try (ByteArrayInputStream bais = new ByteArrayInputStream(fileBytes)) {
-            //AudioFormat audioFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, 44100, 16, 1, 2, 44100, true);
             ais = new AudioInputStream(bais, audioFormat, fileBytes.length / audioFormat.getFrameSize());
         }
 
@@ -138,22 +154,18 @@ public class FileOperations {
         return allFilesWithPath;
     }
 
+    /**
+     *
+     * @param filePath path of desired file
+     * @return Array of two strings, first being the date when the file was last modified; second string is the size of the file
+     * @throws IOException
+     */
     public String[] getFileData(String filePath) throws IOException {
-        String length;
         File file = new File(filePath);
         Date mod = new Date(file.lastModified());
-        AudioFormat format;
-        long frames;
-        try (AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(file)) {
-            format = audioInputStream.getFormat();
-            frames = audioInputStream.getFrameLength();
-            length = String.valueOf((frames) / format.getFrameRate()); //gets length of file in seconds
-            audioInputStream.close();
-        } catch (UnsupportedAudioFileException e) {
-            length = "Not available";
-        }
+        String sizeString = String.valueOf((file.length()/1048576.0)).substring(0, 5);
 
-        return new String[]{mod.toString(), length};
+        return new String[]{mod.toString(), sizeString};
     }
     //Checks if file name is unique in this folder. Adds "(Copyxx)" if needed
     private static String fileCheck(String pathString) {

@@ -102,15 +102,12 @@ class MyCloudStage extends BaseStage {
         myCloudFilesList.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
             String fileData;
 
-            /**
             //get and set info about selected file
             try {
                 fileData = getFileData(myCloudFilesList.getSelectionModel().getSelectedItem());
             } catch (IOException e1) {
                 fileData = "Not available";
             }
-             **/
-            fileData = "Not available";
             for (Node node :
                     gridPane.getChildren()) {
                 if(node instanceof Label && GridPane.getColumnIndex(node)==0 && GridPane.getRowIndex(node)==2) {
@@ -294,13 +291,11 @@ class MyCloudStage extends BaseStage {
         refreshListView();
     }
 
-    /**
     private String getFileData(String fileName) throws IOException { //TODO implement into GUI
         String filePath = parentAndFile.get(fileName) + File.separator + fileName;
         String[] fileData = client.getFileData(filePath);
-        return "Last modified: " + fileData[0] + "; Length: " + fileData[1] + "s";
+        return "Last modified: " + fileData[0] + "; File size: " + fileData[1] + " mb";
     }
-     **/
 
     /**
      * Plays recorded file with given name from server

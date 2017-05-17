@@ -151,7 +151,6 @@ class SignUpStage extends BaseStage {
             if (client.sendUsername(username, password)) {
                 accountCreated.showAndWait();
                 client.setUsername(username);
-                (new File(System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator + username)).mkdir();
                 client.directoryCheck();
 
             } else {

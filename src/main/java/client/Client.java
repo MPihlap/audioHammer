@@ -85,12 +85,12 @@ public class Client {
     }
 
     public void directoryCheck() throws IOException {
+        this.settingsPath  = System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator + username + File.separator +  "settings.txt";
         if (!Files.exists(Paths.get(localPath))){
             Files.createDirectories(Paths.get(localPath));
             createSettings();
         }
         else {
-            this.settingsPath  = System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator + username + File.separator +  "settings.txt";
             try (BufferedReader bufferedReader = new BufferedReader(new FileReader(settingsPath))) {
                 this.downloadPath = bufferedReader.readLine();
                 this.localPath = bufferedReader.readLine();
@@ -137,7 +137,7 @@ public class Client {
                 ByteBuffer.allocate((int) (minutes*60*audioFormat.getSampleRate())*audioFormat.getSampleSizeInBits()/8),
                 servOutputStream
         );
-        //audioCaptureThread.createByteBuffer((int) (minutes*audioFormat.getSampleRate())*audioFormat.getSampleSizeInBits()/8);
+
         audioCaptureThread.setSaveLocally(saveLocally);
         audioCaptureThread.setSaveRemote(saveRemote);
         audioCaptureThread.setCommandsToClient(bufferedCommands);
