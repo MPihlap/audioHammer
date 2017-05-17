@@ -144,21 +144,6 @@ public class LogInStage extends BaseStage {
         stage.show();
     }
 
-<<<<<<< HEAD
-=======
-    /**
-     * used when server is down
-     */
-    private void connectionError() {
-        Alert errorAlert = new Alert(Alert.AlertType.INFORMATION); //TODO use
-        errorAlert.setTitle("Error");
-        errorAlert.setHeaderText(null);
-        errorAlert.setContentText("Could not create a connection. Please try again later.");
-        errorAlert.showAndWait();
-    }
->>>>>>> 9f33a89f87d2027d5e209a2e2e42a0e5abd2bef2
-
-
     /**
      * Allows to use application in offline mode/locally.
      */

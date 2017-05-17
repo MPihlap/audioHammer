@@ -112,6 +112,7 @@ public class SettingsStage extends BaseStage {
         gridPane.add(directoryDownload, 0, 4, 1, 1);
         gridPane.add(chooseDirectoryDownload, 1, 4, 1, 1);
         gridPane.add(changePassword, 0, 6, 1, 1);
+        gridPane.add(formatButton,1,6,1,1);
         gridPane.add(back, 0, 7, 1, 1);
         gridPane.add(apply, 1, 7, 1, 1);
 
@@ -249,8 +250,8 @@ public class SettingsStage extends BaseStage {
     private void chooseFormat() {
         Stage chooseFormat = new Stage();
         chooseFormat.setResizable(false);
-        int sizeW = 300;
-        int sizeH = 150;
+        int sizeW = 350;
+        int sizeH = 160;
         chooseFormat.setMaxWidth(sizeW);
         chooseFormat.setMinWidth(sizeW);
         chooseFormat.setMaxHeight(sizeH);

@@ -176,7 +176,7 @@ class RecordingStage extends BaseStage {
                         }
                         try {
                             if (!online) {
-                                unassigned(); //TODO fix local recording
+                                alert("undone", "undone"); //TODO fix local recording
                             } else {
                                 recordingStart(filename.getText());
                             }
