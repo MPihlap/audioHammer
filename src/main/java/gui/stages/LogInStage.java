@@ -2,13 +2,11 @@ package gui.stages;
 
 import client.Client;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Font;
 import server.LoginHandler;
@@ -90,6 +88,7 @@ public class LogInStage extends BaseStage {
                             wrongUsernameOrPasswordAlert.showAndWait();
                         } else {
                             client.setUsername(userNameField.getText());
+                            client.directoryCheck();
                             MainStage mainStage = new MainStage(client);
                             switchStage(mainStage);
 
@@ -160,6 +159,9 @@ public class LogInStage extends BaseStage {
         stage.show();
     }
 
+    /**
+     * used when server is down
+     */
     private void connectionError() {
         Alert errorAlert = new Alert(Alert.AlertType.INFORMATION); //TODO use
         errorAlert.setTitle("Error");
@@ -168,22 +170,9 @@ public class LogInStage extends BaseStage {
         errorAlert.showAndWait();
     }
 
-    /**
-     * Checks if user can log in with inserted password and username
-     *
-     * @param password the password that user inserted into PasswordField
-     * @param username the username that user inserted into username TextField
-     * @return true, if user can log in; false otherwise
-     * @throws IOException
-     */
-    private boolean logInCheck(String password, String username) throws IOException {
-        client.setUsername(username);
-        //LogIn and open main window
-        return LoginHandler.login(username, password);
-    }
 
     /**
-     * Allows to use application in offline mode/locally. Will be add later
+     * Allows to use application in offline mode/locally.
      */
     private void offlineMode() {
         RecordingStage recordingStage=new RecordingStage(client, false);

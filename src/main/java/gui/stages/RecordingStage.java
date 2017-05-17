@@ -171,7 +171,6 @@ class RecordingStage extends BaseStage {
                     if (filename.getText() != null && !filename.getText().equals("") && this.checkFilename(filename.getText())) {
                         if (online) {
                             client.setFilename(filename.getText());
-
                         }
 
                         try {

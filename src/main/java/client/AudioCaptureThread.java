@@ -17,18 +17,18 @@ public class AudioCaptureThread implements Runnable {
     private final BlockingQueue<String> commandsFromClient;
     private DataOutputStream servStream;
     private final AudioFormat format = new AudioFormat(44100, 16, 1, true, true);
-    //private final ByteArrayOutputStream captureOutputStream;
     private ByteArrayOutputStream captureOutputStream;
     private ByteBuffer byteBuffer;
     private BlockingQueue<String> commandsToClient;
 
+    /**
+     * This method is used to send commands to client during buffered recording
+     * @param commandsToClient
+     */
     public void setCommandsToClient(BlockingQueue<String> commandsToClient) {
         this.commandsToClient = commandsToClient;
     }
 
-    public void createByteBuffer(int capacity){
-        byteBuffer = ByteBuffer.allocate(capacity);
-    }
 
 
     public byte[] getRecordedBytes() {
@@ -37,6 +37,7 @@ public class AudioCaptureThread implements Runnable {
         }
         return captureOutputStream.toByteArray();
     }
+
 
     public AudioCaptureThread(ByteArrayOutputStream captureOutputStream, DataOutputStream servStream, BlockingQueue<String> commandsFromClient, boolean bufferedMode) {
         this.captureOutputStream = captureOutputStream;
@@ -97,7 +98,6 @@ public class AudioCaptureThread implements Runnable {
                     }
                 }
                 else if (command.equals("buffer")) {
-                    System.out.println("In buffer");
                     if (saveRemote) {
                         servStream.writeInt(2); //End of audio transmission.
                         servStream.writeBoolean(true); //Start new file

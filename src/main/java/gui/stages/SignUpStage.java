@@ -7,7 +7,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.GridPane;
-import server.LoginHandler;
 
 import java.io.File;
 import java.io.IOException;
@@ -152,7 +151,7 @@ class SignUpStage extends BaseStage {
             if (client.sendUsername(username, password)) {
                 accountCreated.showAndWait();
                 client.setUsername(username);
-                (new File(System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator + username)).mkdir();
+                client.directoryCheck();
 
             } else {
                 errorAlert.showAndWait();

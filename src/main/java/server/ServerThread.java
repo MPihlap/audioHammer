@@ -28,7 +28,7 @@ public class ServerThread implements Runnable {
         while (!(command = dataInputStream.readUTF()).equals("back")){ //MyCloud loop
             if (command.equals("Listen")){
                 String filename = dataInputStream.readUTF();
-                FileInputStream fileInputStream = new FileInputStream();
+                //FileInputStream fileInputStream = new FileInputStream();
                 //TODO: Implement
             }
             else if (command.equals("Delete")){
@@ -105,11 +105,11 @@ public class ServerThread implements Runnable {
                                         if (!isRecording) {
                                             break;
                                         }
-                                        fileOperations.fileSaving(fileName, fileBytes, username,audioFormat,false);
+                                        FileOperations.fileSaving(fileName, fileBytes, username,audioFormat,false, null);
                                     }
                                 } else {
                                     fileBytes = readAudioBytesFromClient(dataInputStream);
-                                    fileOperations.fileSaving(fileName, fileBytes, username,audioFormat,false);
+                                    FileOperations.fileSaving(fileName, fileBytes, username,audioFormat,false, null);
                                 }
 
                             }

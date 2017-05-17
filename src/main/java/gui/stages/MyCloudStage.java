@@ -100,9 +100,9 @@ class MyCloudStage extends BaseStage {
         });
         //Shows right-click menu on left click and hides on left-click
         myCloudFilesList.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
+            String fileData;
 
             //get and set info about selected file
-            String fileData;
             try {
                 fileData = getFileData(myCloudFilesList.getSelectionModel().getSelectedItem());
             } catch (IOException e1) {
@@ -291,10 +291,10 @@ class MyCloudStage extends BaseStage {
         refreshListView();
     }
 
-    private String getFileData(String fileName) throws IOException { //TODO implement into GUI
+    private String getFileData(String fileName) throws IOException {
         String filePath = parentAndFile.get(fileName) + File.separator + fileName;
         String[] fileData = client.getFileData(filePath);
-        return "Last modified: " + fileData[0] + "; Length: " + fileData[1] + "s";
+        return "Last modified: " + fileData[0] + "; File size: " + fileData[1] + " mb";
     }
 
     /**
@@ -306,7 +306,7 @@ class MyCloudStage extends BaseStage {
         String listenFile = parentAndFile.get(fileName) + File.separator + fileName;
         new Thread(new PlayExistingFile(listenFile)).start();
 
-        //TODO: add custom media player
+        //TODO: implement
     }
 
     /**
