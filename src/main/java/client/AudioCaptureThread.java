@@ -22,7 +22,7 @@ public class AudioCaptureThread implements Runnable {
     private BlockingQueue<String> commandsToClient;
 
     /**
-     * This method is used to send commands to client during buffered recording
+     * This Queue is used to send commands to client during buffered recording
      *
      * @param commandsToClient
      */
@@ -69,7 +69,7 @@ public class AudioCaptureThread implements Runnable {
             microphone.open(format);
             System.out.println("Buffer size:" + microphone.getBufferSize());
             byte[] recordByteBuffer = new byte[microphone.getBufferSize() / 5];
-            recordAudioToServerOrClient(microphone, recordByteBuffer);
+            recordAudio(microphone, recordByteBuffer);
 
         } catch (LineUnavailableException | InterruptedException | IOException e) {
             throw new RuntimeException(e);
@@ -77,7 +77,7 @@ public class AudioCaptureThread implements Runnable {
 
     }
 
-    private void recordAudioToServerOrClient(TargetDataLine microphone, byte[] recordByteBuffer) throws InterruptedException, IOException {
+    private void recordAudio(TargetDataLine microphone, byte[] recordByteBuffer) throws InterruptedException, IOException {
         int numBytesRead;
         commandsFromClient.take(); //Waits for initial input "start"
         microphone.start();
