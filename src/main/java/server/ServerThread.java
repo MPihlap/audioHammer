@@ -27,6 +27,8 @@ public class ServerThread implements Runnable {
         String command;
         while (!(command = dataInputStream.readUTF()).equals("back")){ //MyCloud loop
             if (command.equals("Listen")){
+                String filename = dataInputStream.readUTF();
+                FileInputStream fileInputStream = new FileInputStream();
                 //TODO: Implement
             }
             else if (command.equals("Delete")){
