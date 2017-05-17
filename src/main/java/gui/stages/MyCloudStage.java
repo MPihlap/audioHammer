@@ -179,7 +179,7 @@ class MyCloudStage extends BaseStage {
      */
     private ArrayList<String> myCloudFiles() throws IOException {
         //ArrayList<Path> allFilesWithPath = fileOperations.getAllFiles();
-        List<String> allFiles = client.getAllFilesFromCloud(); //TODO vigane rida, jookseb kokku
+        List<String> allFiles = client.getAllFilesFromCloud();
         ArrayList<Path> allFilesWithPath = new ArrayList<>();
         for (String path : allFiles) {
             allFilesWithPath.add(Paths.get(path));
@@ -316,8 +316,13 @@ class MyCloudStage extends BaseStage {
      */
     private void refreshListView() throws IOException {
         ObservableList<String> myCloudFiles = FXCollections.observableArrayList(myCloudFiles());
+        for (String string:myCloudFiles){
+            System.out.println(string);
+        }
         myCloudFilesList.setItems(myCloudFiles);
     }
+
+
 
 
 }

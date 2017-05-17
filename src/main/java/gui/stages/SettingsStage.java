@@ -64,8 +64,10 @@ public class SettingsStage extends BaseStage {
         directoryLocalSaves.setText(client.getLocalPath());
         Button chooseDirectoryLocalSaves = new Button("...");
         chooseDirectoryLocalSaves.setOnAction((ActionEvent event) -> {
-            String directoryString = directoriChooser();
-            directoryLocalSaves.setText(directoryString);
+            String directoryString = directoryChooser();
+            if (!(directoryString == null)) {
+                directoryLocalSaves.setText(directoryString);
+            }
         });
         //Directory choose download
         Label informationDirectoryDownload = new Label("Downloaded files destination:");
@@ -73,8 +75,10 @@ public class SettingsStage extends BaseStage {
         directoryDownload.setText(client.getDownloadPath());
         Button chooseDirectoryDownload = new Button("...");
         chooseDirectoryDownload.setOnAction((ActionEvent event) -> {
-            String directoryString = directoriChooser();
-            directoryDownload.setText(directoryString);
+            String directoryString = directoryChooser();
+            if (!(directoryString == null)) {
+                directoryDownload.setText(directoryString);
+            }
 
         });
 
@@ -112,7 +116,7 @@ public class SettingsStage extends BaseStage {
         gridPane.add(directoryDownload, 0, 4, 1, 1);
         gridPane.add(chooseDirectoryDownload, 1, 4, 1, 1);
         gridPane.add(changePassword, 0, 6, 1, 1);
-        gridPane.add(formatButton,1,6,1,1);
+        gridPane.add(formatButton, 1, 6, 1, 1);
         gridPane.add(back, 0, 7, 1, 1);
         gridPane.add(apply, 1, 7, 1, 1);
 
@@ -125,7 +129,7 @@ public class SettingsStage extends BaseStage {
     /**
      * Creates directory chooser
      */
-    private String directoriChooser() {
+    private String directoryChooser() {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         File selectedDirectory = directoryChooser.showDialog(stage);
         if (selectedDirectory != null) {
