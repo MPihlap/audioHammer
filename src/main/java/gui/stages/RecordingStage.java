@@ -169,9 +169,7 @@ class RecordingStage extends BaseStage {
                     timerThread.setRecordingBoolean(false);
                 } else {
                     if (filename.getText() != null && !filename.getText().equals("") && this.checkFilename(filename.getText())) {
-                        if (online) {
-                            client.setFilename(filename.getText());
-                        }
+                        client.setFilename(filename.getText());
                         try {
                             if (!online) {
                                 client.setLocalPath(directoryLocalSaves.getText());
