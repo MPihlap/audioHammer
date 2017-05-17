@@ -105,11 +105,11 @@ public class ServerThread implements Runnable {
                                         if (!isRecording) {
                                             break;
                                         }
-                                        FileOperations.fileSaving(fileName, fileBytes, username,audioFormat,false);
+                                        FileOperations.fileSaving(fileName, fileBytes, username,audioFormat,false, null);
                                     }
                                 } else {
                                     fileBytes = readAudioBytesFromClient(dataInputStream);
-                                    FileOperations.fileSaving(fileName, fileBytes, username,audioFormat,false);
+                                    FileOperations.fileSaving(fileName, fileBytes, username,audioFormat,false, null);
                                 }
 
                             }

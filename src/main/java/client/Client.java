@@ -6,7 +6,6 @@ import java.io.*;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,10 +25,14 @@ public class Client {
     private String filename;
     private BlockingQueue<String> recordingInfo = new ArrayBlockingQueue<String>(5);
     private Thread captureThread;
-    private Path downloadPath = Paths.get(System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator + "Downloads");
-    private Path localPath;
+    private String downloadPath = System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator + "Downloads";
+    private String settingsPath;
+    private String localPath;
     private boolean saveLocally;
     private boolean saveRemote;
+
+
+
 
     public void setFilename(String filename) {
         this.filename = filename;
@@ -69,7 +72,7 @@ public class Client {
     }
     public void setUsername(String username) throws IOException {
         this.username = username;
-        this.localPath = Paths.get(System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator + username);
+        this.localPath = System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator + username;
         //fileOperations = new FileOperations(username);
         System.out.println("sain username");
     }
@@ -82,9 +85,16 @@ public class Client {
     }
 
     public void directoryCheck() throws IOException {
-        if (!Files.exists(localPath)){
-            Files.createDirectories(localPath);
+        if (!Files.exists(Paths.get(localPath))){
+            Files.createDirectories(Paths.get(localPath));
             createSettings();
+        }
+        else {
+            this.settingsPath  = System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator + username + File.separator +  "settings.txt";
+            try (BufferedReader bufferedReader = new BufferedReader(new FileReader(settingsPath))) {
+                this.downloadPath = bufferedReader.readLine();
+                this.localPath = bufferedReader.readLine();
+            }
         }
     }
 
@@ -137,7 +147,7 @@ public class Client {
     public void saveBuffer() throws IOException {
         recordingInfo.add("buffer");
         if (saveLocally) {
-            FileOperations.fileSaving(filename, audioCaptureThread.getRecordedBytes(), username, audioFormat, true);
+            FileOperations.fileSaving(filename, audioCaptureThread.getRecordedBytes(), username, audioFormat, true, getLocalPath());
         }
     }
 
@@ -156,7 +166,7 @@ public class Client {
         System.out.println("stopped");
         try {
             captureThread.join();
-            FileOperations.fileSaving(filename,audioCaptureThread.getRecordedBytes(),username,audioFormat,true);
+            FileOperations.fileSaving(filename,audioCaptureThread.getRecordedBytes(),username,audioFormat,true, localPath);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -225,32 +235,28 @@ public class Client {
         }
         return true;
     }
-    private boolean createSettings() throws IOException {
+    private void createSettings() throws IOException {
 
-        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator + username + File.separator +  "settings.txt"))) {
-            bufferedWriter.write(downloadPath.toString());
+        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(settingsPath))) {
+            bufferedWriter.write(downloadPath);
             bufferedWriter.newLine();
-            bufferedWriter.write(localPath.toString());
-            return true;
-        }
-        catch (IOException e) {
-            return false;
+            bufferedWriter.write(localPath);
         }
     }
-    public boolean updateSettings(String localPath, String downloadPath) throws IOException {
-        if (localPath.equals(this.localPath.toString()) && downloadPath.equals(this.downloadPath.toString())) {
-            return true;
+    public void updateSettings(String localPath, String downloadPath) throws IOException {
+        if (localPath.equals(this.localPath) && downloadPath.equals(this.downloadPath)) {
+            return;
         }
-        this.localPath = Paths.get(localPath);
-        this.downloadPath = Paths.get(downloadPath);
-        return createSettings();
+        this.localPath = localPath;
+        this.downloadPath = downloadPath;
+        createSettings();
     }
 
-    public Path getLocalPath() {
+    public String getLocalPath() {
         return localPath;
     }
 
-    public Path getDownloadPath() {
+    public String getDownloadPath() {
         return downloadPath;
     }
 }

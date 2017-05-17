@@ -45,28 +45,26 @@ public class FileOperations {
 
 
     //Saves file
-    public static void fileSaving(String filename, byte[] fileBytes, String username, AudioFormat audioFormat,boolean saveLocal) throws IOException {
+    public static void fileSaving(String filename, byte[] fileBytes, String username, AudioFormat audioFormat,boolean saveLocal, String localPath) throws IOException {
         String serverFilename = filename + ".wav";
         LocalDate localDate = LocalDate.now();
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         String directory = dateTimeFormatter.format(localDate);
         String pathString;
         if (saveLocal) {
-            pathString = System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator + username + File.separator + directory + File.separator + serverFilename;
+            pathString = localPath.toString() + File.separator + serverFilename;
         }
         else {
             pathString = System.getProperty("user.home") + File.separator + "AudioHammerServer" + File.separator + username + File.separator + directory + File.separator + serverFilename;
+            pathString = fileCheck(pathString);
+            Path path = Paths.get(pathString);
+            Files.createDirectories(path.getParent());
         }
-        System.out.println(pathString);
-
-        pathString = fileCheck(pathString);
-        Path path = Paths.get(pathString);
-
-        Files.createDirectories(path.getParent());
         File newFile = new File(pathString);
         FileOperations.createWAV(fileBytes, newFile, audioFormat);
+        System.out.println("File " + filename + " is saved as " +newFile.getName());
 
-        System.out.println("File " + filename + " is saved as " + path.getFileName());
+
     }
     public double getFileSizes() throws IOException {
         fileSizes = 0.0;
