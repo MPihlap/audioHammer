@@ -17,6 +17,8 @@ import server.LoginHandler;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /**
  * Constructs a Settings stage.
@@ -87,17 +89,20 @@ public class SettingsStage extends BaseStage {
          */
         Button apply = new Button("Apply");
         apply.setOnAction((ActionEvent event) -> {
-            String localPath = directoryLocalSaves.getText();
-            String downloadPath = directoryDownload.getText();
-            if (localPath.equals(null) || downloadPath.equals(null)) {
-                errorAlert("Please choose a directory for both paths.");
+            if (!Files.exists(Paths.get(directoryDownload.getText())) ||!Files.exists(Paths.get(directoryLocalSaves.getText()))) {
+                alert("Error!", "At least one of the destination folders you have chosen, does not exist. Please choose another location or create the folder.");
             } else {
-                try {
-                    client.updateSettings(localPath, downloadPath);
-                } catch (IOException e) {
-                    errorAlert("Something went wrong. Try again later.");
+                String localPath = directoryLocalSaves.getText();
+                String downloadPath = directoryDownload.getText();
+                if (localPath.equals(null) || downloadPath.equals(null)) {
+                    alert("Error", "Please choose a directory for both paths.");
+                } else {
+                    try {
+                        client.updateSettings(localPath, downloadPath);
+                    } catch (IOException e) {
+                        alert("Error", "Something went wrong. Try again later.");
+                    }
                 }
-
             }
         });
         Button back = new Button("Back");
@@ -184,26 +189,25 @@ public class SettingsStage extends BaseStage {
             final String currentPasswordInput = currentPassword.getText();
             final String newPasswordInput1 = newPasswordOne.getText();
             final String newPasswordInput2 = newPasswordTwo.getText();
-            // TODO Paroolide kontrollimine ja muutmine
 
             try {
                 if (!LoginHandler.login(client.getUsername(), currentPasswordInput)) {
-                    errorAlert("You inserted wrong current password! Try again.");
+                    alert("Error", "You inserted wrong current password! Try again.");
                 } else if (!newPasswordInput1.equals(newPasswordInput2)) {
-                    errorAlert("New passwords do not match! Try again.");
+                    alert("Error", "New passwords do not match! Try again.");
                 } else if (newPasswordInput1.length() < 6 || newPasswordInput1.length() == 0) {
-                    errorAlert("New inserted password is too short!");
+                    alert("Error", "New inserted password is too short!");
                 } else {
                     if (client.passwordChange(newPasswordInput1)) {
-                        alertPasswordChangeConfirm();
+                        alert("Success", "Your password was changed successfully");
                         resetPasswordStage.close();
                     } else {
-                        errorAlert("Something went wrong.");
+                        alert("Error", "Something went wrong.");
                     }
 
                 }
             } catch (IOException e) {
-                errorAlert("You inserted wrong current password! Try again.");
+                alert("Error", "You inserted wrong current password! Try again.");
             }
         });
         //Adding nodes to gridpane
@@ -222,30 +226,6 @@ public class SettingsStage extends BaseStage {
         resetPasswordStage.initModality(Modality.APPLICATION_MODAL);
         resetPasswordStage.setTitle("Change password");
         resetPasswordStage.showAndWait();
-    }
-
-    /**
-     * Creates and shows Alert
-     *
-     * @param text Alert text
-     */
-    private void errorAlert(String text) {
-        Alert nameExists = new Alert(Alert.AlertType.INFORMATION);
-        nameExists.setTitle("Error");
-        nameExists.setHeaderText(null);
-        nameExists.setContentText(text);
-        nameExists.showAndWait();
-    }
-
-    /**
-     * Shows password changes confim alert
-     */
-    private void alertPasswordChangeConfirm() {
-        Alert nameExists = new Alert(Alert.AlertType.INFORMATION);
-        nameExists.setTitle("Success");
-        nameExists.setHeaderText(null);
-        nameExists.setContentText("Your password was changed successfully");
-        nameExists.showAndWait();
     }
 
     /**
