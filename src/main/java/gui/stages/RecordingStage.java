@@ -159,6 +159,8 @@ class RecordingStage extends BaseStage {
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
+                    directoryLocalSaves.setDisable(false);
+                    chooseDirectoryLocalSaves.setDisable(false);
                     recordingButton.setText("Start");
                     pauseButton.setDisable(true);
                     pauseButton.setText("Pause");
@@ -178,6 +180,8 @@ class RecordingStage extends BaseStage {
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
+                        directoryLocalSaves.setDisable(true);
+                        chooseDirectoryLocalSaves.setDisable(true);
                         timerThread = new TimerThread(timer, time);
                         recordingButton.setText("Stop");
                         recordingBoolean = true;
@@ -318,6 +322,8 @@ class RecordingStage extends BaseStage {
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
+                    directoryLocalSaves.setDisable(false);
+                    chooseDirectoryLocalSaves.setDisable(false);
                     recordingButton.setText("Start");
                     recordingBoolean = false;
                     bufferTimeSlider.setDisable(false);
@@ -340,6 +346,8 @@ class RecordingStage extends BaseStage {
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
+                        directoryLocalSaves.setDisable(true);
+                        chooseDirectoryLocalSaves.setDisable(true);
                         timerThread = new TimerThread(timer, time);
                         recordingButton.setText("Stop");
                         bufferTimeSlider.setDisable(true);
