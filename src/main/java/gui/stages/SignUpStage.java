@@ -49,54 +49,34 @@ class SignUpStage extends BaseStage {
         passwordFieldFirst.setMaxWidth(sizeW - 35);
         PasswordField passwordFieldConfirm = new PasswordField();
         passwordFieldConfirm.setMaxWidth(sizeW - 35);
-        //Account creation problems' alerts TODO add their usage to createAccount();
-        Alert usernameInUse = new Alert(Alert.AlertType.INFORMATION); //TODO use
-        usernameInUse.setTitle("Username already in use!");
-        usernameInUse.setHeaderText(null);
-        usernameInUse.setContentText("Sorry, this username is already in use. Please choose another username.");
-
-        Alert passwordTooShort = new Alert(Alert.AlertType.INFORMATION); //TODO use
-        passwordTooShort.setTitle("Too short password!");
-        passwordTooShort.setHeaderText(null);
-        passwordTooShort.setContentText("Password has to be at least 6 characters long. Please choose longer password.");
-
-        Alert passwordsDoNotMatch = new Alert(Alert.AlertType.INFORMATION); //TODO use
-        passwordsDoNotMatch.setTitle("Passwords do not match!");
-        passwordsDoNotMatch.setHeaderText(null);
-        passwordsDoNotMatch.setContentText("These passwords do not match. Try again.");
-
-        Alert unfilledFields = new Alert(Alert.AlertType.INFORMATION);
-        unfilledFields.setTitle("Empty fields!");
-        unfilledFields.setHeaderText(null);
-        unfilledFields.setContentText("Seems like you have left some fields unfilled. Try again.");
         // Create account button
         Button createAccountButton = new Button("Create account");
         createAccountButton.setOnAction((ActionEvent event) -> {
             if (usernameField.getText().equals("") || passwordFieldFirst.getText().equals("") || passwordFieldConfirm.getText().equals("")) {
-                unfilledFields.showAndWait();
+                alert("Empty fields", "Seems like you have left some fields unfilled. Try again.");
             } else {
                 if (passwordFieldFirst.getText().length() < 6) {
-                    passwordTooShort.showAndWait();
+                    alert("Too short password!", "Password has to be at least 6 characters long. Please choose longer password.");
                 } else if (passwordFieldFirst.getText().equals(passwordFieldConfirm.getText())) {
                     createAccount(usernameField.getText(), passwordFieldFirst.getText());
                 } else {
-                    passwordsDoNotMatch.showAndWait();
+                    alert("Passwords do not match!", "These passwords do not match. Try again.");
                 }
             }
         });
         // Enter for username and password fields
         usernameField.setOnKeyPressed(event -> {
-            if (event.getCode().equals(KeyCode.ENTER)){
+            if (event.getCode().equals(KeyCode.ENTER)) {
                 createAccountButton.fire();
             }
         });
         passwordFieldFirst.setOnKeyPressed(event -> {
-            if (event.getCode().equals(KeyCode.ENTER)){
+            if (event.getCode().equals(KeyCode.ENTER)) {
                 createAccountButton.fire();
             }
         });
         passwordFieldConfirm.setOnKeyPressed(event -> {
-            if (event.getCode().equals(KeyCode.ENTER)){
+            if (event.getCode().equals(KeyCode.ENTER)) {
                 createAccountButton.fire();
             }
         });
@@ -136,25 +116,15 @@ class SignUpStage extends BaseStage {
      * @param password the password that user inserted into PasswordField
      */
     private void createAccount(String username, String password) {
-        Alert accountCreated = new Alert(Alert.AlertType.INFORMATION); //TODO use
-        accountCreated.setTitle("Success!");
-        accountCreated.setHeaderText(null);
-        accountCreated.setContentText("New account created!");
-
-        Alert errorAlert = new Alert(Alert.AlertType.INFORMATION); //TODO use
-        errorAlert.setTitle("Error");
-        errorAlert.setHeaderText(null);
-        errorAlert.setContentText("An account with this name already exists!");
-
         //Account creation before mainStage lines
         try {
             if (client.sendUsername(username, password)) {
-                accountCreated.showAndWait();
+                alert("Success!", "New account created!");
                 client.setUsername(username);
                 client.directoryCheck();
 
             } else {
-                errorAlert.showAndWait();
+                alert("Error!", "An account with this name already exists!");
                 return;
             }
         } catch (IOException e) {

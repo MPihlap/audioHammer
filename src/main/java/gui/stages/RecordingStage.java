@@ -6,6 +6,8 @@ import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.stage.DirectoryChooser;
 
@@ -172,7 +174,6 @@ class RecordingStage extends BaseStage {
                         if (online) {
                             client.setFilename(filename.getText());
                         }
-
                         try {
                             if (!online) {
                                 unassigned(); //TODO fix local recording
@@ -371,7 +372,6 @@ class RecordingStage extends BaseStage {
             }
         });
         lapButton.setOnAction((ActionEvent event) -> {
-            //TODO LapAction
             try {
                 lapAction(bufferTimeSlider);
             } catch (IOException e) {
@@ -426,7 +426,7 @@ class RecordingStage extends BaseStage {
      * @param filename the filename that was inserted into filename TextField
      * @return true if filename is suitable; false if it is not
      */
-    // Filename check. TODO 1.add all cases that are not allowed in filename
+    // Filename check
     private boolean checkFilename(String filename) {
         return !(filename.contains(")") || filename.contains("(")) && !filename.startsWith(".");
     }

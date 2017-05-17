@@ -110,7 +110,7 @@ class MyCloudStage extends BaseStage {
             }
             for (Node node :
                     gridPane.getChildren()) {
-                if(node instanceof Label && GridPane.getColumnIndex(node)==0 && GridPane.getRowIndex(node)==2) {
+                if (node instanceof Label && GridPane.getColumnIndex(node) == 0 && GridPane.getRowIndex(node) == 2) {
                     ((Label) node).setText(fileData);
                 }
             }
@@ -255,20 +255,12 @@ class MyCloudStage extends BaseStage {
      */
     private boolean renameFile(String oldFilename, String newFilename) throws IOException {
         String oldFile = parentAndFile.get(oldFilename) + File.separator + oldFilename;
-        if (client.renameFile(oldFile,newFilename)) {
-            Alert success = new Alert(Alert.AlertType.INFORMATION);
-            success.setTitle("Success!");
-            success.setHeaderText(null);
-            success.setContentText("File succesfully renamed!");
-            success.showAndWait();
+        if (client.renameFile(oldFile, newFilename)) {
+            alert("Success!", "File succesfully renamed!");
             refreshListView();
             return true;
         } else {
-            Alert nameExists = new Alert(Alert.AlertType.INFORMATION);
-            nameExists.setTitle("Error");
-            nameExists.setHeaderText(null);
-            nameExists.setContentText("One of your files already has this name!");
-            nameExists.showAndWait();
+            alert("Error", "One of your files already has this name");
             return false;
         }
     }
@@ -283,11 +275,7 @@ class MyCloudStage extends BaseStage {
 
         String deleteFile = parentAndFile.get(fileName) + File.separator + fileName;
         client.deleteFile(deleteFile);
-        Alert unassignedButton = new Alert(Alert.AlertType.INFORMATION);
-        unassignedButton.setTitle("Success!");
-        unassignedButton.setHeaderText(null);
-        unassignedButton.setContentText("File " + fileName + " succesfully deleted.");
-        unassignedButton.showAndWait();
+        alert("Success!", ("File " + fileName + " succesfully deleted."));
         refreshListView();
     }
 
@@ -316,19 +304,10 @@ class MyCloudStage extends BaseStage {
      */
     private void downloadFile(String fileName) throws IOException {
         String downloadFile = parentAndFile.get(fileName) + File.separator + fileName;
-        if(client.downloadFile(downloadFile, fileName)) {
-            Alert downloadSuccessAlert  = new Alert(Alert.AlertType.INFORMATION);
-            downloadSuccessAlert.setTitle("Success!");
-            downloadSuccessAlert.setHeaderText(null);
-            downloadSuccessAlert.setContentText("File " + fileName + " succesfully downloaded.");
-            downloadSuccessAlert.showAndWait();
-        }
-        else {
-            Alert downloadSuccessButton  = new Alert(Alert.AlertType.INFORMATION);
-            downloadSuccessButton.setTitle("Success!");
-            downloadSuccessButton.setHeaderText(null);
-            downloadSuccessButton.setContentText("Something went wrong. Please try again later.");
-            downloadSuccessButton.showAndWait();
+        if (client.downloadFile(downloadFile, fileName)) {
+            alert("Success!", ("File " + fileName + " succesfully downloaded."));
+        } else {
+            alert("Failure!", "Something went wrong. Please try again later.");
         }
     }
 

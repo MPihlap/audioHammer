@@ -1,6 +1,8 @@
 package gui.stages;
 
 import client.Client;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -20,7 +22,6 @@ import java.io.IOException;
  * Constructs a Settings stage.
  * Created by Helen on 20.04.2017.
  */
-//TODO
 public class SettingsStage extends BaseStage {
     private Client client;
 
@@ -28,6 +29,9 @@ public class SettingsStage extends BaseStage {
         this.client = client;
     }
 
+    /**
+     * Shows Settings page/stage
+     */
     @Override
     public void showStage() {
         //Stage settings
@@ -47,6 +51,12 @@ public class SettingsStage extends BaseStage {
         changePassword.setOnAction((ActionEvent event) -> {
             resetPasswordStage();
         });
+        // Media format button
+        Button formatButton = new Button("Format");
+        formatButton.minWidth(100);
+        formatButton.setOnAction((ActionEvent event) -> {
+            chooseFormat();
+        });
 
         //Directory chooser Local
         Label informationDirectoryLocal = new Label("Local recorded files destination:");
@@ -65,24 +75,24 @@ public class SettingsStage extends BaseStage {
         chooseDirectoryDownload.setOnAction((ActionEvent event) -> {
             String directoryString = directoriChooser();
             directoryDownload.setText(directoryString);
-            
+
         });
 
         Button apply = new Button("Apply");
         apply.setOnAction((ActionEvent event) -> { //TODO salvesta valitud kasutad jm vajalik
             String localPath = directoryLocalSaves.getText();
             String downloadPath = directoryDownload.getText();
-            if(localPath.equals(null) || downloadPath.equals(null)) {
+            if (localPath.equals(null) || downloadPath.equals(null)) {
                 errorAlert("Please choose a directory for both paths.");
-            }
-            else {
+            } else {
                 try {
                     client.updateSettings(localPath, downloadPath);
                 } catch (IOException e) {
                     errorAlert("Something went wrong. Try again later.");
                 }
 
-            }});
+            }
+        });
         Button back = new Button("Back");
         back.setOnAction((ActionEvent event) -> {
             switchStage(new MainStage(client));
@@ -108,6 +118,9 @@ public class SettingsStage extends BaseStage {
         stage.show();
     }
 
+    /**
+     * Creates directory chooser
+     */
     private String directoriChooser() {
         DirectoryChooser directoryChooser = new DirectoryChooser();
         File selectedDirectory = directoryChooser.showDialog(stage);
@@ -118,6 +131,9 @@ public class SettingsStage extends BaseStage {
         }
     }
 
+    /**
+     * Creates reset password stage
+     */
     private void resetPasswordStage() {
         Stage resetPasswordStage = new Stage();
         resetPasswordStage.setResizable(false);
@@ -127,8 +143,8 @@ public class SettingsStage extends BaseStage {
         resetPasswordStage.setMinWidth(sizeW);
         resetPasswordStage.setMaxHeight(sizeH);
         resetPasswordStage.setMinHeight(sizeH);
-        FlowPane newFilename = new FlowPane();
-        newFilename.setStyle("-fx-padding: 10px");
+        FlowPane resetPassword = new FlowPane();
+        resetPassword.setStyle("-fx-padding: 10px");
         GridPane gridPane = new GridPane();
         gridPane.setVgap(10);
         gridPane.setHgap(10);
@@ -163,21 +179,17 @@ public class SettingsStage extends BaseStage {
             // TODO Paroolide kontrollimine ja muutmine
 
             try {
-                if(!LoginHandler.login(client.getUsername(), currentPasswordInput)) {
+                if (!LoginHandler.login(client.getUsername(), currentPasswordInput)) {
                     errorAlert("You inserted wrong current password! Try again.");
-                }
-                else if (!newPasswordInput1.equals(newPasswordInput2)){
+                } else if (!newPasswordInput1.equals(newPasswordInput2)) {
                     errorAlert("New passwords do not match! Try again.");
-                }
-                else if(newPasswordInput1.length()<6 || newPasswordInput1.length()==0) {
+                } else if (newPasswordInput1.length() < 6 || newPasswordInput1.length() == 0) {
                     errorAlert("New inserted password is too short!");
-                }
-                else{
-                    if(client.passwordChange(newPasswordInput1)) {
+                } else {
+                    if (client.passwordChange(newPasswordInput1)) {
                         alertPasswordChangeConfirm();
                         resetPasswordStage.close();
-                    }
-                    else {
+                    } else {
                         errorAlert("Something went wrong.");
                     }
 
@@ -204,6 +216,11 @@ public class SettingsStage extends BaseStage {
         resetPasswordStage.showAndWait();
     }
 
+    /**
+     * Creates and shows Alert
+     *
+     * @param text Alert text
+     */
     private void errorAlert(String text) {
         Alert nameExists = new Alert(Alert.AlertType.INFORMATION);
         nameExists.setTitle("Error");
@@ -212,11 +229,100 @@ public class SettingsStage extends BaseStage {
         nameExists.showAndWait();
     }
 
+    /**
+     * Shows password changes confim alert
+     */
     private void alertPasswordChangeConfirm() {
         Alert nameExists = new Alert(Alert.AlertType.INFORMATION);
         nameExists.setTitle("Success");
         nameExists.setHeaderText(null);
         nameExists.setContentText("Your password was changed successfully");
         nameExists.showAndWait();
+    }
+
+    /**
+     * Creates and shows format stage
+     */
+    private void chooseFormat() {
+        Stage chooseFormat = new Stage();
+        chooseFormat.setResizable(false);
+        int sizeW = 300;
+        int sizeH = 150;
+        chooseFormat.setMaxWidth(sizeW);
+        chooseFormat.setMinWidth(sizeW);
+        chooseFormat.setMaxHeight(sizeH);
+        chooseFormat.setMinHeight(sizeH);
+        FlowPane chooseFormatFlow = new FlowPane();
+        chooseFormatFlow.setStyle("-fx-padding: 10px");
+        GridPane gridPane = new GridPane();
+        gridPane.setVgap(10);
+        gridPane.setHgap(10);
+        gridPane.setPadding(new Insets(5, 10, 5, 10));
+        //Main Label
+        Label mainInformation = new Label("Choose format parameters: ");
+        //Format options
+        Label information1 = new Label("Sample rate:");
+        TextField sampleRate = new TextField();
+        sampleRate.setMinWidth(100);
+        sampleRate.textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                if (!newValue.matches("\\d*")) {
+                    sampleRate.setText(newValue.replaceAll("[^\\d]", ""));
+                }
+            }
+        });
+
+        Label information2 = new Label("Sample size:");
+        TextField sampleSize = new TextField();
+        sampleSize.setMinWidth(100);
+        sampleSize.textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                if (!newValue.matches("\\d*")) {
+                    sampleSize.setText(newValue.replaceAll("[^\\d]", ""));
+                }
+            }
+        });
+        Label information3 = new Label("Channels:");
+        TextField channels = new TextField();
+        channels.setMinWidth(100);
+        channels.textProperty().addListener(new ChangeListener<String>() {
+            @Override
+            public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                if (!newValue.matches("\\d*")) {
+                    channels.setText(newValue.replaceAll("[^\\d]", ""));
+                }
+            }
+        });
+
+        //Cancel buttons
+        Button cancel = new Button("Cancel");
+        cancel.setOnAction((ActionEvent event) -> {
+            chooseFormat.close();
+        });
+        //Changing password button
+        Button confirm = new Button("Confirm");
+        confirm.setOnAction((ActionEvent event) -> {
+
+            // TODO set filesaving parameters
+        });
+        //Adding nodes to gridpane
+        gridPane.add(mainInformation, 0, 0, 3, 1);
+        gridPane.add(information1, 0, 1, 1, 1);
+        gridPane.add(information2, 1, 1, 1, 1);
+        gridPane.add(information3, 2, 1, 1, 1);
+        gridPane.add(sampleRate, 0, 2, 1, 1);
+        gridPane.add(sampleSize, 2, 2, 1, 1);
+        gridPane.add(channels, 1, 2, 1, 1);
+        gridPane.add(cancel, 0, 3, 1, 1);
+        gridPane.add(confirm, 1, 3, 1, 1);
+
+        //Final setup and show
+        Scene scene = new Scene(gridPane, 200, 100);
+        chooseFormat.setScene(scene);
+        chooseFormat.initModality(Modality.APPLICATION_MODAL);
+        chooseFormat.setTitle("Choose format");
+        chooseFormat.showAndWait();
     }
 }

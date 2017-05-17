@@ -166,11 +166,7 @@ public class MainStage extends BaseStage {
 
     public boolean fileSizeCheck() {
         if (fileSizes > 2010) {
-            Alert fileSizeOverAlert = new Alert(Alert.AlertType.INFORMATION);
-            fileSizeOverAlert.setTitle("Warning");
-            fileSizeOverAlert.setHeaderText(null);
-            fileSizeOverAlert.setContentText("Your myCloud storage capacity is reaching its limit. Please download or delete some files.");
-            fileSizeOverAlert.showAndWait();
+            alert("Warning!", "Your myCloud storage capacity is reaching its limit. Please download or delete some files.");
             return false;
         }
         return true;
