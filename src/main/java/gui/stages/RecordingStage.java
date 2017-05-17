@@ -87,7 +87,7 @@ class RecordingStage extends BaseStage {
         openCloud.setMinWidth(100);
         openCloud.setOnAction((ActionEvent event) -> {
             if (recordingBoolean) {
-                alert ("Still recording!", "Please stop recording before switching the page.");
+                alert("Still recording!", "Please stop recording before switching the page.");
             } else {
                 try {
                     client.sendCommand("MyCloud");
@@ -134,11 +134,8 @@ class RecordingStage extends BaseStage {
         //Saving location
         TextField directoryLocalSaves = new TextField();
         directoryLocalSaves.setMaxWidth(308);
-        directoryLocalSaves.setMinWidth(308);
-        LocalDate localDate = LocalDate.now();
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-        String directory = dateTimeFormatter.format(localDate);
-        String pathString = System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator + directory;
+        directoryLocalSaves.setMinWidth(308);;
+        String pathString = System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator;
         directoryLocalSaves.setText(pathString);
         Button chooseDirectoryLocalSaves = new Button("...");
         chooseDirectoryLocalSaves.setOnAction((ActionEvent event) -> {
@@ -176,10 +173,9 @@ class RecordingStage extends BaseStage {
                         }
                         try {
                             if (!online) {
-                                alert("undone", "undone"); //TODO fix local recording
-                            } else {
-                                recordingStart(filename.getText());
+                                client.setLocalPath(directoryLocalSaves.getText());
                             }
+                            recordingStart(filename.getText());
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -254,7 +250,7 @@ class RecordingStage extends BaseStage {
         openCloud.setMinWidth(100);
         openCloud.setOnAction((ActionEvent event) -> {
             if (recordingBoolean) {
-                alert ("Still recording!", "Please stop recording before switching the page.");
+                alert("Still recording!", "Please stop recording before switching the page.");
             } else {
                 switchStage(new MyCloudStage(client));
             }
@@ -288,10 +284,7 @@ class RecordingStage extends BaseStage {
         TextField directoryLocalSaves = new TextField();
         directoryLocalSaves.setMaxWidth(308);
         directoryLocalSaves.setMinWidth(308);
-        LocalDate localDate = LocalDate.now();
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-        String directory = dateTimeFormatter.format(localDate);
-        String pathString = System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator + directory;
+        String pathString = System.getProperty("user.home") + File.separator + "AudioHammer" ;
         directoryLocalSaves.setText(pathString);
         Button chooseDirectoryLocalSaves = new Button("...");
         chooseDirectoryLocalSaves.setOnAction((ActionEvent event) -> {
@@ -337,6 +330,9 @@ class RecordingStage extends BaseStage {
                 } else {
                     System.out.println(bufferTimeSlider.getValue());
                     if (filename.getText() != null && !filename.getText().equals("") && this.checkFilename(filename.getText())) {
+                        if (!online) {
+                            client.setLocalPath(directoryLocalSaves.getText());
+                        }
                         client.setFilename(filename.getText());
                         int bufferTime = (int) bufferTimeSlider.getValue();
                         System.out.println(bufferTime);
@@ -356,11 +352,11 @@ class RecordingStage extends BaseStage {
                         filename.setDisable(true);
                         new Thread(timerThread).start();
                     } else {
-                        alert ("No filename!", "Please insert filename");
+                        alert("No filename!", "Please insert filename");
                     }
                 }
             } else {
-                alert ("No saving location!", "Please choose where you wish to save your files.");
+                alert("No saving location!", "Please choose where you wish to save your files.");
             }
         });
         lapButton.setOnAction((ActionEvent event) -> {
@@ -409,7 +405,8 @@ class RecordingStage extends BaseStage {
 
     /**
      * Starts buffered recording saving
-     * @param minutes buffered recording time in minutes
+     *
+     * @param minutes  buffered recording time in minutes
      * @param filename file name for buffered file
      * @throws IOException
      */
@@ -431,6 +428,7 @@ class RecordingStage extends BaseStage {
 
     /**
      * Makes a lap in recording
+     *
      * @param bufferedTimeSlider Slider for buffertime
      * @throws IOException
      */
@@ -443,7 +441,7 @@ class RecordingStage extends BaseStage {
      */
     public void backCheck() {
         if (recordingBoolean) {
-            alert ("Still recording!", "Please stop recording before switching the page.");
+            alert("Still recording!", "Please stop recording before switching the page.");
         } else {
             try {
                 client.sendCommand("back");
@@ -456,6 +454,7 @@ class RecordingStage extends BaseStage {
 
     /**
      * Creates directory chooser
+     *
      * @return
      */
     private String directoriChooser() {
