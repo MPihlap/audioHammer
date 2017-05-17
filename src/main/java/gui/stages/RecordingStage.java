@@ -134,7 +134,8 @@ class RecordingStage extends BaseStage {
         //Saving location
         TextField directoryLocalSaves = new TextField();
         directoryLocalSaves.setMaxWidth(308);
-        directoryLocalSaves.setMinWidth(308);;
+        directoryLocalSaves.setMinWidth(308);
+        ;
         String pathString = System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator;
         directoryLocalSaves.setText(pathString);
         Button chooseDirectoryLocalSaves = new Button("...");
@@ -284,7 +285,7 @@ class RecordingStage extends BaseStage {
         TextField directoryLocalSaves = new TextField();
         directoryLocalSaves.setMaxWidth(308);
         directoryLocalSaves.setMinWidth(308);
-        String pathString = System.getProperty("user.home") + File.separator + "AudioHammer" ;
+        String pathString = System.getProperty("user.home") + File.separator + "AudioHammer";
         directoryLocalSaves.setText(pathString);
         Button chooseDirectoryLocalSaves = new Button("...");
         chooseDirectoryLocalSaves.setOnAction((ActionEvent event) -> {

@@ -19,9 +19,11 @@ import java.io.IOException;
  */
 public class LogInStage extends BaseStage {
     private Client client;
+
     private void setClient() {
         this.client = new Client();
     }
+
     private boolean isInLoginDialogue = false;
 
     /**
@@ -62,9 +64,9 @@ public class LogInStage extends BaseStage {
                 client.createConnection();
                 isInLoginDialogue = true;
                 if (userNameField.getText().equals("")) {
-                    alert("No username!","Please insert your username.");
+                    alert("No username!", "Please insert your username.");
                 } else if (passwordField.getText().equals("")) {
-                    alert("No password","Please insert your password.");
+                    alert("No password", "Please insert your password.");
                 } else {
                     try {
                         client.sendCommand("login");
@@ -84,17 +86,17 @@ public class LogInStage extends BaseStage {
 
                 }
             } catch (IOException e) {
-                alert("Error","Could not create a connection. Please try again later.");
+                alert("Error", "Could not create a connection. Please try again later.");
             }
         });
         //Enter for username and Password fields
         userNameField.setOnKeyPressed(event -> {
-            if (event.getCode().equals(KeyCode.ENTER)){
+            if (event.getCode().equals(KeyCode.ENTER)) {
                 logInButton.fire();
             }
         });
         passwordField.setOnKeyPressed(event -> {
-            if (event.getCode().equals(KeyCode.ENTER)){
+            if (event.getCode().equals(KeyCode.ENTER)) {
                 logInButton.fire();
             }
         });
@@ -105,11 +107,11 @@ public class LogInStage extends BaseStage {
                 try {
                     client.createConnection();
                 } catch (IOException e) {
-                    alert("Error","Could not create a connection. Please try again later.");
+                    alert("Error", "Could not create a connection. Please try again later.");
                 }
             }
             try {
-                if (isInLoginDialogue){
+                if (isInLoginDialogue) {
                     client.sendCommand("cancel");
                 }
                 client.sendCommand("signup");
@@ -148,7 +150,7 @@ public class LogInStage extends BaseStage {
      * Allows to use application in offline mode/locally.
      */
     private void offlineMode() {
-        RecordingStage recordingStage=new RecordingStage(client, false);
+        RecordingStage recordingStage = new RecordingStage(client, false);
         switchStage(recordingStage);
     }
 

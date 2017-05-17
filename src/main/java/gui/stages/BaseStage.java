@@ -11,7 +11,6 @@ public abstract class BaseStage {
     protected Stage stage;
 
     /**
-     *
      * @param stage
      */
     public void setStage(Stage stage) {
@@ -19,7 +18,6 @@ public abstract class BaseStage {
     }
 
     /**
-     *
      * @param baseStage
      */
     public void switchStage(BaseStage baseStage) {
@@ -30,8 +28,9 @@ public abstract class BaseStage {
 
     /**
      * Generates alert window
+     *
      * @param error error text the alert should show
-     * @param text futer information text the alert should show
+     * @param text  futer information text the alert should show
      */
     public void alert(String error, String text) {
         Alert errorAlert = new Alert(Alert.AlertType.INFORMATION);
