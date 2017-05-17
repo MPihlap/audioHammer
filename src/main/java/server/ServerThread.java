@@ -26,52 +26,6 @@ public class ServerThread implements Runnable {
         this.socket = socket;
     }
 
-    private void handleMyCloud(DataInputStream dataInputStream, DataOutputStream clientOutputStream) throws IOException, UnsupportedAudioFileException {
-        writeAllFilesToClient(clientOutputStream, fileOperations);
-        String command;
-        while (!(command = dataInputStream.readUTF()).equals("back")) { //MyCloud loop
-            if (command.equals("Listen")) {
-                String filename = dataInputStream.readUTF();
-                String filepath = fileOperations.getFilePath(filename).toString();
-                System.out.println(filepath);
-                RandomAccessFile randomAccessFile = new RandomAccessFile(filepath, "r");
-                AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File(filepath));
-                AudioFormat format = audioInputStream.getFormat();
-                FileOperations.sendFormat(clientOutputStream,format);
-                int sampleRate = (int) format.getSampleRate();
-                audioInputStream.close();
-                int bytesRead;
-                randomAccessFile.seek(45);
-                System.out.println("Sample rate: " + sampleRate);
-                byte[] buffer = new byte[sampleRate * 2];
-                clientOutputStream.writeInt(Math.toIntExact(randomAccessFile.length() - 44));
-                System.out.println("File length: "+Math.toIntExact(randomAccessFile.length() - 44));
-                while ((bytesRead = randomAccessFile.read(buffer, 0, buffer.length)) != -1) {
-                    clientOutputStream.writeInt(bytesRead);
-                    clientOutputStream.write(buffer, 0, bytesRead);
-                }
-                //TODO: Implement
-            } else if (command.equals("Delete")) {
-                String filename = dataInputStream.readUTF();
-                fileOperations.deleteFile(filename);
-            } else if (command.equals("Download")) {
-                System.out.println("Läksin DL (servThread)");
-                String filename = dataInputStream.readUTF(); //receives filepath
-                System.out.println(FileOperations.sendFile(filename, clientOutputStream));
-            } else if (command.equals("Rename")) {
-                String oldFileName = dataInputStream.readUTF();
-                String newFileName = dataInputStream.readUTF();
-                clientOutputStream.writeBoolean(fileOperations.renameFile(oldFileName, newFileName));
-                writeAllFilesToClient(clientOutputStream, fileOperations);
-            } else if (command.equals("Data")) {
-                String filePath = dataInputStream.readUTF();
-                String[] data = fileOperations.getFileData(filePath);
-                clientOutputStream.writeUTF(data[0]);
-                clientOutputStream.writeUTF(data[1]);
-            }
-        }
-    }
-
     @Override
     public void run() {
         try (InputStream inputStream = socket.getInputStream();
@@ -149,9 +103,70 @@ public class ServerThread implements Runnable {
         }
     }
 
+    private void handleMyCloud(DataInputStream dataInputStream, DataOutputStream clientOutputStream) throws IOException, UnsupportedAudioFileException {
+        writeAllFilesToClient(clientOutputStream, fileOperations);
+        String command;
+        while (!(command = dataInputStream.readUTF()).equals("back")) { //MyCloud loop
+            if (command.equals("Listen")) {
+                streamAudioToClient(dataInputStream, clientOutputStream);
+                //TODO: Implement
+            } else if (command.equals("Delete")) {
+                String filename = dataInputStream.readUTF();
+                fileOperations.deleteFile(filename);
+            } else if (command.equals("Download")) {
+                System.out.println("Läksin DL (servThread)");
+                String filename = dataInputStream.readUTF(); //receives filepath
+                System.out.println(FileOperations.sendFile(filename, clientOutputStream));
+            } else if (command.equals("Rename")) {
+                String oldFileName = dataInputStream.readUTF();
+                String newFileName = dataInputStream.readUTF();
+                clientOutputStream.writeBoolean(fileOperations.renameFile(oldFileName, newFileName));
+                writeAllFilesToClient(clientOutputStream, fileOperations);
+            } else if (command.equals("Data")) {
+                String filePath = dataInputStream.readUTF();
+                String[] data = fileOperations.getFileData(filePath);
+                clientOutputStream.writeUTF(data[0]);
+                clientOutputStream.writeUTF(data[1]);
+            }
+        }
+    }
+
+    /**
+     *  Gets filename from user and sends bytes using a buffer 2x the size of the sample rate
+     * @param dataInputStream
+     * @param clientOutputStream
+     * @throws IOException
+     * @throws UnsupportedAudioFileException
+     */
+    private void streamAudioToClient(DataInputStream dataInputStream, DataOutputStream clientOutputStream) throws IOException, UnsupportedAudioFileException {
+        String filename = dataInputStream.readUTF();
+        String filepath = fileOperations.getFilePath(filename).toString();
+        System.out.println(filepath);
+        RandomAccessFile randomAccessFile = new RandomAccessFile(filepath, "r");
+        AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File(filepath));
+        AudioFormat format = audioInputStream.getFormat();
+        FileOperations.sendFormat(clientOutputStream,format);
+        int sampleRate = (int) format.getSampleRate();
+        audioInputStream.close();
+        int bytesRead;
+        randomAccessFile.seek(45);
+        System.out.println("Sample rate: " + sampleRate);
+        byte[] buffer = new byte[sampleRate * 2];
+        clientOutputStream.writeInt(Math.toIntExact(randomAccessFile.length() - 44));
+        System.out.println("File length: "+Math.toIntExact(randomAccessFile.length() - 44));
+        while ((bytesRead = randomAccessFile.read(buffer, 0, buffer.length)) != -1) {
+            clientOutputStream.writeInt(bytesRead);
+            clientOutputStream.write(buffer, 0, bytesRead);
+        }
+    }
 
 
-
+    /**
+     * Writes all files to client to display on MyCloud
+     * @param clientOutputStream
+     * @param fileOperations
+     * @throws IOException
+     */
     private void writeAllFilesToClient(DataOutputStream clientOutputStream, FileOperations fileOperations) throws IOException {
         ArrayList<Path> allFiles = fileOperations.getAllFiles();
         clientOutputStream.writeInt(allFiles.size());
@@ -160,6 +175,13 @@ public class ServerThread implements Runnable {
         }
     }
 
+    /**
+     * Reads username and password from client, checks if they match, returns username
+     * @param dataInputStream
+     * @param clientOutputStream
+     * @return Username
+     * @throws IOException
+     */
     private String setUsername(DataInputStream dataInputStream, DataOutputStream clientOutputStream) throws IOException {
         String username;
         while (true) {
@@ -206,7 +228,7 @@ public class ServerThread implements Runnable {
     }
 
     /**
-     * Uses a ByteBuffer to store a certain number of bytes. If buffer is full, bytes from start are disgarded and the
+     * Uses a ByteBuffer to store a certain number of bytes. If buffer is full, bytes from start are discarded and the
      * buffer is shifted.
      *
      * @param clientInputStream inputStream to receive bytes

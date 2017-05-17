@@ -20,6 +20,11 @@ public class AudioPlaybackThread implements Runnable {
         this.format = audioFormat;
     }
 
+    /**
+     * Reads audio from server and sends it to system default SourceDataLine
+     * @throws IOException
+     * @throws LineUnavailableException
+     */
     private void streamAudioFromServer() throws IOException, LineUnavailableException {
         int filesize = servInputStream.readInt();
         int totalBytesRead = 0;

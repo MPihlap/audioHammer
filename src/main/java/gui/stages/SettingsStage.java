@@ -316,6 +316,7 @@ public class SettingsStage extends BaseStage {
             int sampleSize = Integer.parseInt(sampleSizeField.getText());
             int channels = Integer.parseInt(channelsField.getText());
             client.setAudioFormat(new AudioFormat(sampleRate,sampleSize,channels,true,true));
+            chooseFormat.close();
 
             // TODO set filesaving parameters
         });
