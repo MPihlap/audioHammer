@@ -17,7 +17,6 @@ public class AudioCaptureThread implements Runnable {
     private final BlockingQueue<String> commandsFromClient;
     private DataOutputStream servStream;
     private final AudioFormat format = new AudioFormat(44100, 16, 1, true, true);
-    //private final ByteArrayOutputStream captureOutputStream;
     private ByteArrayOutputStream captureOutputStream;
     private ByteBuffer byteBuffer;
     private BlockingQueue<String> commandsToClient;

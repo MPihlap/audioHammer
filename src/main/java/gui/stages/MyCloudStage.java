@@ -100,14 +100,17 @@ class MyCloudStage extends BaseStage {
         });
         //Shows right-click menu on left click and hides on left-click
         myCloudFilesList.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
-
-            //get and set info about selected file
             String fileData;
+
+            /**
+            //get and set info about selected file
             try {
                 fileData = getFileData(myCloudFilesList.getSelectionModel().getSelectedItem());
             } catch (IOException e1) {
                 fileData = "Not available";
             }
+             **/
+            fileData = "Not available";
             for (Node node :
                     gridPane.getChildren()) {
                 if(node instanceof Label && GridPane.getColumnIndex(node)==0 && GridPane.getRowIndex(node)==2) {
@@ -291,11 +294,13 @@ class MyCloudStage extends BaseStage {
         refreshListView();
     }
 
+    /**
     private String getFileData(String fileName) throws IOException { //TODO implement into GUI
         String filePath = parentAndFile.get(fileName) + File.separator + fileName;
         String[] fileData = client.getFileData(filePath);
         return "Last modified: " + fileData[0] + "; Length: " + fileData[1] + "s";
     }
+     **/
 
     /**
      * Plays recorded file with given name from server

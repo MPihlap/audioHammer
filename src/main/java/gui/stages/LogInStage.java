@@ -2,13 +2,11 @@ package gui.stages;
 
 import client.Client;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Font;
 import server.LoginHandler;
@@ -90,6 +88,7 @@ public class LogInStage extends BaseStage {
                             wrongUsernameOrPasswordAlert.showAndWait();
                         } else {
                             client.setUsername(userNameField.getText());
+                            client.directoryCheck();
                             MainStage mainStage = new MainStage(client);
                             switchStage(mainStage);
 

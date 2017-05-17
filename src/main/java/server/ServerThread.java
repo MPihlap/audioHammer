@@ -44,12 +44,14 @@ public class ServerThread implements Runnable {
                 clientOutputStream.writeBoolean(fileOperations.renameFile(oldFileName,newFileName));
                 writeAllFilesToClient(clientOutputStream, fileOperations);
             }
+            /**
             else if(command.equals("Data")) {
                 String filePath = dataInputStream.readUTF();
                 String[] data = fileOperations.getFileData(filePath);
                 clientOutputStream.writeUTF(data[0]);
                 clientOutputStream.writeUTF(data[1]);
             }
+             **/
         }
     }
     @Override
@@ -103,11 +105,11 @@ public class ServerThread implements Runnable {
                                         if (!isRecording) {
                                             break;
                                         }
-                                        fileOperations.fileSaving(fileName, fileBytes, username,audioFormat,false);
+                                        FileOperations.fileSaving(fileName, fileBytes, username,audioFormat,false);
                                     }
                                 } else {
                                     fileBytes = readAudioBytesFromClient(dataInputStream);
-                                    fileOperations.fileSaving(fileName, fileBytes, username,audioFormat,false);
+                                    FileOperations.fileSaving(fileName, fileBytes, username,audioFormat,false);
                                 }
 
                             }

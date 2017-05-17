@@ -51,7 +51,7 @@ public class SettingsStage extends BaseStage {
         //Directory chooser Local
         Label informationDirectoryLocal = new Label("Local recorded files destination:");
         TextField directoryLocalSaves = new TextField();
-        directoryLocalSaves.setPromptText("No directory chosen"); //TODO võib panna hetkel valitud kasuta, aga see tuleb siis kuskilt infost fetchida. Sellisel juhul mitte PromptText vaid lihtsalt .setText
+        directoryLocalSaves.setText(client.getLocalPath().toString()); //TODO võib panna hetkel valitud kasuta, aga see tuleb siis kuskilt infost fetchida. Sellisel juhul mitte PromptText vaid lihtsalt .setText
         Button chooseDirectoryLocalSaves = new Button("...");
         chooseDirectoryLocalSaves.setOnAction((ActionEvent event) -> {
             String directoryString = directoriChooser();
@@ -60,19 +60,34 @@ public class SettingsStage extends BaseStage {
         //Directory choose download
         Label informationDirectoryDownload = new Label("Downloaded files destination:");
         TextField directoryDownload = new TextField();
-        directoryDownload.setPromptText("No directory chosen"); //TODO võib panna hetkel valitud kasuta, aga see tuleb siis kuskilt infost fetchida. Sellisel juhul mitte PromptText vaid lihtsalt .setTex
+        directoryDownload.setText(client.getDownloadPath().toString()); //TODO võib panna hetkel valitud kasuta, aga see tuleb siis kuskilt infost fetchida. Sellisel juhul mitte PromptText vaid lihtsalt .setTex
         Button chooseDirectoryDownload = new Button("...");
         chooseDirectoryDownload.setOnAction((ActionEvent event) -> {
             String directoryString = directoriChooser();
             directoryDownload.setText(directoryString);
             
         });
-        Button back = new Button("Back");
-        back.setOnAction((ActionEvent event) -> { //TODO salvesta valitud kasutad jm vajalik
+
+        Button apply = new Button("Apply");
+        apply.setOnAction((ActionEvent event) -> { //TODO salvesta valitud kasutad jm vajalik
             String localPath = directoryLocalSaves.getText();
             String downloadPath = directoryDownload.getText();
+            if(localPath.equals(null) || downloadPath.equals(null)) {
+                errorAlert("Please choose a directory for both paths.");
+            }
+            else {
+                try {
+                    client.updateSettings(localPath, downloadPath);
+                } catch (IOException e) {
+                    errorAlert("Something went wrong. Try again later.");
+                }
+
+            }});
+        Button back = new Button("Back");
+        back.setOnAction((ActionEvent event) -> {
             switchStage(new MainStage(client));
         });
+
         gridPane.setVgap(10);
         gridPane.setHgap(10);
         gridPane.setPadding(new Insets(5, 10, 5, 10));
@@ -85,6 +100,7 @@ public class SettingsStage extends BaseStage {
         gridPane.add(chooseDirectoryDownload, 1, 4, 1, 1);
         gridPane.add(changePassword, 0, 6, 1, 1);
         gridPane.add(back, 0, 7, 1, 1);
+        gridPane.add(apply, 1, 7, 1, 1);
 
         //Final setup and show
         Scene scene = new Scene(gridPane, sizeW, sizeH);
@@ -148,13 +164,13 @@ public class SettingsStage extends BaseStage {
 
             try {
                 if(!LoginHandler.login(client.getUsername(), currentPasswordInput)) {
-                    alertPasswordChange("You inserted wrong current password! Try again.");
+                    errorAlert("You inserted wrong current password! Try again.");
                 }
                 else if (!newPasswordInput1.equals(newPasswordInput2)){
-                    alertPasswordChange("New passwords do not match! Try again.");
+                    errorAlert("New passwords do not match! Try again.");
                 }
                 else if(newPasswordInput1.length()<6 || newPasswordInput1.length()==0) {
-                    alertPasswordChange("New inserted password is too short!");
+                    errorAlert("New inserted password is too short!");
                 }
                 else{
                     if(client.passwordChange(newPasswordInput1)) {
@@ -162,12 +178,12 @@ public class SettingsStage extends BaseStage {
                         resetPasswordStage.close();
                     }
                     else {
-                        alertPasswordChange("Something went wrong.");
+                        errorAlert("Something went wrong.");
                     }
 
                 }
             } catch (IOException e) {
-                alertPasswordChange("You inserted wrong current password! Try again.");
+                errorAlert("You inserted wrong current password! Try again.");
             }
         });
         //Adding nodes to gridpane
@@ -188,7 +204,7 @@ public class SettingsStage extends BaseStage {
         resetPasswordStage.showAndWait();
     }
 
-    private void alertPasswordChange(String text) {
+    private void errorAlert(String text) {
         Alert nameExists = new Alert(Alert.AlertType.INFORMATION);
         nameExists.setTitle("Error");
         nameExists.setHeaderText(null);
