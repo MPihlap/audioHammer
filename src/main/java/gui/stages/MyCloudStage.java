@@ -1,12 +1,13 @@
 package gui.stages;
 
+import client.AudioPlaybackThread;
 import client.Client;
-import client.FileOperations;
 import client.PlayExistingFile;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
@@ -20,9 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * Constructs a MyCloud stage.
@@ -31,13 +30,13 @@ import java.util.List;
 
 class MyCloudStage extends BaseStage {
     private Client client;
-    //private FileOperations fileOperations;
+    //private client.FileOperations fileOperations;
     private HashMap<String, String> parentAndFile;
     private ListView<String> myCloudFilesList;
 
     MyCloudStage(Client client) {
         this.client = client;
-        //this.fileOperations = new FileOperations(client.getUsername());
+        //this.fileOperations = new client.FileOperations(client.getUsername());
     }
 
     /**
@@ -82,11 +81,19 @@ class MyCloudStage extends BaseStage {
         //Reads right-click menu choice
         cm.setOnAction(event -> {
             if ((((MenuItem) event.getTarget()).getText()).equals("Listen")) {
-                listenFile(myCloudFilesList.getSelectionModel().getSelectedItem());
+                try {
+                    listenFile(myCloudFilesList.getSelectionModel().getSelectedItem());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             } else if ((((MenuItem) event.getTarget()).getText()).equals("Rename")) {
                 renameFileStage(myCloudFilesList.getSelectionModel().getSelectedItem());
             } else if ((((MenuItem) event.getTarget()).getText()).equals("Download")) {
-                downloadFile(myCloudFilesList.getSelectionModel().getSelectedItem());
+                try {
+                    downloadFile(myCloudFilesList.getSelectionModel().getSelectedItem());
+                } catch (IOException e) {
+                    System.err.println("Error while downloading file");
+                }
             } else {
                 try {
                     deleteFile(myCloudFilesList.getSelectionModel().getSelectedItem());
@@ -97,11 +104,28 @@ class MyCloudStage extends BaseStage {
             }
         });
         //Shows right-click menu on left click and hides on left-click
-        myCloudFilesList.addEventHandler(MouseEvent.MOUSE_CLICKED, (MouseEvent e) -> {
-            String[] targetInfo = e.getTarget().toString().split("'");
+        myCloudFilesList.addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
+            String fileData;
+
+            //get and set info about selected file
+            try {
+                fileData = getFileData(myCloudFilesList.getSelectionModel().getSelectedItem());
+            } catch (IOException e1) {
+                fileData = "Not available";
+            }
+            for (Node node :
+                    gridPane.getChildren()) {
+                if (node instanceof Label && GridPane.getColumnIndex(node) == 0 && GridPane.getRowIndex(node) == 2) {
+                    ((Label) node).setText(fileData);
+                }
+            }
+
+
             //If right click on filename
+            String[] targetInfo = e.getTarget().toString().split("'");
             if (e.getButton() == MouseButton.SECONDARY && ((targetInfo.length == 2 && !targetInfo[1].equals("null"))) || (targetInfo.length == 1)) {
                 if (myCloudFilesList.getSelectionModel().getSelectedItem() != null) {
+
                     cm.show(myCloudFilesList, e.getScreenX(), e.getScreenY());
                 }
                 //If right click on empty space
@@ -121,13 +145,20 @@ class MyCloudStage extends BaseStage {
 
             }
         });
+
+
         myCloudFilesList.setMaxSize(sizeW - 35, 150);
         myCloudFilesList.setMinSize(sizeW - 35, 150);
         //information label TODO Text editing (Helen)
-        Label information = new Label("Here comes some information about chosen file. Date,Length,etc");
+        Label information = new Label("");
         //Back to main stage
         Button backButton = new Button("Back");
         backButton.setOnAction((ActionEvent event) -> {
+            try {
+                client.sendCommand("back");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             switchStage(new MainStage(client));
         });
         //Adding nodes to grid
@@ -176,6 +207,7 @@ class MyCloudStage extends BaseStage {
     private void renameFileStage(String fileName) {
         //New file name popup window
         Stage newFilenameStage = new Stage();
+        newFilenameStage.setResizable(false);
         FlowPane newFilename = new FlowPane();
         newFilename.setStyle("-fx-padding: 10px");
         GridPane gridPane = new GridPane();
@@ -228,20 +260,12 @@ class MyCloudStage extends BaseStage {
      */
     private boolean renameFile(String oldFilename, String newFilename) throws IOException {
         String oldFile = parentAndFile.get(oldFilename) + File.separator + oldFilename;
-        if (client.renameFile(oldFile,newFilename)) {
-            Alert success = new Alert(Alert.AlertType.INFORMATION);
-            success.setTitle("Success!");
-            success.setHeaderText(null);
-            success.setContentText("File succesfully renamed!");
-            success.showAndWait();
+        if (client.renameFile(oldFile, newFilename)) {
+            alert("Success!", "File succesfully renamed!");
             refreshListView();
             return true;
         } else {
-            Alert nameExists = new Alert(Alert.AlertType.INFORMATION);
-            nameExists.setTitle("Error");
-            nameExists.setHeaderText(null);
-            nameExists.setContentText("One of your files already has this name!");
-            nameExists.showAndWait();
+            alert("Error", "One of your files already has this name");
             return false;
         }
     }
@@ -252,16 +276,18 @@ class MyCloudStage extends BaseStage {
      * @param fileName the filename of the file that will be deleted
      */
     private void deleteFile(String fileName) throws IOException {
-        //TODO: ask for confirmation for delete; make list automatically update
+        //TODO: ask for confirmation for delete
 
         String deleteFile = parentAndFile.get(fileName) + File.separator + fileName;
         client.deleteFile(deleteFile);
-        Alert unassignedButton = new Alert(Alert.AlertType.INFORMATION);
-        unassignedButton.setTitle("Success!");
-        unassignedButton.setHeaderText(null);
-        unassignedButton.setContentText("File " + fileName + " succesfully deleted.");
-        unassignedButton.showAndWait();
+        alert("Success!", ("File " + fileName + " succesfully deleted."));
         refreshListView();
+    }
+
+    private String getFileData(String fileName) throws IOException {
+        String filePath = parentAndFile.get(fileName) + File.separator + fileName;
+        String[] fileData = client.getFileData(filePath);
+        return "Last modified: " + fileData[0] + "; File size: " + fileData[1] + " mb";
     }
 
     /**
@@ -269,11 +295,11 @@ class MyCloudStage extends BaseStage {
      *
      * @param fileName the filename of the file that will be played
      */
-    private void listenFile(String fileName) {
-        String listenFile = parentAndFile.get(fileName) + File.separator + fileName;
-        new Thread(new PlayExistingFile(listenFile)).start();
-
-        //TODO: add custom media player
+    private void listenFile(String fileName) throws IOException {
+        //String listenFile = parentAndFile.get(fileName) + File.separator + fileName;
+        //new Thread(new PlayExistingFile(listenFile)).start();
+        client.streamFileFromCloud(fileName);
+        //TODO: implement
     }
 
     /**
@@ -281,8 +307,13 @@ class MyCloudStage extends BaseStage {
      *
      * @param fileName the filename of the file that will be downloaded
      */
-    private void downloadFile(String fileName) {
-        unassigned();
+    private void downloadFile(String fileName) throws IOException {
+        String downloadFile = parentAndFile.get(fileName) + File.separator + fileName;
+        if (client.downloadFile(downloadFile, fileName)) {
+            alert("Success!", ("File " + fileName + " succesfully downloaded."));
+        } else {
+            alert("Failure!", "Something went wrong. Please try again later.");
+        }
     }
 
     /**
@@ -290,6 +321,13 @@ class MyCloudStage extends BaseStage {
      */
     private void refreshListView() throws IOException {
         ObservableList<String> myCloudFiles = FXCollections.observableArrayList(myCloudFiles());
+        for (String string:myCloudFiles){
+            System.out.println(string);
+        }
         myCloudFilesList.setItems(myCloudFiles);
     }
+
+
+
+
 }

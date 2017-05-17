@@ -12,7 +12,7 @@ import java.util.Arrays;
 /**
  * Created by Alo on 19-Apr-17.
  */
-public class PasswordEncryption  {
+public class PasswordHashing {
 
 
     /**
@@ -22,10 +22,10 @@ public class PasswordEncryption  {
      * @throws NoSuchAlgorithmException
      * @throws InvalidKeySpecException
      */
-    static String passwordEncrypter(String password) throws NoSuchAlgorithmException, InvalidKeySpecException{
+    static String passwordHasher(String password) throws NoSuchAlgorithmException, InvalidKeySpecException{
         char[] passwordAsChars = password.toCharArray();
         byte[] salt = saltGenerator();
-        PBEKeySpec spec = new PBEKeySpec(passwordAsChars, salt, 100, 128);
+        PBEKeySpec spec = new PBEKeySpec(passwordAsChars, salt, 1000, 128);
         SecretKeyFactory secretKeyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
         byte[] passwordAsHash = secretKeyFactory.generateSecret(spec).getEncoded();
         return String.format("%x", new BigInteger(passwordAsHash)) + ":" +  String.format("%x", new BigInteger(salt)); //siin %x tähendab, et antud argument muudetakse hex stringiks
@@ -58,7 +58,7 @@ public class PasswordEncryption  {
 
         byte[] saltAsBytes = new BigInteger(salt, 16).toByteArray();
 
-        PBEKeySpec spec = new PBEKeySpec(passwordAsChars, saltAsBytes, 100, 128);
+        PBEKeySpec spec = new PBEKeySpec(passwordAsChars, saltAsBytes, 1000, 128);
         SecretKeyFactory secretKeyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
 
         byte[] passwordAsHash = secretKeyFactory.generateSecret(spec).getEncoded();
@@ -73,6 +73,7 @@ public class PasswordEncryption  {
             }
 
         }
+
 
         return true;
     }

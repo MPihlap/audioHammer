@@ -6,22 +6,30 @@ import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
+import javafx.stage.DirectoryChooser;
 
+import java.io.File;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Constructs a Recording stage.
  * Created by Helen on 18.04.2017.
  */
 class RecordingStage extends BaseStage {
+    private boolean online;
     private boolean recordingBoolean;
     private long time;
     private TimerThread timerThread;
     private Client client;
 
-    RecordingStage(Client client) {
+    RecordingStage(Client client, boolean online) {
         this.client = client;
+        this.online = online;
     }
 
     /**
@@ -77,11 +85,29 @@ class RecordingStage extends BaseStage {
         //Button which switch to MyCloud window
         Button openCloud = new Button("MyCloud");
         openCloud.setMinWidth(100);
-        openCloud.setOnAction(event -> myCloudButton());
-        //Back to main stage button
+        openCloud.setOnAction((ActionEvent event) -> {
+            if (recordingBoolean) {
+                alert("Still recording!", "Please stop recording before switching the page.");
+            } else {
+                try {
+                    client.sendCommand("MyCloud");
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                switchStage(new MyCloudStage(client));
+            }
+        });
+
+        //Back button
+        Button outButton = new Button("Log in");
+        outButton.setMinWidth(100);
+        outButton.setOnAction((ActionEvent event) -> {
+            LogInStage logInStage = new LogInStage();
+            switchStage(logInStage);
+        });
         Button backToMain = new Button("Back");
         backToMain.setOnAction((ActionEvent event) -> {
-            mainStage();
+            backCheck();
         });
         backToMain.setMinWidth(100);
         //Recording timer (format hh:mm:ss:msms)
@@ -105,7 +131,18 @@ class RecordingStage extends BaseStage {
         Button pauseButton = new Button("Pause");
         pauseButton.setMinWidth(100);
         pauseButton.setDisable(!recordingBoolean);
-        //Saving location checkboxes
+        //Saving location
+        TextField directoryLocalSaves = new TextField();
+        directoryLocalSaves.setMaxWidth(308);
+        directoryLocalSaves.setMinWidth(308);
+        ;
+        String pathString = System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator;
+        directoryLocalSaves.setText(pathString);
+        Button chooseDirectoryLocalSaves = new Button("...");
+        chooseDirectoryLocalSaves.setOnAction((ActionEvent event) -> {
+            String directoryString = directoriChooser();
+            directoryLocalSaves.setText(directoryString);
+        });
         Label saveLocation = new Label("File saving location: ");
         CheckBox checkBoxLocal = new CheckBox("Local");
         CheckBox checkBoxCloud = new CheckBox("MyCloud");
@@ -114,12 +151,16 @@ class RecordingStage extends BaseStage {
         recordingButton.setMinWidth(100);
         recordingButton.setOnAction((ActionEvent event) -> {
             if (checkBoxLocal.isSelected() || checkBoxCloud.isSelected()) {
+                client.setSaveLocally(checkBoxLocal.isSelected());
+                client.setSaveRemote(checkBoxCloud.isSelected());
                 if (recordingBoolean) {
                     try {
                         client.stopRecording();
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
+                    directoryLocalSaves.setDisable(false);
+                    chooseDirectoryLocalSaves.setDisable(false);
                     recordingButton.setText("Start");
                     pauseButton.setDisable(true);
                     pauseButton.setText("Pause");
@@ -130,18 +171,17 @@ class RecordingStage extends BaseStage {
                     timerThread.setRecordingBoolean(false);
                 } else {
                     if (filename.getText() != null && !filename.getText().equals("") && this.checkFilename(filename.getText())) {
+                        client.setFilename(filename.getText());
                         try {
-                            client.sendCommand("filename");
-                            client.sendCommand(filename.getText());
+                            if (!online) {
+                                client.setLocalPath(directoryLocalSaves.getText());
+                            }
+                            recordingStart(filename.getText());
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
-
-                        try {
-                            recordingStart();
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
+                        directoryLocalSaves.setDisable(true);
+                        chooseDirectoryLocalSaves.setDisable(true);
                         timerThread = new TimerThread(timer, time);
                         recordingButton.setText("Stop");
                         recordingBoolean = true;
@@ -178,13 +218,20 @@ class RecordingStage extends BaseStage {
         gridPaneRecording.add(fileNameLabel, 0, 0, 3, 1);
         gridPaneRecording.add(filename, 0, 1, 3, 1);
         gridPaneRecording.add(saveLocation, 0, 2, 1, 1);
-        gridPaneRecording.add(checkBoxLocal, 1, 2, 1, 1);
-        gridPaneRecording.add(checkBoxCloud, 2, 2, 1, 1);
-        gridPaneRecording.add(recordingButton, 0, 3, 1, 1);
         gridPaneRecording.add(pauseButton, 1, 3, 1, 1);
+        if (online) {
+            gridPaneRecording.add(checkBoxLocal, 1, 2, 1, 1);
+            gridPaneRecording.add(checkBoxCloud, 2, 2, 1, 1);
+            gridPaneRecording.add(openCloud, 0, 4, 2, 1);
+            gridPaneRecording.add(backToMain, 1, 4, 1, 1);
+        } else {
+            checkBoxLocal.setSelected(true);
+            gridPaneRecording.add(directoryLocalSaves, 1, 2, 2, 1);
+            gridPaneRecording.add(chooseDirectoryLocalSaves, 3, 2, 1, 1);
+            gridPaneRecording.add(outButton, 0, 4, 1, 1);
+        }
+        gridPaneRecording.add(recordingButton, 0, 3, 1, 1);
         gridPaneRecording.add(timer, 2, 3, 1, 1);
-        gridPaneRecording.add(openCloud, 0, 4, 2, 1);
-        gridPaneRecording.add(backToMain, 1, 4, 1, 1);
         return gridPaneRecording;
     }
 
@@ -204,11 +251,23 @@ class RecordingStage extends BaseStage {
         //Button which switch to MyCloud window
         Button openCloud = new Button("MyCloud");
         openCloud.setMinWidth(100);
-        openCloud.setOnAction(event -> myCloudButton());
-        //Back to main stage button
+        openCloud.setOnAction((ActionEvent event) -> {
+            if (recordingBoolean) {
+                alert("Still recording!", "Please stop recording before switching the page.");
+            } else {
+                switchStage(new MyCloudStage(client));
+            }
+        });
+        //Back button
+        Button outButton = new Button("Log in");
+        outButton.setMinWidth(100);
+        outButton.setOnAction((ActionEvent event) -> {
+            LogInStage logInStage = new LogInStage();
+            switchStage(logInStage);
+        });
         Button backToMain = new Button("Back");
         backToMain.setOnAction((ActionEvent event) -> {
-            mainStage();
+            backCheck();
         });
         backToMain.setMinWidth(100);
         //Recording Pause-Resume button
@@ -219,25 +278,27 @@ class RecordingStage extends BaseStage {
         Label timer = new Label("00:00:00");
         timer.setMaxWidth(200);
         //No filename alert
-        Alert noFilenameAlert = new Alert(Alert.AlertType.INFORMATION);
-        noFilenameAlert.setTitle("No filename!");
-        noFilenameAlert.setHeaderText(null);
-        noFilenameAlert.setContentText("Please insert filename.");
+
         //Filename already used alert. TODO add checks and usage
         Alert filenameAlreadyUsedAlert = new Alert(Alert.AlertType.INFORMATION);
         filenameAlreadyUsedAlert.setTitle("Used filename!");
         filenameAlreadyUsedAlert.setHeaderText(null);
-        //Choose saving location alert
-        Alert noSaveLocationAlert = new Alert(Alert.AlertType.INFORMATION);
-        noSaveLocationAlert.setTitle("No saving location!");
-        noSaveLocationAlert.setHeaderText(null);
-        noSaveLocationAlert.setContentText("Please choose where you wish to save your files.");
-        //Saving location checkboxes
+        //Saving location
+        TextField directoryLocalSaves = new TextField();
+        directoryLocalSaves.setMaxWidth(308);
+        directoryLocalSaves.setMinWidth(308);
+        String pathString = System.getProperty("user.home") + File.separator + "AudioHammer";
+        directoryLocalSaves.setText(pathString);
+        Button chooseDirectoryLocalSaves = new Button("...");
+        chooseDirectoryLocalSaves.setOnAction((ActionEvent event) -> {
+            String directoryString = directoriChooser();
+            directoryLocalSaves.setText(directoryString);
+        });
         Label saveLocation = new Label("File saving location: ");
         CheckBox checkBoxLocal = new CheckBox("Local");
         CheckBox checkBoxCloud = new CheckBox("MyCloud");
         //Buffertime slider
-        Label bufferTimeLabel = new Label("Choose buffertime (min): ");
+        Label bufferTimeLabel = new Label("Buffertime (min): ");
         Slider bufferTimeSlider = new Slider();
         bufferTimeSlider.setMin(1);
         bufferTimeSlider.setMax(10);
@@ -253,12 +314,16 @@ class RecordingStage extends BaseStage {
         recordingButton.setMinWidth(100);
         recordingButton.setOnAction((ActionEvent event) -> {
             if (checkBoxLocal.isSelected() || checkBoxCloud.isSelected()) {
+                client.setSaveLocally(checkBoxLocal.isSelected());
+                client.setSaveRemote(checkBoxCloud.isSelected());
                 if (recordingBoolean) {
                     try {
                         client.stopRecording();
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
+                    directoryLocalSaves.setDisable(false);
+                    chooseDirectoryLocalSaves.setDisable(false);
                     recordingButton.setText("Start");
                     recordingBoolean = false;
                     bufferTimeSlider.setDisable(false);
@@ -270,20 +335,19 @@ class RecordingStage extends BaseStage {
                 } else {
                     System.out.println(bufferTimeSlider.getValue());
                     if (filename.getText() != null && !filename.getText().equals("") && this.checkFilename(filename.getText())) {
-                        try {
-                            client.sendCommand("filename");
-                            client.sendCommand(filename.getText());
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
+                        if (!online) {
+                            client.setLocalPath(directoryLocalSaves.getText());
                         }
+                        client.setFilename(filename.getText());
                         int bufferTime = (int) bufferTimeSlider.getValue();
                         System.out.println(bufferTime);
-                        //TODO start recording
                         try {
-                            bufferedRecordingStart(bufferTime);
+                            bufferedRecordingStart(bufferTime, filename.getText());
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
+                        directoryLocalSaves.setDisable(true);
+                        chooseDirectoryLocalSaves.setDisable(true);
                         timerThread = new TimerThread(timer, time);
                         recordingButton.setText("Stop");
                         bufferTimeSlider.setDisable(true);
@@ -295,15 +359,14 @@ class RecordingStage extends BaseStage {
                         filename.setDisable(true);
                         new Thread(timerThread).start();
                     } else {
-                        noFilenameAlert.showAndWait();
+                        alert("No filename!", "Please insert filename");
                     }
                 }
             } else {
-                noSaveLocationAlert.showAndWait();
+                alert("No saving location!", "Please choose where you wish to save your files.");
             }
         });
         lapButton.setOnAction((ActionEvent event) -> {
-            //TODO LapAction
             try {
                 lapAction(bufferTimeSlider);
             } catch (IOException e) {
@@ -317,31 +380,24 @@ class RecordingStage extends BaseStage {
         gridPaneRecording.add(fileNameLabel, 0, 0, 3, 1);
         gridPaneRecording.add(filename, 0, 1, 3, 1);
         gridPaneRecording.add(saveLocation, 0, 2, 1, 1);
-        gridPaneRecording.add(checkBoxLocal, 1, 2, 1, 1);
-        gridPaneRecording.add(checkBoxCloud, 2, 2, 1, 1);
+        if (online) {
+            gridPaneRecording.add(checkBoxLocal, 1, 2, 1, 1);
+            gridPaneRecording.add(checkBoxCloud, 2, 2, 1, 1);
+            gridPaneRecording.add(openCloud, 0, 5, 2, 1);
+            gridPaneRecording.add(backToMain, 1, 5, 1, 1);
+        } else {
+            gridPaneRecording.add(directoryLocalSaves, 1, 2, 2, 1);
+            gridPaneRecording.add(chooseDirectoryLocalSaves, 3, 2, 1, 1);
+            gridPaneRecording.add(outButton, 0, 5, 1, 1);
+
+            checkBoxLocal.setSelected(true);
+        }
         gridPaneRecording.add(bufferTimeLabel, 0, 3, 1, 1);
         gridPaneRecording.add(bufferTimeSlider, 1, 3, 2, 1);
         gridPaneRecording.add(recordingButton, 0, 4, 1, 1);
         gridPaneRecording.add(lapButton, 1, 4, 1, 1);
         gridPaneRecording.add(timer, 2, 4, 1, 1);
-        gridPaneRecording.add(openCloud, 0, 5, 2, 1);
-        gridPaneRecording.add(backToMain, 1, 5, 1, 1);
         return gridPaneRecording;
-    }
-
-    /**
-     * Switches to MyCloud page/stage
-     */
-    private void myCloudButton() {
-        if (recordingBoolean) {
-            Alert stillRecordingAlert = new Alert(Alert.AlertType.INFORMATION);
-            stillRecordingAlert.setTitle("Still recording!");
-            stillRecordingAlert.setHeaderText(null);
-            stillRecordingAlert.setContentText("Please stop recording before visiting MyCloud.");
-            stillRecordingAlert.showAndWait();
-        } else {
-            switchStage(new MyCloudStage(client));
-        }
     }
 
     /**
@@ -349,12 +405,21 @@ class RecordingStage extends BaseStage {
      *
      * @throws IOException from Client class
      */
-    private void recordingStart() throws IOException {
-        client.startRecording();
+    private void recordingStart(String filename) throws IOException {
+        client.startRecording(filename);
         time = System.currentTimeMillis();
     }
-    private void bufferedRecordingStart(int minutes) throws IOException {
-        client.startBufferedRecording(minutes);
+
+    /**
+     * Starts buffered recording saving
+     *
+     * @param minutes  buffered recording time in minutes
+     * @param filename file name for buffered file
+     * @throws IOException
+     */
+
+    private void bufferedRecordingStart(int minutes, String filename) throws IOException {
+        client.startBufferedRecording(minutes, filename);
         time = System.currentTimeMillis();
     }
 
@@ -364,29 +429,50 @@ class RecordingStage extends BaseStage {
      * @param filename the filename that was inserted into filename TextField
      * @return true if filename is suitable; false if it is not
      */
-    // Filename check. TODO 1.add all cases that are not allowed in filename
     private boolean checkFilename(String filename) {
         return !(filename.contains(")") || filename.contains("(")) && !filename.startsWith(".");
     }
 
-    //Saves last n minutes of the recording
+    /**
+     * Makes a lap in recording
+     *
+     * @param bufferedTimeSlider Slider for buffertime
+     * @throws IOException
+     */
     private void lapAction(Slider bufferedTimeSlider) throws IOException {
         client.saveBuffer();
     }
 
     /**
-     * Switches to Main page/stage
+     * Checks whether it is still recording
      */
-    private void mainStage() {
+    public void backCheck() {
         if (recordingBoolean) {
-            Alert stillRecordingAlert = new Alert(Alert.AlertType.INFORMATION);
-            stillRecordingAlert.setTitle("Still recording!");
-            stillRecordingAlert.setHeaderText(null);
-            stillRecordingAlert.setContentText("Please stop recording before returing to Main page.");
-            stillRecordingAlert.showAndWait();
+            alert("Still recording!", "Please stop recording before switching the page.");
         } else {
+            try {
+                client.sendCommand("back");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             switchStage(new MainStage(client));
         }
     }
+
+    /**
+     * Creates directory chooser
+     *
+     * @return
+     */
+    private String directoriChooser() {
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        File selectedDirectory = directoryChooser.showDialog(stage);
+        if (selectedDirectory != null) {
+            return selectedDirectory.getAbsolutePath();
+        } else {
+            return null;
+        }
+    }
+
 }
 

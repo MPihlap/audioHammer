@@ -23,6 +23,7 @@ import java.io.IOException;
 public class MainStage extends BaseStage {
     private Client client;
     private boolean isCreated = false;
+    private double fileSizes;
 
     /**
      * isCreated checks if user is connected to server
@@ -53,14 +54,25 @@ public class MainStage extends BaseStage {
         stage.setMinHeight(sizeH);
         //General information labels
         Label informationMain = new Label();
-        informationMain.setText("Information (Does not change):\nFree MyCloud room:\nLast recording:\n\n\n\n");
+        informationMain.setText("Information:\nMyCloud room used:\nLast recording:\n\n\n\n");
         Label informationUser = new Label();
-        informationUser.setText("\n2GB\n11.03.2017\n\n\n");
+        try {
+            fileSizes = Math.round(getFileSizes());
+        } catch (IOException e) {
+            fileSizes = 0.0;
+        }
+        informationUser.setText("\n" + fileSizes + " MB / 2GB\n11.03.2017\n\n\n");
         //Recording stage button
         Button recordingButton = new Button("Recording");
         recordingButton.setOnAction((ActionEvent event) -> {
-            switchStage(new RecordingStage(client));
-        });
+            if (fileSizeCheck()) {
+                try {
+                    client.sendCommand("Recording");
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                switchStage(new RecordingStage(client,true));
+            }});
         //MyCloud stage button
         Button myCloudButton = new Button("MyCloud");
         myCloudButton.setOnAction((ActionEvent event) -> {
@@ -75,7 +87,7 @@ public class MainStage extends BaseStage {
         Image imageSettings = new Image(getClass().getClassLoader().getResourceAsStream("settings.png"));
         Button settingsButton = new Button("", new ImageView(imageSettings));
         settingsButton.setOnAction((ActionEvent event) -> {
-            unassigned();
+            switchStage(new SettingsStage(client));
         });
         //Log out button
         Button logOutButton = new Button("Log out");
@@ -147,4 +159,22 @@ public class MainStage extends BaseStage {
         logoutStage.setTitle("Log out");
         logoutStage.showAndWait();
     }
+
+    // uses client to send a command to server to retrieve used myCloud storage space
+    public double getFileSizes() throws IOException {
+        return client.getFileSizes();
+    }
+
+    /**
+     * used when user is reaching his/her max myCloud storage limit
+     * @return true, when there is more than 10 mb free, false otherwise
+     */
+    public boolean fileSizeCheck() {
+        if (fileSizes > 2010) {
+            alert("Warning!", "Your myCloud storage capacity is reaching its limit. Please download or delete some files.");
+            return false;
+        }
+        return true;
+    }
 }
+

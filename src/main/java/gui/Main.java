@@ -15,6 +15,7 @@ public class Main extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         LogInStage logInStage=new LogInStage();
+        stage.setResizable(false);
         logInStage.setStage(stage);
         //Client client = new Client();
         logInStage.showStage();

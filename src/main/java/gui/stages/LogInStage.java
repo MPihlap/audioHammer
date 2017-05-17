@@ -6,6 +6,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Font;
 import server.LoginHandler;
@@ -18,9 +19,11 @@ import java.io.IOException;
  */
 public class LogInStage extends BaseStage {
     private Client client;
+
     private void setClient() {
         this.client = new Client();
     }
+
     private boolean isInLoginDialogue = false;
 
     /**
@@ -47,25 +50,11 @@ public class LogInStage extends BaseStage {
         TextField userNameField = new TextField();
         userNameField.setPromptText("Username");
         userNameField.setMaxWidth(sizeW - 35);
+
         Label passwordLabel = new Label("Password: ");
         PasswordField passwordField = new PasswordField();
         passwordField.setPromptText("Password");
         passwordField.setMaxWidth(sizeW - 35);
-        //Alerts about log in information (password, username)
-        Alert noPasswordAlert = new Alert(Alert.AlertType.INFORMATION);
-        noPasswordAlert.setTitle("No password!");
-        noPasswordAlert.setHeaderText(null);
-        noPasswordAlert.setContentText("Please insert your password.");
-
-        Alert noUsernameAlert = new Alert(Alert.AlertType.INFORMATION);
-        noUsernameAlert.setTitle("No username!");
-        noUsernameAlert.setHeaderText(null);
-        noUsernameAlert.setContentText("Please insert your username.");
-
-        Alert wrongUsernameOrPasswordAlert = new Alert(Alert.AlertType.INFORMATION);
-        wrongUsernameOrPasswordAlert.setTitle("Wrong username or password!");
-        wrongUsernameOrPasswordAlert.setHeaderText(null);
-        wrongUsernameOrPasswordAlert.setContentText("You have inserted an incorrect username and/or password.");
         //Log in button
         Button logInButton = new Button("Log in");
         this.setClient(); //starts up new client
@@ -75,17 +64,18 @@ public class LogInStage extends BaseStage {
                 client.createConnection();
                 isInLoginDialogue = true;
                 if (userNameField.getText().equals("")) {
-                    noUsernameAlert.showAndWait();
+                    alert("No username!", "Please insert your username.");
                 } else if (passwordField.getText().equals("")) {
-                    noPasswordAlert.showAndWait();
+                    alert("No password", "Please insert your password.");
                 } else {
                     try {
                         client.sendCommand("login");
                         boolean logInBoolean = client.sendUsername(userNameField.getText(), passwordField.getText());
                         if (!logInBoolean) {
-                            wrongUsernameOrPasswordAlert.showAndWait();
+                            alert("Wrong username or password!", "You have inserted an incorrect username and/or password.");
                         } else {
                             client.setUsername(userNameField.getText());
+                            client.directoryCheck();
                             MainStage mainStage = new MainStage(client);
                             switchStage(mainStage);
 
@@ -96,7 +86,18 @@ public class LogInStage extends BaseStage {
 
                 }
             } catch (IOException e) {
-                connectionError();
+                alert("Error", "Could not create a connection. Please try again later.");
+            }
+        });
+        //Enter for username and Password fields
+        userNameField.setOnKeyPressed(event -> {
+            if (event.getCode().equals(KeyCode.ENTER)) {
+                logInButton.fire();
+            }
+        });
+        passwordField.setOnKeyPressed(event -> {
+            if (event.getCode().equals(KeyCode.ENTER)) {
+                logInButton.fire();
             }
         });
         //Sign up button
@@ -106,11 +107,11 @@ public class LogInStage extends BaseStage {
                 try {
                     client.createConnection();
                 } catch (IOException e) {
-                    connectionError();
+                    alert("Error", "Could not create a connection. Please try again later.");
                 }
             }
             try {
-                if (isInLoginDialogue){
+                if (isInLoginDialogue) {
                     client.sendCommand("cancel");
                 }
                 client.sendCommand("signup");
@@ -145,33 +146,12 @@ public class LogInStage extends BaseStage {
         stage.show();
     }
 
-    private void connectionError() {
-        Alert errorAlert = new Alert(Alert.AlertType.INFORMATION); //TODO use
-        errorAlert.setTitle("Error");
-        errorAlert.setHeaderText(null);
-        errorAlert.setContentText("Could not create a connection. Please try again later.");
-        errorAlert.showAndWait();
-    }
-
     /**
-     * Checks if user can log in with inserted password and username
-     *
-     * @param password the password that user inserted into PasswordField
-     * @param username the username that user inserted into username TextField
-     * @return true, if user can log in; false otherwise
-     * @throws IOException
-     */
-    private boolean logInCheck(String password, String username) throws IOException {
-        client.setUsername(username);
-        //LogIn and open main window
-        return LoginHandler.login(username, password);
-    }
-
-    /**
-     * Allows to use application in offline mode/locally. Will be add later
+     * Allows to use application in offline mode/locally.
      */
     private void offlineMode() {
-        unassigned();
+        RecordingStage recordingStage = new RecordingStage(client, false);
+        switchStage(recordingStage);
     }
 
 

@@ -1,10 +1,8 @@
 package server;
 
-import javax.crypto.SecretKeyFactory;
 import java.io.*;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.Arrays;
 import java.util.Scanner;
 
 
@@ -83,7 +81,7 @@ public class LoginHandler {
                 if (userData[0].equals(username)) {
                     String storedPassword = userData[1];
                     String salt = userData[2];
-                    if (PasswordEncryption.passwordCheck(password, storedPassword, salt)) {
+                    if (PasswordHashing.passwordCheck(password, storedPassword, salt)) {
                         return true;
                     }
                     break;
@@ -93,9 +91,32 @@ public class LoginHandler {
             throw new RuntimeException(e);
         }
         return false;
+    }
+    public static boolean changePassword(String username, String password) throws IOException {
+        String tempFile = "src/resources/UserInfo.temp";
+        String userpath = "src/resources/UserInfo.txt";
+
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(userpath));
+             BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(tempFile))) {
+                String userLine;
+                while ((userLine = bufferedReader.readLine()) != null) {
+                    String[] userData = userLine.split(":");
+                    if (!userData[0].equals(username)) {
+                        bufferedWriter.write(userLine);
+                        bufferedWriter.newLine();
+                    }
+                }
+                bufferedWriter.write(username + ":" +  PasswordHashing.passwordHasher(password));
+                bufferedWriter.newLine();
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+            return false;
+        }
+        File oldFile = new File(userpath);
+        oldFile.delete();
+        new File(tempFile).renameTo(oldFile);
+        return true;
 
     }
-
     /**
      *
      * @param username Username of client
@@ -134,12 +155,13 @@ public class LoginHandler {
         String userpath = "src/resources/UserInfo.txt";
         File file = new File(userpath);
 
-        try (FileWriter fileWriter = new FileWriter(file, true)
+        try (BufferedWriter fileWriter = new BufferedWriter(new FileWriter(file, true))
         ) {
             isTaken = doesUsernameExist(username, file);
             if (!isTaken) {
-                fileWriter.write(username + ":" + PasswordEncryption.passwordEncrypter(password) + '\n');
-                System.out.println("kirjutasin?");
+
+                fileWriter.write(username + ":" + PasswordHashing.passwordHasher(password));
+                fileWriter.newLine();
             }
             else {
                 return false;
