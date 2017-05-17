@@ -151,6 +151,8 @@ class RecordingStage extends BaseStage {
         recordingButton.setMinWidth(100);
         recordingButton.setOnAction((ActionEvent event) -> {
             if (checkBoxLocal.isSelected() || checkBoxCloud.isSelected()) {
+                client.setSaveLocally(checkBoxLocal.isSelected());
+                client.setSaveRemote(checkBoxCloud.isSelected());
                 if (recordingBoolean) {
                     try {
                         client.stopRecording();
@@ -167,20 +169,16 @@ class RecordingStage extends BaseStage {
                     timerThread.setRecordingBoolean(false);
                 } else {
                     if (filename.getText() != null && !filename.getText().equals("") && this.checkFilename(filename.getText())) {
-                        try {
-                            if (online){
-                                client.sendCommand("filename");
-                                client.sendCommand(filename.getText());
-                            }
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
+                        if (online) {
+                            client.setFilename(filename.getText());
+
                         }
 
                         try {
-                            if (!online){
+                            if (!online) {
                                 unassigned(); //TODO fix local recording
-                            }else{
-                                recordingStart();
+                            } else {
+                                recordingStart(filename.getText());
                             }
                         } catch (IOException e) {
                             throw new RuntimeException(e);
@@ -328,6 +326,8 @@ class RecordingStage extends BaseStage {
         recordingButton.setMinWidth(100);
         recordingButton.setOnAction((ActionEvent event) -> {
             if (checkBoxLocal.isSelected() || checkBoxCloud.isSelected()) {
+                client.setSaveLocally(checkBoxLocal.isSelected());
+                client.setSaveRemote(checkBoxCloud.isSelected());
                 if (recordingBoolean) {
                     try {
                         client.stopRecording();
@@ -345,17 +345,11 @@ class RecordingStage extends BaseStage {
                 } else {
                     System.out.println(bufferTimeSlider.getValue());
                     if (filename.getText() != null && !filename.getText().equals("") && this.checkFilename(filename.getText())) {
-                        try {
-                            client.sendCommand("filename");
-                            client.sendCommand(filename.getText());
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
+                        client.setFilename(filename.getText());
                         int bufferTime = (int) bufferTimeSlider.getValue();
                         System.out.println(bufferTime);
-                        //TODO start recording
                         try {
-                            bufferedRecordingStart(bufferTime);
+                            bufferedRecordingStart(bufferTime, filename.getText());
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -392,15 +386,15 @@ class RecordingStage extends BaseStage {
         gridPaneRecording.add(fileNameLabel, 0, 0, 3, 1);
         gridPaneRecording.add(filename, 0, 1, 3, 1);
         gridPaneRecording.add(saveLocation, 0, 2, 1, 1);
-        if (online){
+        if (online) {
             gridPaneRecording.add(checkBoxLocal, 1, 2, 1, 1);
             gridPaneRecording.add(checkBoxCloud, 2, 2, 1, 1);
             gridPaneRecording.add(openCloud, 0, 5, 2, 1);
             gridPaneRecording.add(backToMain, 1, 5, 1, 1);
-        }else{
-            gridPaneRecording.add(directoryLocalSaves,1,2,2,1);
-            gridPaneRecording.add(chooseDirectoryLocalSaves,3,2,1,1);
-            gridPaneRecording.add(outButton,0,5,1,1);
+        } else {
+            gridPaneRecording.add(directoryLocalSaves, 1, 2, 2, 1);
+            gridPaneRecording.add(chooseDirectoryLocalSaves, 3, 2, 1, 1);
+            gridPaneRecording.add(outButton, 0, 5, 1, 1);
 
             checkBoxLocal.setSelected(true);
         }
@@ -417,13 +411,13 @@ class RecordingStage extends BaseStage {
      *
      * @throws IOException from Client class
      */
-    private void recordingStart() throws IOException {
-        client.startRecording();
+    private void recordingStart(String filename) throws IOException {
+        client.startRecording(filename);
         time = System.currentTimeMillis();
     }
 
-    private void bufferedRecordingStart(int minutes) throws IOException {
-        client.startBufferedRecording(minutes);
+    private void bufferedRecordingStart(int minutes, String filename) throws IOException {
+        client.startBufferedRecording(minutes, filename);
         time = System.currentTimeMillis();
     }
 

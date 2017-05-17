@@ -1,7 +1,6 @@
 package gui.stages;
 
 import client.Client;
-import client.FileOperations;
 import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
@@ -13,7 +12,6 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import server.LoginHandler;
-import server.PasswordHashing;
 
 import java.io.File;
 import java.io.IOException;

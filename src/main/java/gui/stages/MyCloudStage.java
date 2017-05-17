@@ -1,12 +1,10 @@
 package gui.stages;
 
 import client.Client;
-import client.FileOperations;
 import client.PlayExistingFile;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -19,13 +17,9 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.FileTime;
 import java.util.*;
 
 /**
@@ -35,13 +29,13 @@ import java.util.*;
 
 class MyCloudStage extends BaseStage {
     private Client client;
-    //private FileOperations fileOperations;
+    //private client.FileOperations fileOperations;
     private HashMap<String, String> parentAndFile;
     private ListView<String> myCloudFilesList;
 
     MyCloudStage(Client client) {
         this.client = client;
-        //this.fileOperations = new FileOperations(client.getUsername());
+        //this.fileOperations = new client.FileOperations(client.getUsername());
     }
 
     /**

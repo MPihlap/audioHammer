@@ -9,7 +9,7 @@ import java.io.IOException;
  */
 
 
-//Clip requires separate thread to be run on, which is why it's not in FileOperations
+//Clip requires separate thread to be run on, which is why it's not in client.FileOperations
 
 //TODO: maybe add custom media player in stage 3?
 public class PlayExistingFile implements Runnable, LineListener {

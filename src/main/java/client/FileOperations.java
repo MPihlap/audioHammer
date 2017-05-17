@@ -1,14 +1,13 @@
 package client;
 
 import javax.sound.sampled.*;
-import javax.sound.sampled.spi.AudioFileReader;
-import javax.xml.crypto.Data;
-import javax.xml.transform.Source;
 import java.io.*;
-import java.net.Socket;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Created by Alo on 18-Apr-17.
@@ -16,12 +15,16 @@ import java.util.*;
 public class FileOperations {
     private ArrayList<Path> allFilesWithPath = new ArrayList<>();
     private final String path;
-    Double fileSizes = 0.0;
+    private Double fileSizes = 0.0;
 
 
 
-    public FileOperations(String username) {
-        this.path = System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator + username;
+    public FileOperations(String username) throws IOException {
+        this.path = System.getProperty("user.home") + File.separator + "AudioHammerServer" + File.separator + username;
+        if (!Files.exists(Paths.get(path))){
+            Files.createDirectories(Paths.get(path));
+            System.out.println("Tried to make directories");
+        }
     }
 
     //adds user recorded files to list
@@ -39,6 +42,32 @@ public class FileOperations {
         Files.walkFileTree(Paths.get(path), simpleFileVisitor);
     }
 
+
+
+    //Saves file
+    public static void fileSaving(String filename, byte[] fileBytes, String username, AudioFormat audioFormat,boolean saveLocal) throws IOException {
+        String serverFilename = filename + ".wav";
+        LocalDate localDate = LocalDate.now();
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+        String directory = dateTimeFormatter.format(localDate);
+        String pathString;
+        if (saveLocal) {
+            pathString = System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator + username + File.separator + directory + File.separator + serverFilename;
+        }
+        else {
+            pathString = System.getProperty("user.home") + File.separator + "AudioHammerServer" + File.separator + username + File.separator + directory + File.separator + serverFilename;
+        }
+        System.out.println(pathString);
+
+        pathString = fileCheck(pathString);
+        Path path = Paths.get(pathString);
+
+        Files.createDirectories(path.getParent());
+        File newFile = new File(pathString);
+        FileOperations.createWAV(fileBytes, newFile, audioFormat);
+
+        System.out.println("File " + filename + " is saved as " + path.getFileName());
+    }
     public double getFileSizes() throws IOException {
         fileSizes = 0.0;
         SimpleFileVisitor<Path> simpleFileVisitor = new SimpleFileVisitor<Path>() {
@@ -127,6 +156,43 @@ public class FileOperations {
         }
 
         return new String[]{mod.toString(), length};
+    }
+    //Checks if file name is unique in this folder. Adds "(Copyxx)" if needed
+    private static String fileCheck(String pathString) {
+        String pathStringFixed = pathString;
+        FilenameFilter filter = (dir, name) -> name.endsWith(".wav");
+        Path path = Paths.get(pathString);
+        File folder = new File(path.getParent().toString());
+        System.out.println(folder);
+
+        File[] filesInFolder = folder.listFiles(filter);
+        if (filesInFolder != null) {
+            for (File file : filesInFolder) {
+                if (file.getName().equals(path.getFileName().toString())) {
+                    if (pathString.charAt(pathString.length() - 5) == (')')) {
+                        int number2 = Character.getNumericValue(pathString.charAt(pathString.length() - 6)) + 1;
+                        int number1 = Character.getNumericValue(pathString.charAt(pathString.length() - 7));
+                        if (number1 == 9 && number2 == 9) {
+                            System.out.println("Selle faili nimega copisied on juba 100 tükki.Esimese faili ümbersalvestamine.");
+                            return (pathString.substring(0, (pathString.length() - 8)) + pathString.substring(pathString.length() - 4, pathString.length()));
+                        }
+                        if (number2 == 10) {
+                            number1 = Character.getNumericValue(pathString.charAt(pathString.length() - 7)) + 1;
+                            number2 = 0;
+                        }
+
+                        pathStringFixed = pathString.substring(0, (pathString.length() - 8)) + "(" + number1 + number2 + ")" + pathString.substring(pathString.length() - 4, pathString.length());
+                    } else {
+                        pathStringFixed = pathString.substring(0, (pathString.length() - 4)) + "(01)" + pathString.substring(pathString.length() - 4, pathString.length());
+                    }
+                    pathStringFixed = fileCheck(pathStringFixed);
+                }
+            }
+        }
+
+        return pathStringFixed;
+
+
     }
 
 

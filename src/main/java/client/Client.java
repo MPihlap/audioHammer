@@ -1,12 +1,10 @@
 package client;
 
 
-import server.ServerThread;
-
 import javax.sound.sampled.AudioFormat;
 import java.io.*;
 import java.net.Socket;
-import java.nio.file.Files;
+import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -23,9 +21,29 @@ public class Client {
     private Socket servSocket;
     private DataOutputStream servOutputStream;
     private DataInputStream servInputStream;
+    FileOperations fileOperations;
+    private boolean offlineMode;
+    private AudioCaptureThread audioCaptureThread;
+    private String filename;
+
+    public void setFilename(String filename) {
+        this.filename = filename;
+    }
+
+    public void setSaveLocally(boolean saveLocally) {
+        this.saveLocally = saveLocally;
+    }
+
+    public void setSaveRemote(boolean saveRemote) {
+        this.saveRemote = saveRemote;
+    }
+
     private BlockingQueue<String> recordingInfo = new ArrayBlockingQueue<String>(5);
     private Thread captureThread;
     private Path downloadPath = Paths.get(System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator + "Downloads");
+    private boolean saveLocally;
+    private boolean saveRemote;
+
 
     public String getUsername() {
         return username;
@@ -48,8 +66,9 @@ public class Client {
         }
         return allFiles;
     }
-    public void setUsername(String username) {
+    public void setUsername(String username) throws IOException {
         this.username = username;
+        //fileOperations = new FileOperations(username);
         System.out.println("sain username");
     }
 
@@ -67,29 +86,49 @@ public class Client {
         servOutputStream.writeUTF(command);
     }
 
-    public void startRecording() throws IOException {
-        sendFormat();
-        servOutputStream.writeBoolean(false);
+    public void startRecording(String filename) throws IOException {
+        System.out.println("Remote: "+saveRemote);
+        System.out.println("Local "+saveLocally);
+        if (saveRemote) {
+            servOutputStream.writeUTF("filename");
+            servOutputStream.writeUTF(filename);
+            sendFormat();
+            servOutputStream.writeBoolean(false);
+        }
         recordingInfo.add("start");
-        AudioCaptureThread audioCaptureThread = new AudioCaptureThread(new ByteArrayOutputStream(), servOutputStream, recordingInfo, false);
+        audioCaptureThread = new AudioCaptureThread(new ByteArrayOutputStream(), servOutputStream, recordingInfo, false);
+        audioCaptureThread.setSaveLocally(saveLocally);
+        audioCaptureThread.setSaveRemote(saveRemote);
         this.captureThread = new Thread(audioCaptureThread);
         captureThread.start();
         System.out.println("hakkas lindistama");
     }
-    private void localRecording(){
-
-    }
-    public void startBufferedRecording(int minutes)throws IOException{
-        sendFormat();
-        servOutputStream.writeBoolean(true);
-        servOutputStream.writeInt(minutes);
+    public void startBufferedRecording(int minutes,String filename) throws IOException {
+        if (saveRemote) {
+            servOutputStream.writeUTF("filename");
+            servOutputStream.writeUTF(filename);
+            sendFormat();
+            servOutputStream.writeBoolean(true);
+            servOutputStream.writeInt(minutes);
+        }
+        ArrayBlockingQueue<String> bufferedCommands = new ArrayBlockingQueue<>(5);
         recordingInfo.add("start");
-        AudioCaptureThread audioCaptureThread = new AudioCaptureThread(new ByteArrayOutputStream(), servOutputStream, recordingInfo, true);
+        audioCaptureThread = new AudioCaptureThread(true,recordingInfo,
+                ByteBuffer.allocate((int) (minutes*60*audioFormat.getSampleRate())*audioFormat.getSampleSizeInBits()/8),
+                servOutputStream
+        );
+        //audioCaptureThread.createByteBuffer((int) (minutes*audioFormat.getSampleRate())*audioFormat.getSampleSizeInBits()/8);
+        audioCaptureThread.setSaveLocally(saveLocally);
+        audioCaptureThread.setSaveRemote(saveRemote);
+        audioCaptureThread.setCommandsToClient(bufferedCommands);
         this.captureThread = new Thread(audioCaptureThread);
         captureThread.start();
     }
     public void saveBuffer() throws IOException {
         recordingInfo.add("buffer");
+        if (saveLocally) {
+            FileOperations.fileSaving(filename, audioCaptureThread.getRecordedBytes(), username, audioFormat, true);
+        }
     }
 
     public void pauseRecording() {
@@ -107,6 +146,7 @@ public class Client {
         System.out.println("stopped");
         try {
             captureThread.join();
+            FileOperations.fileSaving(filename,audioCaptureThread.getRecordedBytes(),username,audioFormat,true);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
