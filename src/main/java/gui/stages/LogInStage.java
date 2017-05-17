@@ -144,23 +144,23 @@ public class LogInStage extends BaseStage {
         stage.show();
     }
 
-
+<<<<<<< HEAD
+=======
     /**
-     * Checks if user can log in with inserted password and username
-     *
-     * @param password the password that user inserted into PasswordField
-     * @param username the username that user inserted into username TextField
-     * @return true, if user can log in; false otherwise
-     * @throws IOException
+     * used when server is down
      */
-    private boolean logInCheck(String password, String username) throws IOException {
-        client.setUsername(username);
-        //LogIn and open main window
-        return LoginHandler.login(username, password);
+    private void connectionError() {
+        Alert errorAlert = new Alert(Alert.AlertType.INFORMATION); //TODO use
+        errorAlert.setTitle("Error");
+        errorAlert.setHeaderText(null);
+        errorAlert.setContentText("Could not create a connection. Please try again later.");
+        errorAlert.showAndWait();
     }
+>>>>>>> 9f33a89f87d2027d5e209a2e2e42a0e5abd2bef2
+
 
     /**
-     * Allows to use application in offline mode/locally. Will be add later
+     * Allows to use application in offline mode/locally.
      */
     private void offlineMode() {
         RecordingStage recordingStage=new RecordingStage(client, false);

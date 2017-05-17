@@ -279,7 +279,7 @@ class MyCloudStage extends BaseStage {
         refreshListView();
     }
 
-    private String getFileData(String fileName) throws IOException { //TODO implement into GUI
+    private String getFileData(String fileName) throws IOException {
         String filePath = parentAndFile.get(fileName) + File.separator + fileName;
         String[] fileData = client.getFileData(filePath);
         return "Last modified: " + fileData[0] + "; File size: " + fileData[1] + " mb";
@@ -294,7 +294,7 @@ class MyCloudStage extends BaseStage {
         String listenFile = parentAndFile.get(fileName) + File.separator + fileName;
         new Thread(new PlayExistingFile(listenFile)).start();
 
-        //TODO: add custom media player
+        //TODO: implement
     }
 
     /**

@@ -6,6 +6,7 @@ import java.io.*;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -88,9 +89,11 @@ public class Client {
         this.settingsPath  = System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator + username + File.separator +  "settings.txt";
         if (!Files.exists(Paths.get(localPath))){
             Files.createDirectories(Paths.get(localPath));
-            createSettings();
         }
         else {
+            if (!Files.exists(Paths.get(settingsPath))){
+                createSettings();
+            }
             try (BufferedReader bufferedReader = new BufferedReader(new FileReader(settingsPath))) {
                 this.downloadPath = bufferedReader.readLine();
                 this.localPath = bufferedReader.readLine();
@@ -98,9 +101,6 @@ public class Client {
         }
     }
 
-    public void closeConnection() throws IOException {
-        this.servSocket.close();
-    }
 
     public void sendCommand(String command) throws IOException {
         servOutputStream.writeUTF(command);

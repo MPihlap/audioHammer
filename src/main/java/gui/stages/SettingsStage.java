@@ -61,7 +61,7 @@ public class SettingsStage extends BaseStage {
         //Directory chooser Local
         Label informationDirectoryLocal = new Label("Local recorded files destination:");
         TextField directoryLocalSaves = new TextField();
-        directoryLocalSaves.setText(client.getLocalPath().toString()); //TODO võib panna hetkel valitud kasuta, aga see tuleb siis kuskilt infost fetchida. Sellisel juhul mitte PromptText vaid lihtsalt .setText
+        directoryLocalSaves.setText(client.getLocalPath());
         Button chooseDirectoryLocalSaves = new Button("...");
         chooseDirectoryLocalSaves.setOnAction((ActionEvent event) -> {
             String directoryString = directoriChooser();
@@ -70,7 +70,7 @@ public class SettingsStage extends BaseStage {
         //Directory choose download
         Label informationDirectoryDownload = new Label("Downloaded files destination:");
         TextField directoryDownload = new TextField();
-        directoryDownload.setText(client.getDownloadPath().toString()); //TODO võib panna hetkel valitud kasuta, aga see tuleb siis kuskilt infost fetchida. Sellisel juhul mitte PromptText vaid lihtsalt .setTex
+        directoryDownload.setText(client.getDownloadPath());
         Button chooseDirectoryDownload = new Button("...");
         chooseDirectoryDownload.setOnAction((ActionEvent event) -> {
             String directoryString = directoriChooser();
@@ -78,8 +78,11 @@ public class SettingsStage extends BaseStage {
 
         });
 
+        /**
+         * changes download and local recording save locations
+         */
         Button apply = new Button("Apply");
-        apply.setOnAction((ActionEvent event) -> { //TODO salvesta valitud kasutad jm vajalik
+        apply.setOnAction((ActionEvent event) -> {
             String localPath = directoryLocalSaves.getText();
             String downloadPath = directoryDownload.getText();
             if (localPath.equals(null) || downloadPath.equals(null)) {

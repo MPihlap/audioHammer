@@ -160,10 +160,15 @@ public class MainStage extends BaseStage {
         logoutStage.showAndWait();
     }
 
+    // uses client to send a command to server to retrieve used myCloud storage space
     public double getFileSizes() throws IOException {
         return client.getFileSizes();
     }
 
+    /**
+     * used when user is reaching his/her max myCloud storage limit
+     * @return true, when there is more than 10 mb free, false otherwise
+     */
     public boolean fileSizeCheck() {
         if (fileSizes > 2010) {
             alert("Warning!", "Your myCloud storage capacity is reaching its limit. Please download or delete some files.");
