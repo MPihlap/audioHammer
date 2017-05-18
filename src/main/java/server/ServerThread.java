@@ -57,6 +57,7 @@ public class ServerThread implements Runnable {
                         command = dataInputStream.readUTF();
                         if (command.equals("MyCloud")) {
                             handleMyCloud(dataInputStream, clientOutputStream);
+                            break;
                         }
                         if (command.equals("back")) {
                             break;
