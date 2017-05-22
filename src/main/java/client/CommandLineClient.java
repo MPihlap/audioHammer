@@ -40,6 +40,7 @@ public class CommandLineClient {
                 while (true) {
                     String response = sc.nextLine();
                     if (response.equals("B")) {
+                        listenGPIO.setBufferedMode(true);
                         int minutes;
                         while (true) {
                             System.out.println("How long would you like the buffer to be? (min)");
@@ -51,26 +52,27 @@ public class CommandLineClient {
                             }
                         }
                         listenGPIO.setReadyToRecord(true);
+                        client.startBufferedRecording(minutes);
                         while (true) {
-                            System.out.println("Please press the start button to start recording.");
+                            System.out.println("We are recording! ");
+                            System.out.println("Please press the start button to save previous "+minutes+" minutes of audio.");
+                            System.out.println("Please press the stop button to stop the recording process");
                             String take = recordingQueue.take();
                             if (take.equals("start")) {
-                                System.out.println("Starting!");
+                                System.out.println("Buffered!");
+                                client.saveBuffer();
                                 break;
                             }
-                        }
-                        client.startBufferedRecording(minutes);
-                        System.out.println("Please press the stop button to stop recording");
-                        while (true) {
-                            if (recordingQueue.take().equals("stop")) {
+                            if (take.equals("stop")){
                                 client.stopRecording();
-                                System.out.println("Stopping!");
                                 listenGPIO.setReadyToRecord(false);
+                                System.out.println("Stopping!");
                                 break;
                             }
                         }
                         break;
                     } else if (response.equals("R")) {
+                        listenGPIO.setBufferedMode(false);
                         listenGPIO.setReadyToRecord(true);
                         while (true) {
                             String take = recordingQueue.take();

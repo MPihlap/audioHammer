@@ -1,16 +1,7 @@
 package server;
 
-import javax.sound.sampled.AudioFileFormat;
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
 import java.io.*;
 import java.net.Socket;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 
 /**
  * Created by Helen on 16.05.2017.
@@ -21,17 +12,27 @@ public class FinalServerThread implements Runnable {
     public FinalServerThread(Socket socket) {
         this.socket = socket;
     }
+
     @Override
     public void run() {
         try (InputStream inputStream = socket.getInputStream();
-        DataInputStream dataInputStream = new DataInputStream(inputStream)) {
-            String filename=dataInputStream.readUTF();
-            System.out.println(filename);
-            String pathString = System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator +filename;
-            receiveFile(pathString,dataInputStream);
+             DataInputStream dataInputStream = new DataInputStream(inputStream)) {
+            while (true) {
+                boolean sending = dataInputStream.readBoolean();
+                if (sending) {
+                    String filename = dataInputStream.readUTF();
+                    System.out.println("Receiving: "+filename);
+                    String pathString = System.getProperty("user.home") + File.separator + "AudioHammer" + File.separator + filename;
+                    receiveFile(pathString, dataInputStream);
+                } else {
+                    break;
+                }
+            }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
 
     private static boolean receiveFile(String fileName, DataInputStream dataInputStream) {
@@ -46,6 +47,7 @@ public class FinalServerThread implements Runnable {
                     fileOutputStream.write(buffer, 0, bytesRead);
                 }
             }
+            System.out.println("File saved");
         } catch (IOException e) {
             return false;
         }

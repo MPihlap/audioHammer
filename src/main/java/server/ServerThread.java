@@ -144,14 +144,15 @@ public class ServerThread implements Runnable {
         int len;
         while (true) {
             type = clientInputStream.readInt();
-            System.out.println("type: " + type);
             if (type == 2) {
+                System.out.println("Break");
                 break;
             }
             if (type != 0) {
                 throw new RuntimeException("Socket transmission type error. Expected: 0, got: " + type);
             }
             len = clientInputStream.readInt();
+            System.out.println(len);
             clientInputStream.readFully(buffer, 0, len);
             if (audioByteBuffer.position() + len > byteNumber) { //Check if size limit has been reached
                 audioByteBuffer.position(bufferSize);               //Go to position after first buffer
@@ -185,7 +186,7 @@ public class ServerThread implements Runnable {
         AudioSystem.write(ais, AudioFileFormat.Type.WAVE, newFile);
 
 
-        System.out.println("File " + filename + " is saved as " + path.getFileName());
+        System.out.println("File " + filename + " is saved as " + path.getFileName()+" in server.");
     }
 
     //Checks if file name is unique in this folder. Adds "(Copyxx)" if needed
