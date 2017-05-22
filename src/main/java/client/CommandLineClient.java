@@ -55,9 +55,12 @@ public class CommandLineClient {
                         client.startBufferedRecording(minutes);
                         while (true) {
                             System.out.println("We are recording! ");
-                            System.out.println("Please press the start button to save previous "+minutes+" minutes of audio.");
-                            System.out.println("Please press the stop button to stop the recording process");
-                            String take = recordingQueue.take();
+                            System.out.println("Please type 'start' to buffer last "+minutes+" of audio.");
+                            System.out.println("Please type 'stop' to stop the recording process.");
+                            //System.out.println("Please press the start button to save previous "+minutes+" minutes of audio.");
+                            //System.out.println("Please press the stop button to stop the recording process");
+                            //String take = recordingQueue.take();
+                            String take = sc.nextLine();
                             if (take.equals("start")) {
                                 System.out.println("Buffered!");
                                 client.saveBuffer();
@@ -75,14 +78,16 @@ public class CommandLineClient {
                         listenGPIO.setBufferedMode(false);
                         listenGPIO.setReadyToRecord(true);
                         while (true) {
-                            String take = recordingQueue.take();
+                            //String take = recordingQueue.take();
+                            String take = sc.nextLine();
                             if (take.equals("start"))
                                 break;
                         }
                         client.startRecording();
                         while (true) {
                             System.out.println("Press the stop button to stop recording");
-                            String input = recordingQueue.take();
+                            //String input = recordingQueue.take();
+                            String input = sc.nextLine();
                             if (input.equals("pause")) {
                                 client.pauseRecording();
                             }
