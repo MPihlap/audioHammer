@@ -19,7 +19,10 @@ public class ServerSend implements Runnable {
     boolean single = true;
     Scanner scanner;
 
-    public ServerSend(Scanner scanner) {
+
+    public ServerSend(String ip, boolean single, Scanner scanner) {
+        this.ip = ip;
+        this.single = single;
         this.scanner = scanner;
     }
 
@@ -44,6 +47,7 @@ public class ServerSend implements Runnable {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
             if (!files.isEmpty()) {
                 if (single && counter!=1) {
                     counter=0;

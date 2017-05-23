@@ -37,7 +37,7 @@ public class ServerThread implements Runnable {
                     }
                     if (command.equals("filename")) {           //if filename is entered, start recording
                         String fileName = dataInputStream.readUTF();
-                        System.out.println(fileName);
+                        System.out.println("Receiving file: "+fileName);
                         boolean bufferedMode = dataInputStream.readBoolean(); //Buffered recording or regular recording
                         System.out.println("Buffer: " + bufferedMode);
                         byte[] fileBytes;
@@ -67,7 +67,7 @@ public class ServerThread implements Runnable {
                 }
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         } finally {
             try {
                 socket.close();
@@ -107,18 +107,19 @@ public class ServerThread implements Runnable {
         }
         ByteArrayOutputStream byteArrayOut = new ByteArrayOutputStream();
         int len;
+        System.out.println("Recording");
         while (true) {
             type = dataInputStream.readInt();
             if (type == 2) {
                 break;
             }
             len = dataInputStream.readInt();
-            System.out.println(len);
             dataInputStream.readFully(buffer, 0, len);
             byteArrayOut.write(buffer, 0, len);
         }
 
         byte[] audioBytes = byteArrayOut.toByteArray();
+        System.out.println("Stoped recording");
         return byteArrayOut.toByteArray();
     }
 

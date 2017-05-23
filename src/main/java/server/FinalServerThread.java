@@ -19,6 +19,7 @@ public class FinalServerThread implements Runnable {
              DataInputStream dataInputStream = new DataInputStream(inputStream)) {
             while (true) {
                 boolean sending = dataInputStream.readBoolean();
+                System.out.println("File sending: "+sending);
                 if (sending) {
                     String filename = dataInputStream.readUTF();
                     System.out.println("Receiving: "+filename);
@@ -30,7 +31,7 @@ public class FinalServerThread implements Runnable {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println(e);
         }
 
     }

@@ -2,4 +2,5 @@
 *.iml
 *.class
 .xml
+.swp
 src/resources/UserInfo.txt
