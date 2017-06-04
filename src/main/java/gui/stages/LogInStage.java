@@ -2,15 +2,18 @@ package gui.stages;
 
 import client.Client;
 import javafx.event.ActionEvent;
+import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.GridPane;
-import javafx.scene.text.Font;
-import server.LoginHandler;
+import javafx.scene.image.ImageView;
+import javafx.scene.shape.Box;
 
+import javax.swing.*;
 import java.io.IOException;
 
 /**
@@ -41,10 +44,20 @@ public class LogInStage extends BaseStage {
         stage.setMaxHeight(sizeH);
         stage.setMinHeight(sizeH);
         //Welcome labels
-        Label titleLabel1 = new Label("Welcome to");
+        /*Label titleLabel1 = new Label("Welcome to");
         titleLabel1.setFont(Font.font(20));
         Label titleLabel2 = new Label("AUDIOHAMMER");
-        titleLabel2.setFont(Font.font(22));
+        titleLabel2.setFont(Font.font(22));*/
+        //Icon
+        Label emptyLabel=new Label();
+        Label emptyLabel2=new Label();
+        Image logoImage=new Image ("logo.png");
+        ImageView logo=new ImageView();
+        logo.setImage(logoImage);
+        logo.setFitWidth(100);
+        logo.setPreserveRatio(true);
+        logo.setSmooth(true);
+        logo.setCache(true);
         //Username and password textfields
         Label usernameLabel = new Label("Username: ");
         TextField userNameField = new TextField();
@@ -131,15 +144,15 @@ public class LogInStage extends BaseStage {
         gridPane.setHgap(10);
         gridPane.setPadding(new Insets(10, 10, 5, 10));
         gridPane.setAlignment(Pos.CENTER);
-        gridPane.add(titleLabel1, 0, 0, 3, 1); //TODO horizontally center
-        gridPane.add(titleLabel2, 0, 1, 3, 1);//TODO horizontally center
-        gridPane.add(offlineMode, 0, 2, 3, 1);
-        gridPane.add(usernameLabel, 0, 3, 1, 1);
-        gridPane.add(userNameField, 0, 4, 3, 1);
-        gridPane.add(passwordLabel, 0, 5, 1, 1);
-        gridPane.add(passwordField, 0, 6, 3, 1);
-        gridPane.add(logInButton, 0, 7, 1, 1);
-        gridPane.add(signUpButton, 1, 7, 1, 1);
+        gridPane.add(logo, 0, 0, 3, 1);
+        gridPane.setHalignment(logo, HPos.CENTER);
+        gridPane.add(offlineMode, 0, 1, 3, 1);
+        gridPane.add(usernameLabel, 0, 2, 1, 1);
+        gridPane.add(userNameField, 0, 3, 3, 1);
+        gridPane.add(passwordLabel, 0, 4, 1, 1);
+        gridPane.add(passwordField, 0, 5, 3, 1);
+        gridPane.add(logInButton, 0, 6, 1, 1);
+        gridPane.add(signUpButton, 1, 6, 1, 1);
         //Last settings and show
         Scene scene = new Scene(gridPane, sizeW, sizeH);
         stage.setScene(scene);
