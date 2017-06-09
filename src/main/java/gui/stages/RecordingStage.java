@@ -255,6 +255,11 @@ class RecordingStage extends BaseStage {
             if (recordingBoolean) {
                 alert("Still recording!", "Please stop recording before switching the page.");
             } else {
+                try {
+                    client.sendCommand("MyCloud");
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
                 switchStage(new MyCloudStage(client));
             }
         });
