@@ -140,9 +140,10 @@ public class Client {
         recordingInfo.add("start");
         audioCaptureThread = new AudioCaptureThread(true, recordingInfo,
                 ByteBuffer.allocate((int) (minutes * 60 * audioFormat.getSampleRate()) * audioFormat.getSampleSizeInBits() / 8),
-                servOutputStream
-        );
-
+                servOutputStream);
+        audioCaptureThread.setFilename(filename);
+        audioCaptureThread.setUsername(username);
+        audioCaptureThread.setLocalPath(localPath);
         audioCaptureThread.setSaveLocally(saveLocally);
         audioCaptureThread.setSaveRemote(saveRemote);
         audioCaptureThread.setCommandsToClient(bufferedCommands);
@@ -152,9 +153,11 @@ public class Client {
 
     public void saveBuffer() throws IOException {
         recordingInfo.add("buffer");
+        /*
         if (saveLocally) {
             FileOperations.fileSaving(filename, audioCaptureThread.getRecordedBytes(), username, audioFormat, true, getLocalPath());
         }
+        */
     }
 
     public void pauseRecording() {

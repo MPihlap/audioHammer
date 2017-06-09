@@ -11,6 +11,7 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 
 /**
@@ -48,9 +49,7 @@ public class ServerThread implements Runnable {
                     break;
                 }
                 if (command.equals("MyCloud")) {
-
                     handleMyCloud(dataInputStream, clientOutputStream);
-
                 }
                 if (command.equals("Recording")) { //if filename is entered, start recording
                     while (true) {
@@ -264,7 +263,7 @@ public class ServerThread implements Runnable {
             }
             audioByteBuffer.put(buffer, 0, len);
         }
-        return audioByteBuffer.array();
+        return Arrays.copyOf(audioByteBuffer.array(),audioByteBuffer.position());
     }
 
 

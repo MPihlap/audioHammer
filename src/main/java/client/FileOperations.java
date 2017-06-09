@@ -69,6 +69,9 @@ public class FileOperations {
         String pathString;
         if (saveLocal) {
             pathString = localPath + File.separator + serverFilename;
+            pathString = fileCheck(pathString);
+            Path path = Paths.get(pathString);
+            Files.createDirectories(path.getParent());
         }
         else {
             pathString = System.getProperty("user.home") + File.separator + "AudioHammerServer" + File.separator + username + File.separator + directory + File.separator + serverFilename;

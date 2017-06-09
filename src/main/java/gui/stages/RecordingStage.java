@@ -338,6 +338,8 @@ class RecordingStage extends BaseStage {
                         if (!online) {
                             client.setLocalPath(directoryLocalSaves.getText());
                         }
+                        client.setLocalPath(directoryLocalSaves.getText());
+                        System.out.println("directory set");
                         client.setFilename(filename.getText());
                         int bufferTime = (int) bufferTimeSlider.getValue();
                         System.out.println(bufferTime);

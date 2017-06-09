@@ -5,12 +5,18 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.concurrent.BlockingQueue;
 
 /**
  * Created by Meelis on 30/03/2017.
  */
 public class AudioCaptureThread implements Runnable {
+    private String filename;
+    private String username;
+    private String localPath;
+    private byte[] bufferBytes;
+
     private boolean saveLocally;
     private boolean saveRemote;
     private final boolean bufferedMode;
@@ -20,7 +26,6 @@ public class AudioCaptureThread implements Runnable {
     private ByteArrayOutputStream captureOutputStream;
     private ByteBuffer byteBuffer;
     private BlockingQueue<String> commandsToClient;
-
     /**
      * This Queue is used to send commands to client during buffered recording
      *
@@ -30,10 +35,21 @@ public class AudioCaptureThread implements Runnable {
         this.commandsToClient = commandsToClient;
     }
 
+    public void setLocalPath(String localPath) {
+        this.localPath = localPath;
+    }
+
+    public void setFilename(String filename) {
+        this.filename = filename;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
     public byte[] getRecordedBytes() {
         if (bufferedMode) {
-            return byteBuffer.array();
+            return bufferBytes;
         }
         return captureOutputStream.toByteArray();
     }
@@ -107,7 +123,10 @@ public class AudioCaptureThread implements Runnable {
                         servStream.writeInt(microphone.getBufferSize() / 5);
                     }
                     if (saveLocally) {
-                        commandsToClient.add("buffer");
+                        bufferBytes = Arrays.copyOf(byteBuffer.array(),byteBuffer.position());
+                        byteBuffer.clear();
+                        FileOperations.fileSaving(filename,bufferBytes,username,format,true,localPath);
+                        //commandsToClient.add("buffer");
                     }
                 }
             }
